@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App - 登录</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    }
+    .login-card {
+      width: 420px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 48px 40px 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .login-card .logo {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .login-card .logo h1 {
+      font-size: 28px;
+      color: #303133;
+      margin-top: 12px;
+    }
+    .login-card .logo p {
+      color: #909399;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .login-card .logo .icon {
+      font-size: 48px;
+    }
+    .login-card .el-form-item {
+      margin-bottom: 24px;
+    }
+    .login-card .el-button {
+      width: 100%;
+      height: 44px;
+      font-size: 16px;
+      border-radius: 8px;
+    }
+    .login-card .footer-link {
+      text-align: center;
+      margin-top: 20px;
+      color: #909399;
+      font-size: 14px;
+    }
+    .login-card .footer-link a {
+      color: #667eea;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .login-card .footer-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="login-card">
+      <div class="logo">
+        <div class="icon">📝</div>
+        <h1>Todo App</h1>
+        <p>个人待办管理平台</p>
+      </div>
+      <el-form :model="form" :rules="rules" ref="formRef" @submit.prevent="handleLogin">
+        <el-form-item prop="username">
+          <el-input v-model="form.username" placeholder="请输入用户名" prefix-icon="User" size="large" />
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input v-model="form.password" type="password" placeholder="请输入密码" prefix-icon="Lock" size="large" show-password />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleLogin">登 录</el-button>
+        </el-form-item>
+      </el-form>
+      <div class="footer-link" v-if="allowRegister">
+        还没有账号？<a href="register.html">去注册 →</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script>
+    const { createApp, reactive, ref, onMounted } = Vue
+    const app = createApp({
+      setup() {
+        const formRef = ref()
+        const form = reactive({ username: '', password: '' })
+        const allowRegister = ref(true)
+        const rules = {
+          username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+          password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+        }
+        const handleLogin = () => {
+          formRef.value.validate((valid) => {
+            if (valid) {
+              // 原型演示：admin 用户登录跳管理后台，普通用户跳主页
+              const isAdmin = form.username === 'admin'
+              ElementPlus.ElMessage.success('登录成功！（原型演示）')
+              setTimeout(() => {
+                window.location.href = isAdmin ? 'admin-user.html' : 'index.html'
+              }, 800)
+            }
+          })
+        }
+        return { formRef, form, rules, handleLogin, allowRegister }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+  </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App - 注册</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    }
+    .register-card {
+      width: 420px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 48px 40px 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .register-card .logo {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .register-card .logo h1 {
+      font-size: 28px;
+      color: #303133;
+      margin-top: 12px;
+    }
+    .register-card .logo p {
+      color: #909399;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .register-card .logo .icon {
+      font-size: 48px;
+    }
+    .register-card .el-form-item {
+      margin-bottom: 24px;
+    }
+    .register-card .el-button {
+      width: 100%;
+      height: 44px;
+      font-size: 16px;
+      border-radius: 8px;
+    }
+    .register-card .footer-link {
+      text-align: center;
+      margin-top: 20px;
+      color: #909399;
+      font-size: 14px;
+    }
+    .register-card .footer-link a {
+      color: #667eea;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .register-card .footer-link a:hover {
+      text-decoration: underline;
+    }
+    .closed-tip {
+      text-align: center;
+      padding: 32px 0;
+    }
+    .closed-tip .icon { font-size: 48px; margin-bottom: 12px; }
+    .closed-tip p { color: #909399; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="register-card">
+      <template v-if="allowRegister">
+        <div class="logo">
+          <div class="icon">📝</div>
+          <h1>Todo App</h1>
+          <p>个人待办管理平台</p>
+        </div>
+        <el-form :model="form" :rules="rules" ref="formRef" @submit.prevent="handleRegister">
+          <el-form-item prop="username">
+            <el-input v-model="form.username" placeholder="请输入用户名(3-20位)" prefix-icon="User" size="large" />
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input v-model="form.password" type="password" placeholder="请输入密码(6-20位)" prefix-icon="Lock" size="large" show-password />
+          </el-form-item>
+          <el-form-item prop="confirmPassword">
+            <el-input v-model="form.confirmPassword" type="password" placeholder="请确认密码" prefix-icon="Lock" size="large" show-password />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handleRegister">注 册</el-button>
+          </el-form-item>
+        </el-form>
+        <div class="footer-link">
+          已有账号？<a href="login.html">去登录 →</a>
+        </div>
+      </template>
+      <template v-else>
+        <div class="closed-tip">
+          <div class="icon">🔒</div>
+          <p>注册功能暂未开放</p>
+          <p style="margin-top:8px">请联系管理员开通账号</p>
+        </div>
+        <div class="footer-link">
+          <a href="login.html">← 返回登录</a>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script>
+    const { createApp, reactive, ref } = Vue
+    const app = createApp({
+      setup() {
+        const formRef = ref()
+        // 原型演示：设为 true 显示注册表单，设为 false 显示关闭提示
+        const allowRegister = ref(true)
+        const form = reactive({ username: '', password: '', confirmPassword: '' })
+        const validateConfirm = (rule, value, callback) => {
+          if (value !== form.password) {
+            callback(new Error('两次输入密码不一致'))
+          } else {
+            callback()
+          }
+        }
+        const rules = {
+          username: [
+            { required: true, message: '请输入用户名', trigger: 'blur' },
+            { min: 3, max: 20, message: '长度3-20位', trigger: 'blur' }
+          ],
+          password: [
+            { required: true, message: '请输入密码', trigger: 'blur' },
+            { min: 6, max: 20, message: '长度6-20位', trigger: 'blur' }
+          ],
+          confirmPassword: [
+            { required: true, message: '请确认密码', trigger: 'blur' },
+            { validator: validateConfirm, trigger: 'blur' }
+          ]
+        }
+        const handleRegister = () => {
+          formRef.value.validate((valid) => {
+            if (valid) {
+              ElementPlus.ElMessage.success('注册成功！（原型演示）')
+              setTimeout(() => window.location.href = 'login.html', 800)
+            }
+          })
+        }
+        return { formRef, form, rules, handleRegister, allowRegister }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+  </script>
+</body>
+</html>

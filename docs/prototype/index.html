@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App - 任务主页</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f0f2f5;
+      font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      min-height: 100vh;
+    }
+    .header {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header .logo {
+      font-size: 20px;
+      font-weight: 600;
+      color: #303133;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header .right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header .username {
+      color: #606266;
+      font-size: 14px;
+    }
+    .main {
+      max-width: 960px;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .stat-card .label { color: #909399; font-size: 13px; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; color: #303133; }
+    .stat-card .value.accent { color: #667eea; }
+    .stat-card .value.success { color: #67c23a; }
+    .stat-card .value.warning { color: #e6a23c; }
+    .filter-bar {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .filter-bar .el-input { width: 240px; }
+    .task-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .task-section .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .task-section .section-header h2 { font-size: 18px; color: #303133; }
+    .batch-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: #ecf5ff;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #409eff;
+    }
+    .batch-bar .batch-actions { display: flex; gap: 8px; }
+    .task-item {
+      display: flex;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 16px;
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-item .task-content { flex: 1; min-width: 0; }
+    .task-item .task-title {
+      font-size: 15px;
+      color: #303133;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .task-item .task-desc {
+      font-size: 13px;
+      color: #909399;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .task-item.done .task-title {
+      color: #c0c4cc;
+      text-decoration: line-through;
+    }
+    .task-item .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #909399;
+    }
+    .task-item .task-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .priority-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .priority-high { background: #fef0f0; color: #f56c6c; }
+    .priority-medium { background: #fdf6ec; color: #e6a23c; }
+    .priority-low { background: #f0f9eb; color: #67c23a; }
+    .category-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #ecf5ff;
+      color: #409eff;
+    }
+    .pagination-wrap { display: flex; justify-content: center; margin-top: 24px; }
+    .empty-state { text-align: center; padding: 48px 0; color: #c0c4cc; }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="header">
+      <div class="logo">📝 Todo App</div>
+      <div class="right">
+        <span class="username">{{ currentUser }}</span>
+        <el-button text @click="passwordDialogVisible = true">修改密码</el-button>
+        <el-button type="danger" text @click="handleLogout">退出登录</el-button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="label">总任务</div>
+          <div class="value">{{ tasks.length }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">待办</div>
+          <div class="value warning">{{ todoCount }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">已完成</div>
+          <div class="value success">{{ doneCount }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">完成率</div>
+          <div class="value accent">{{ doneRate }}%</div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <el-input v-model="keyword" placeholder="搜索任务..." clearable prefix-icon="Search" />
+        <el-select v-model="filterStatus" placeholder="状态" clearable style="width:120px">
+          <el-option label="待办" :value="0" />
+          <el-option label="已完成" :value="1" />
+        </el-select>
+        <el-select v-model="filterCategory" placeholder="分类" clearable style="width:120px">
+          <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+        </el-select>
+        <el-select v-model="filterPriority" placeholder="优先级" clearable style="width:120px">
+          <el-option label="高" :value="1" />
+          <el-option label="中" :value="2" />
+          <el-option label="低" :value="3" />
+        </el-select>
+      </div>
+
+      <div class="task-section">
+        <div class="section-header">
+          <h2>任务列表</h2>
+          <el-button type="primary" @click="openCreateDialog">+ 新增任务</el-button>
+        </div>
+
+        <!-- 批量操作栏 -->
+        <div class="batch-bar" v-if="selectedTasks.length > 0">
+          已选 {{ selectedTasks.length }} 项
+          <div class="batch-actions">
+            <el-button size="small" type="success" @click="batchAction('complete')">批量完成</el-button>
+            <el-button size="small" type="warning" @click="batchAction('undo')">批量取消完成</el-button>
+            <el-button size="small" type="danger" @click="batchAction('delete')">批量删除</el-button>
+            <el-button size="small" text @click="selectedTasks = []">取消选择</el-button>
+          </div>
+        </div>
+
+        <div v-if="pagedTasks.length === 0" class="empty-state">
+          <div class="icon">📋</div>
+          <p>暂无任务，点击上方按钮新增</p>
+        </div>
+
+        <div v-for="task in pagedTasks" :key="task.id" class="task-item" :class="{ done: task.status === 1 }">
+          <el-checkbox
+            v-model="task._selected"
+            @change="(val) => toggleSelect(task, val)"
+          />
+          <el-checkbox
+            :model-value="task.status === 1"
+            @change="toggleTask(task)"
+            size="large"
+          />
+          <div class="task-content">
+            <div class="task-title">{{ task.title }}</div>
+            <div class="task-desc" v-if="task.content">{{ task.content }}</div>
+            <div class="task-meta">
+              <span :class="['priority-tag', task.priority === 1 ? 'priority-high' : task.priority === 2 ? 'priority-medium' : 'priority-low']">
+                {{ priorityLabel(task.priority) }}
+              </span>
+              <span class="category-tag">📁 {{ getCategoryName(task.categoryId) }}</span>
+              <span>{{ task.createTime }}</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <el-button type="primary" text size="small" @click="openEditDialog(task)">编辑</el-button>
+            <el-popconfirm title="确定要删除该任务吗？" confirm-button-text="确定删除" cancel-button-text="取消" @confirm="deleteTask(task)">
+              <template #reference>
+                <el-button type="danger" text size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
+          </div>
+        </div>
+
+        <div class="pagination-wrap" v-if="filteredTasks.length > pageSize">
+          <el-pagination
+            v-model:current-page="currentPage"
+            :page-size="pageSize"
+            :total="filteredTasks.length"
+            layout="prev, pager, next"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- 新增/编辑弹窗 -->
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑任务' : '新增任务'" width="480px" destroy-on-close>
+      <el-form :model="taskForm" :rules="taskRules" ref="taskFormRef" label-width="80px">
+        <el-form-item label="任务标题" prop="title">
+          <el-input v-model="taskForm.title" placeholder="请输入任务标题" maxlength="100" show-word-limit />
+        </el-form-item>
+        <el-form-item label="任务内容">
+          <el-input v-model="taskForm.content" type="textarea" :rows="4" placeholder="请输入任务内容（选填）" maxlength="1000" show-word-limit />
+        </el-form-item>
+        <el-form-item label="优先级" prop="priority">
+          <el-select v-model="taskForm.priority" style="width:100%">
+            <el-option label="高" :value="1" />
+            <el-option label="中" :value="2" />
+            <el-option label="低" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分类" prop="categoryId">
+          <el-select v-model="taskForm.categoryId" style="width:100%" placeholder="请选择分类">
+            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitTask">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 修改密码弹窗 -->
+    <el-dialog v-model="passwordDialogVisible" title="修改密码" width="420px" destroy-on-close>
+      <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-width="100px">
+        <el-form-item label="当前密码" prop="oldPassword">
+          <el-input v-model="passwordForm.oldPassword" type="password" placeholder="请输入当前密码" show-password />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="passwordForm.newPassword" type="password" placeholder="请输入新密码(6-20位)" show-password />
+        </el-form-item>
+        <el-form-item label="确认新密码" prop="confirmPassword">
+          <el-input v-model="passwordForm.confirmPassword" type="password" placeholder="请确认新密码" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="passwordDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="changePassword">确定</el-button>
+      </template>
+    </el-dialog>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script>
+    const { createApp, reactive, ref, computed } = Vue
+    const app = createApp({
+      setup() {
+        const currentUser = ref('testuser')
+        const keyword = ref('')
+        const filterStatus = ref(null)
+        const filterCategory = ref(null)
+        const filterPriority = ref(null)
+        const currentPage = ref(1)
+        const pageSize = ref(10)
+        const dialogVisible = ref(false)
+        const isEdit = ref(false)
+        const taskFormRef = ref()
+        const selectedTasks = ref([])
+
+        // 修改密码
+        const passwordDialogVisible = ref(false)
+        const passwordFormRef = ref()
+        const passwordForm = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' })
+        const validatePasswordConfirm = (rule, value, callback) => {
+          if (value !== passwordForm.newPassword) callback(new Error('两次输入密码不一致'))
+          else callback()
+        }
+        const passwordRules = {
+          oldPassword: [{ required: true, message: '请输入当前密码', trigger: 'blur' }],
+          newPassword: [
+            { required: true, message: '请输入新密码', trigger: 'blur' },
+            { min: 6, max: 20, message: '长度6-20位', trigger: 'blur' }
+          ],
+          confirmPassword: [
+            { required: true, message: '请确认新密码', trigger: 'blur' },
+            { validator: validatePasswordConfirm, trigger: 'blur' }
+          ]
+        }
+        const changePassword = () => {
+          passwordFormRef.value.validate((valid) => {
+            if (valid) {
+              ElementPlus.ElMessage.success('密码修改成功！（原型演示）')
+              passwordDialogVisible.value = false
+            }
+          })
+        }
+
+        const categories = reactive([
+          { id: 1, name: '工作' },
+          { id: 2, name: '生活' },
+          { id: 3, name: '学习' }
+        ])
+
+        const tasks = reactive([
+          { id: 1, title: '完成项目需求文档编写', content: '需要完成PRD文档和接口文档的编写，包含用户模块和任务模块', status: 0, priority: 1, categoryId: 1, createTime: '2024-01-15 10:30', _selected: false },
+          { id: 2, title: '买牛奶和面包', content: '超市买全脂牛奶2盒，全麦面包1袋', status: 1, priority: 2, categoryId: 2, createTime: '2024-01-14 18:20', _selected: false },
+          { id: 3, title: '学习 Go Zero 框架', content: '完成官方教程的API和RPC部分，理解goctl代码生成', status: 0, priority: 1, categoryId: 3, createTime: '2024-01-13 09:00', _selected: false },
+          { id: 4, title: '修复登录页面的 Bug', content: '用户名含特殊字符时登录失败，需要增加输入校验', status: 0, priority: 2, categoryId: 1, createTime: '2024-01-12 14:15', _selected: false },
+          { id: 5, title: '整理书架和衣柜', content: '', status: 1, priority: 3, categoryId: 2, createTime: '2024-01-11 20:00', _selected: false },
+          { id: 6, title: '阅读《Clean Code》第3章', content: '重点关注函数设计原则，做好读书笔记', status: 0, priority: 2, categoryId: 3, createTime: '2024-01-10 08:30', _selected: false },
+          { id: 7, title: '准备周会 PPT', content: '汇总本周开发进度和下周计划，附上燃尽图', status: 0, priority: 1, categoryId: 1, createTime: '2024-01-09 16:45', _selected: false },
+          { id: 8, title: '预约牙科检查', content: '口腔医院3楼，记得带医保卡', status: 1, priority: 3, categoryId: 2, createTime: '2024-01-08 11:00', _selected: false },
+        ])
+
+        const taskForm = reactive({ id: null, title: '', content: '', priority: 2, categoryId: null })
+        const taskRules = {
+          title: [{ required: true, message: '请输入任务标题', trigger: 'blur' }],
+        }
+
+        const todoCount = computed(() => tasks.filter(t => t.status === 0).length)
+        const doneCount = computed(() => tasks.filter(t => t.status === 1).length)
+        const doneRate = computed(() => tasks.length ? Math.round(doneCount.value / tasks.length * 100) : 0)
+
+        const filteredTasks = computed(() => {
+          return tasks.filter(t => {
+            if (filterStatus.value !== null && filterStatus.value !== '' && t.status !== filterStatus.value) return false
+            if (filterCategory.value && t.categoryId !== filterCategory.value) return false
+            if (filterPriority.value && t.priority !== filterPriority.value) return false
+            if (keyword.value && !t.title.includes(keyword.value)) return false
+            return true
+          })
+        })
+
+        const pagedTasks = computed(() => {
+          const start = (currentPage.value - 1) * pageSize.value
+          return filteredTasks.value.slice(start, start + pageSize.value)
+        })
+
+        const priorityLabel = (p) => p === 1 ? '高' : p === 2 ? '中' : '低'
+        const getCategoryName = (id) => categories.find(c => c.id === id)?.name || '未分类'
+
+        const toggleSelect = (task, val) => {
+          const idx = selectedTasks.value.indexOf(task.id)
+          if (val && idx === -1) selectedTasks.value.push(task.id)
+          else if (!val && idx > -1) selectedTasks.value.splice(idx, 1)
+        }
+
+        const batchAction = (action) => {
+          if (action === 'complete') {
+            tasks.filter(t => selectedTasks.value.includes(t.id)).forEach(t => t.status = 1)
+            ElementPlus.ElMessage.success('批量完成成功')
+          } else if (action === 'undo') {
+            tasks.filter(t => selectedTasks.value.includes(t.id)).forEach(t => t.status = 0)
+            ElementPlus.ElMessage.success('批量取消完成成功')
+          } else if (action === 'delete') {
+            ElementPlus.ElMessageBox.confirm(`确定删除选中的 ${selectedTasks.value.length} 项任务吗？`, '提示', {
+              confirmButtonText: '确定删除',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              selectedTasks.value.forEach(id => {
+                const idx = tasks.findIndex(t => t.id === id)
+                if (idx > -1) tasks.splice(idx, 1)
+              })
+              ElementPlus.ElMessage.success('批量删除成功')
+            }).catch(() => {})
+          }
+          selectedTasks.value = []
+          tasks.forEach(t => t._selected = false)
+        }
+
+        const toggleTask = (task) => {
+          task.status = task.status === 0 ? 1 : 0
+          ElementPlus.ElMessage.success(task.status === 1 ? '已标记完成' : '已标记待办')
+        }
+
+        const deleteTask = (task) => {
+          const idx = tasks.findIndex(t => t.id === task.id)
+          if (idx > -1) tasks.splice(idx, 1)
+          ElementPlus.ElMessage.success('删除成功')
+        }
+
+        const openCreateDialog = () => {
+          isEdit.value = false
+          taskForm.id = null
+          taskForm.title = ''
+          taskForm.content = ''
+          taskForm.priority = 2
+          taskForm.categoryId = null
+          dialogVisible.value = true
+        }
+
+        const openEditDialog = (task) => {
+          isEdit.value = true
+          taskForm.id = task.id
+          taskForm.title = task.title
+          taskForm.content = task.content
+          taskForm.priority = task.priority
+          taskForm.categoryId = task.categoryId
+          dialogVisible.value = true
+        }
+
+        const submitTask = () => {
+          taskFormRef.value.validate((valid) => {
+            if (!valid) return
+            if (isEdit.value) {
+              const task = tasks.find(t => t.id === taskForm.id)
+              if (task) {
+                task.title = taskForm.title
+                task.content = taskForm.content
+                task.priority = taskForm.priority
+                task.categoryId = taskForm.categoryId
+              }
+              ElementPlus.ElMessage.success('编辑成功')
+            } else {
+              tasks.unshift({
+                id: Date.now(),
+                title: taskForm.title,
+                content: taskForm.content,
+                status: 0,
+                priority: taskForm.priority,
+                categoryId: taskForm.categoryId,
+                createTime: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-'),
+                _selected: false
+              })
+              ElementPlus.ElMessage.success('创建成功')
+            }
+            dialogVisible.value = false
+          })
+        }
+
+        const handleLogout = () => {
+          ElementPlus.ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+          }).then(() => {
+            window.location.href = 'login.html'
+          }).catch(() => {})
+        }
+
+        return {
+          currentUser, keyword, filterStatus, filterCategory, filterPriority,
+          currentPage, pageSize, categories, tasks, selectedTasks,
+          todoCount, doneCount, doneRate, filteredTasks, pagedTasks,
+          dialogVisible, isEdit, taskForm, taskFormRef, taskRules,
+          priorityLabel, getCategoryName, toggleSelect, batchAction,
+          toggleTask, deleteTask, openCreateDialog, openEditDialog, submitTask, handleLogout,
+          passwordDialogVisible, passwordFormRef, passwordForm, passwordRules, changePassword
+        }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+  </script>
+</body>
+</html>

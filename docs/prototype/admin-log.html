@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App - 操作日志</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f0f2f5;
+      font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      min-height: 100vh;
+    }
+    .header {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header .logo {
+      font-size: 20px;
+      font-weight: 600;
+      color: #303133;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header .right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+    .sidebar {
+      width: 200px;
+      background: #fff;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+      padding: 16px 0;
+    }
+    .sidebar .menu-item {
+      display: block;
+      padding: 12px 24px;
+      color: #606266;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .sidebar .menu-item:hover { background: #f5f7fa; color: #409eff; }
+    .sidebar .menu-item.active { background: #ecf5ff; color: #409eff; font-weight: 500; }
+    .content {
+      flex: 1;
+      padding: 24px;
+    }
+    .page-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .page-header h2 { font-size: 18px; color: #303133; }
+    .action-tag {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .action-login { background: #ecf5ff; color: #409eff; }
+    .action-create { background: #f0f9eb; color: #67c23a; }
+    .action-update { background: #fdf6ec; color: #e6a23c; }
+    .action-delete { background: #fef0f0; color: #f56c6c; }
+    .action-config { background: #f4f4f5; color: #909399; }
+    .pagination-wrap { display: flex; justify-content: center; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="header">
+      <div class="logo">📝 Todo App 管理后台</div>
+      <div class="right">
+        <span style="color:#606266;font-size:14px">管理员：admin</span>
+        <el-button text @click="window.location.href='index.html'">前台首页</el-button>
+        <el-button type="danger" text>退出登录</el-button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="sidebar">
+        <a class="menu-item" href="admin-user.html">👤 用户管理</a>
+        <a class="menu-item" href="admin-config.html">⚙️ 系统设置</a>
+        <a class="menu-item active" href="admin-log.html">📋 操作日志</a>
+        <a class="menu-item" href="admin-login-log.html">🔑 登录日志</a>
+      </div>
+
+      <div class="content">
+        <div class="page-card">
+          <div class="page-header">
+            <h2>操作日志</h2>
+            <div style="display:flex;gap:12px">
+              <el-input v-model="keyword" placeholder="搜索用户名..." clearable style="width:180px" prefix-icon="Search" />
+              <el-select v-model="filterAction" placeholder="操作类型" clearable style="width:140px">
+                <el-option label="创建" value="create" />
+                <el-option label="更新" value="update" />
+                <el-option label="删除" value="delete" />
+                <el-option label="配置变更" value="config" />
+              </el-select>
+            </div>
+          </div>
+
+          <el-table :data="pagedLogs" stripe>
+            <el-table-column prop="id" label="ID" width="70" />
+            <el-table-column prop="username" label="操作用户" width="120" />
+            <el-table-column label="操作类型" width="110">
+              <template #default="{ row }">
+                <span :class="['action-tag', 'action-' + row.action]">{{ actionLabel(row.action) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="targetType" label="对象类型" width="100" />
+            <el-table-column prop="detail" label="操作详情" show-overflow-tooltip />
+            <el-table-column prop="ip" label="IP地址" width="140" />
+            <el-table-column prop="createTime" label="操作时间" width="180" />
+          </el-table>
+
+          <div class="pagination-wrap">
+            <el-pagination
+              v-model:current-page="currentPage"
+              :page-size="pageSize"
+              :total="filteredLogs.length"
+              layout="total, prev, pager, next"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script>
+    const { createApp, reactive, ref, computed } = Vue
+    const app = createApp({
+      setup() {
+        const keyword = ref('')
+        const filterAction = ref('')
+        const currentPage = ref(1)
+        const pageSize = ref(10)
+
+        const logs = reactive([
+          { id: 1, username: 'admin', action: 'config', targetType: '系统配置', detail: '修改配置: allow_register=true → false', ip: '192.168.1.100', createTime: '2024-01-20 15:30:00' },
+          { id: 2, username: 'admin', action: 'update', targetType: '用户', detail: '禁用用户: wangwu', ip: '192.168.1.100', createTime: '2024-01-20 14:20:00' },
+          { id: 3, username: 'admin', action: 'update', targetType: '用户', detail: '重置用户密码: lisi', ip: '192.168.1.100', createTime: '2024-01-20 10:15:00' },
+          { id: 4, username: 'zhangsan', action: 'create', targetType: '任务', detail: '创建任务: 完成项目需求文档编写', ip: '192.168.1.101', createTime: '2024-01-19 16:30:00' },
+          { id: 5, username: 'zhangsan', action: 'delete', targetType: '任务', detail: '删除任务: 旧任务#15', ip: '192.168.1.101', createTime: '2024-01-19 14:10:00' },
+          { id: 6, username: 'admin', action: 'create', targetType: '用户', detail: '新用户注册: zhaoliu', ip: '192.168.1.105', createTime: '2024-01-18 16:45:00' },
+          { id: 7, username: 'lisi', action: 'update', targetType: '任务', detail: '完成任务: 阅读文档', ip: '192.168.1.102', createTime: '2024-01-18 11:20:00' },
+          { id: 8, username: 'admin', action: 'config', targetType: '系统配置', detail: '修改配置: site_name=Todo App', ip: '192.168.1.100', createTime: '2024-01-17 09:00:00' },
+        ])
+
+        const actionLabel = (a) => {
+          const map = { create: '创建', update: '更新', delete: '删除', config: '配置变更' }
+          return map[a] || a
+        }
+
+        const filteredLogs = computed(() => {
+          return logs.filter(l => {
+            if (keyword.value && !l.username.includes(keyword.value)) return false
+            if (filterAction.value && l.action !== filterAction.value) return false
+            return true
+          })
+        })
+
+        const pagedLogs = computed(() => {
+          const start = (currentPage.value - 1) * pageSize.value
+          return filteredLogs.value.slice(start, start + pageSize.value)
+        })
+
+        return { keyword, filterAction, currentPage, pageSize, logs, filteredLogs, pagedLogs, actionLabel }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+  </script>
+</body>
+</html>

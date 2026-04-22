@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App - 用户管理</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f0f2f5;
+      font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      min-height: 100vh;
+    }
+    .header {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header .logo {
+      font-size: 20px;
+      font-weight: 600;
+      color: #303133;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header .right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+    .sidebar {
+      width: 200px;
+      background: #fff;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+      padding: 16px 0;
+    }
+    .sidebar .menu-item {
+      display: block;
+      padding: 12px 24px;
+      color: #606266;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .sidebar .menu-item:hover { background: #f5f7fa; color: #409eff; }
+    .sidebar .menu-item.active { background: #ecf5ff; color: #409eff; font-weight: 500; }
+    .content {
+      flex: 1;
+      padding: 24px;
+    }
+    .page-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .page-header h2 { font-size: 18px; color: #303133; }
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #fef0f0;
+      color: #f56c6c;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .status-enabled { background: #f0f9eb; color: #67c23a; }
+    .status-disabled { background: #f4f4f5; color: #909399; }
+    .pagination-wrap { display: flex; justify-content: center; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="header">
+      <div class="logo">📝 Todo App 管理后台</div>
+      <div class="right">
+        <span style="color:#606266;font-size:14px">管理员：admin</span>
+        <el-button text @click="window.location.href='index.html'">前台首页</el-button>
+        <el-button type="danger" text>退出登录</el-button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="sidebar">
+        <a class="menu-item active" href="admin-user.html">👤 用户管理</a>
+        <a class="menu-item" href="admin-config.html">⚙️ 系统设置</a>
+        <a class="menu-item" href="admin-log.html">📋 操作日志</a>
+        <a class="menu-item" href="admin-login-log.html">🔑 登录日志</a>
+      </div>
+
+      <div class="content">
+        <div class="page-card">
+          <div class="page-header">
+            <h2>用户管理</h2>
+            <el-input v-model="keyword" placeholder="搜索用户名..." clearable style="width:240px" prefix-icon="Search" />
+          </div>
+
+          <el-table :data="pagedUsers" stripe>
+            <el-table-column prop="id" label="ID" width="80" />
+            <el-table-column prop="username" label="用户名" />
+            <el-table-column label="角色" width="100">
+              <template #default="{ row }">
+                <span v-if="row.isAdmin" class="admin-badge">管理员</span>
+                <span v-else style="color:#909399;font-size:13px">普通用户</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <span :class="['status-badge', row.status === 1 ? 'status-enabled' : 'status-disabled']">
+                  {{ row.status === 1 ? '启用' : '禁用' }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="createTime" label="注册时间" width="180" />
+            <el-table-column label="操作" width="260">
+              <template #default="{ row }">
+                <el-button type="primary" text size="small" @click="openResetDialog(row)">重置密码</el-button>
+                <el-button
+                  :type="row.status === 1 ? 'warning' : 'success'"
+                  text size="small"
+                  @click="toggleStatus(row)"
+                  :disabled="row.isAdmin"
+                >
+                  {{ row.status === 1 ? '禁用' : '启用' }}
+                </el-button>
+                <el-popconfirm title="确定要删除该用户吗？" @confirm="deleteUser(row)" :disabled="row.isAdmin">
+                  <template #reference>
+                    <el-button type="danger" text size="small" :disabled="row.isAdmin">删除</el-button>
+                  </template>
+                </el-popconfirm>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <div class="pagination-wrap">
+            <el-pagination
+              v-model:current-page="currentPage"
+              :page-size="pageSize"
+              :total="filteredUsers.length"
+              layout="total, prev, pager, next"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重置密码弹窗 -->
+    <el-dialog v-model="resetDialogVisible" title="重置密码" width="420px" destroy-on-close>
+      <el-form :model="resetForm" :rules="resetRules" ref="resetFormRef" label-width="100px">
+        <el-form-item label="用户">
+          <span>{{ resetForm.username }}</span>
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="resetForm.newPassword" type="password" placeholder="请输入新密码(6-20位)" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="resetDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitReset">确定重置</el-button>
+      </template>
+    </el-dialog>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script>
+    const { createApp, reactive, ref, computed } = Vue
+    const app = createApp({
+      setup() {
+        const keyword = ref('')
+        const currentPage = ref(1)
+        const pageSize = ref(10)
+        const resetDialogVisible = ref(false)
+        const resetFormRef = ref()
+        const resetForm = reactive({ id: null, username: '', newPassword: '' })
+        const resetRules = {
+          newPassword: [
+            { required: true, message: '请输入新密码', trigger: 'blur' },
+            { min: 6, max: 20, message: '长度6-20位', trigger: 'blur' }
+          ]
+        }
+
+        const users = reactive([
+          { id: 1, username: 'admin', isAdmin: true, status: 1, createTime: '2024-01-01 00:00:00' },
+          { id: 2, username: 'zhangsan', isAdmin: false, status: 1, createTime: '2024-01-10 09:30:00' },
+          { id: 3, username: 'lisi', isAdmin: false, status: 1, createTime: '2024-01-12 14:20:00' },
+          { id: 4, username: 'wangwu', isAdmin: false, status: 0, createTime: '2024-01-15 10:00:00' },
+          { id: 5, username: 'zhaoliu', isAdmin: false, status: 1, createTime: '2024-01-18 16:45:00' },
+        ])
+
+        const filteredUsers = computed(() => {
+          if (!keyword.value) return users
+          return users.filter(u => u.username.includes(keyword.value))
+        })
+
+        const pagedUsers = computed(() => {
+          const start = (currentPage.value - 1) * pageSize.value
+          return filteredUsers.value.slice(start, start + pageSize.value)
+        })
+
+        const openResetDialog = (user) => {
+          resetForm.id = user.id
+          resetForm.username = user.username
+          resetForm.newPassword = ''
+          resetDialogVisible.value = true
+        }
+
+        const submitReset = () => {
+          resetFormRef.value.validate((valid) => {
+            if (valid) {
+              ElementPlus.ElMessage.success(`已重置 ${resetForm.username} 的密码`)
+              resetDialogVisible.value = false
+            }
+          })
+        }
+
+        const toggleStatus = (user) => {
+          user.status = user.status === 1 ? 0 : 1
+          ElementPlus.ElMessage.success(user.status === 1 ? '已启用' : '已禁用')
+        }
+
+        const deleteUser = (user) => {
+          const idx = users.findIndex(u => u.id === user.id)
+          if (idx > -1) users.splice(idx, 1)
+          ElementPlus.ElMessage.success('删除成功')
+        }
+
+        return {
+          keyword, currentPage, pageSize, users, filteredUsers, pagedUsers,
+          resetDialogVisible, resetFormRef, resetForm, resetRules,
+          openResetDialog, submitReset, toggleStatus, deleteUser
+        }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+  </script>
+</body>
+</html>
