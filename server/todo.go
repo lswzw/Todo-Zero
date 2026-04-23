@@ -20,6 +20,9 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
+// Version is set via -ldflags at build time.
+var Version = "dev"
+
 //go:embed dist
 var staticFiles embed.FS
 
@@ -34,6 +37,7 @@ var (
 	jwtSecret   = flag.String("jwt-secret", "todo-app-jwt-secret-key-2024", "JWT signing secret")
 	jwtExpire   = flag.Int64("jwt-expire", 86400, "JWT token expiration in seconds")
 	configFile  = flag.String("f", "", "config file path (overrides command-line flags)")
+	showVersion = flag.Bool("version", false, "print version and exit")
 )
 
 func main() {
@@ -49,6 +53,13 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  %s -f /etc/todo-api.yaml    # Use config file\n", os.Args[0])
 	}
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("Todo-Zero %s\n", Version)
+		os.Exit(0)
+	}
+
+	fmt.Printf("[Main] Todo-Zero %s starting...\n", Version)
 
 	var c config.Config
 
