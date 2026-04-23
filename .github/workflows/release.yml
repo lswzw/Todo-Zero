@@ -19,19 +19,14 @@ jobs:
         include:
           - goos: linux
             goarch: amd64
-            suffix: ''
           - goos: linux
             goarch: arm64
-            suffix: ''
           - goos: darwin
             goarch: amd64
-            suffix: ''
           - goos: darwin
             goarch: arm64
-            suffix: ''
           - goos: windows
             goarch: amd64
-            suffix: .exe
 
     runs-on: ubuntu-latest
     steps:
@@ -61,10 +56,12 @@ jobs:
           CGO_ENABLED: 0
         run: |
           cd server
+          BINARY="todo-zero-${{ matrix.goos }}-${{ matrix.goarch }}"
+          [ "${{ matrix.goos }}" = "windows" ] && BINARY="${BINARY}.exe"
           go build -trimpath \
             -ldflags="-s -w -X main.Version=${{ github.ref_name }}" \
             -tags netgo,osusergo \
-            -o ../todo-zero${{ matrix.suffix }} .
+            -o "../${BINARY}" .
 
       - name: Install UPX
         if: matrix.goos != 'darwin'
@@ -73,13 +70,16 @@ jobs:
 
       - name: Compress binary (UPX)
         if: matrix.goos != 'darwin'
-        run: upx --best --lzma todo-zero${{ matrix.suffix }}
+        run: |
+          BINARY="todo-zero-${{ matrix.goos }}-${{ matrix.goarch }}"
+          [ "${{ matrix.goos }}" = "windows" ] && BINARY="${BINARY}.exe"
+          upx --best --lzma "${BINARY}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: todo-zero-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: todo-zero${{ matrix.suffix }}
+          path: todo-zero-${{ matrix.goos }}-${{ matrix.goarch }}*
 
   release:
     needs: build
@@ -92,14 +92,24 @@ jobs:
           path: artifacts
           merge-multiple: false
 
-      - name: List artifacts
-        run: find artifacts -type f | sort
+      - name: Rename and collect release files
+        run: |
+          mkdir -p release
+          for dir in artifacts/todo-zero-*/; do
+            for f in "${dir}"*; do
+              [ -f "$f" ] || continue
+              filename=$(basename "$f")
+              # Add tag version: todo-zero-linux-amd64 → todo-zero-v1.2.0-linux-amd64
+              newname=$(echo "$filename" | sed 's/^todo-zero/todo-zero-${{ github.ref_name }}/')
+              cp "$f" "release/${newname}"
+            done
+          done
+          ls -lh release/
 
       - name: Generate checksums
         run: |
-          cd artifacts
-          find . -type f -exec sha256sum {} \; > ../checksums.txt
-          mv ../checksums.txt .
+          cd release
+          sha256sum * > checksums.txt
           cat checksums.txt
 
       - name: Create Release
@@ -107,5 +117,4 @@ jobs:
         with:
           generate_release_notes: true
           files: |
-            artifacts/**/*
-            artifacts/checksums.txt
+            release/*
