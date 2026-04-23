@@ -47,10 +47,10 @@ func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTa
 
 		switch req.Action {
 		case "complete":
-			task.Status = 1
+			task.Status = 2 // 已完成
 			_ = l.svcCtx.TaskModel.Update(l.ctx, task)
 		case "undo":
-			task.Status = 0
+			task.Status = 0 // 待办
 			_ = l.svcCtx.TaskModel.Update(l.ctx, task)
 		case "delete":
 			_ = l.svcCtx.TaskModel.Delete(l.ctx, id)

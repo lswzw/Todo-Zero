@@ -30,8 +30,8 @@ type Task struct {
 	Id         int64          `db:"id"`          // 任务ID
 	Title      string         `db:"title"`       // 任务标题
 	Content    sql.NullString `db:"content"`     // 任务内容
-	Priority   int64          `db:"priority"`    // 优先级: 0=普通 1=重要 2=紧急
-	Status     int64          `db:"status"`      // 状态: 0=待办 1=进行中 2=已完成
+	Priority   int64          `db:"priority"`    // 优先级: 1=重要 2=紧急 3=普通
+	Status     int64          `db:"status"`      // 状态: 0=待办 2=已完成
 	CategoryId sql.NullInt64  `db:"category_id"` // 分类ID
 	UserId     int64          `db:"user_id"`     // 用户ID
 	StartTime  sql.NullTime   `db:"start_time"`  // 开始时间

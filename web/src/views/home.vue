@@ -44,15 +44,15 @@
           <div class="section-actions">
             <el-select v-model="filters.status" placeholder="状态" clearable style="width: 100px" @change="loadTasks">
               <el-option label="待办" :value="0" />
-              <el-option label="已完成" :value="1" />
+              <el-option label="已完成" :value="2" />
             </el-select>
             <el-select v-model="filters.categoryId" placeholder="分类" clearable style="width: 100px" @change="loadTasks">
               <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
             </el-select>
             <el-select v-model="filters.priority" placeholder="优先级" clearable style="width: 100px" @change="loadTasks">
-              <el-option label="高" :value="1" />
-              <el-option label="中" :value="2" />
-              <el-option label="低" :value="3" />
+              <el-option label="紧急" :value="2" />
+              <el-option label="重要" :value="1" />
+              <el-option label="普通" :value="3" />
             </el-select>
             <el-button :type="selectMode ? 'primary' : ''" @click="toggleSelectMode">
               {{ selectMode ? '退出多选' : '多选' }}
@@ -82,17 +82,17 @@
               <div :class="['check-dot', { active: selectedIds.includes(task.id) }]" />
             </div>
             <div class="task-status" @click="handleToggle(task)">
-              <div :class="['status-circle', { done: task.status === 1 }]">
-                <el-icon v-if="task.status === 1"><Check /></el-icon>
+              <div :class="['status-circle', { done: task.status === 2 }]">
+                <el-icon v-if="task.status === 2"><Check /></el-icon>
               </div>
             </div>
             <div class="task-body">
-              <div :class="['task-title', { 'line-through': task.status === 1 }]">{{ task.title }}</div>
+              <div :class="['task-title', { 'line-through': task.status === 2 }]">{{ task.title }}</div>
               <div v-if="task.content" class="task-content">{{ task.content }}</div>
               <div class="task-meta">
-                <el-tag v-if="task.priority === 1" size="small" type="danger">高</el-tag>
-                <el-tag v-else-if="task.priority === 2" size="small" type="warning">中</el-tag>
-                <el-tag v-else size="small" type="success">低</el-tag>
+                <el-tag v-if="task.priority === 2" size="small" type="danger">紧急</el-tag>
+                <el-tag v-else-if="task.priority === 1" size="small" type="warning">重要</el-tag>
+                <el-tag v-else size="small" type="success">普通</el-tag>
                 <el-tag v-if="task.categoryName" size="small" type="info">{{ task.categoryName }}</el-tag>
                 <span class="task-time">{{ task.createTime }}</span>
               </div>
@@ -136,9 +136,9 @@
         </el-form-item>
         <el-form-item label="优先级">
           <el-select v-model="taskForm.priority" style="width: 100%">
-            <el-option label="高" :value="1" />
-            <el-option label="中" :value="2" />
-            <el-option label="低" :value="3" />
+            <el-option label="紧急" :value="2" />
+            <el-option label="重要" :value="1" />
+            <el-option label="普通" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="分类">
@@ -210,7 +210,7 @@ const taskDialogVisible = ref(false)
 const editingTask = ref<any>(null)
 const submitting = ref(false)
 const taskFormRef = ref()
-const taskForm = ref({ title: '', content: '', priority: 2, categoryId: undefined as number | undefined })
+const taskForm = ref({ title: '', content: '', priority: 3, categoryId: undefined as number | undefined })
 const taskRules = {
   title: [
     { required: true, message: '请输入任务标题', trigger: 'blur' },
@@ -313,7 +313,7 @@ function openTaskDialog(task?: any) {
   if (task) {
     taskForm.value = { title: task.title, content: task.content || '', priority: task.priority, categoryId: task.categoryId || undefined }
   } else {
-    taskForm.value = { title: '', content: '', priority: 2, categoryId: undefined }
+    taskForm.value = { title: '', content: '', priority: 3, categoryId: undefined }
   }
   taskDialogVisible.value = true
 }

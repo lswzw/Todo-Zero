@@ -31,16 +31,16 @@ func (l *TaskListLogic) TaskList(req *types.TaskListReq) (resp *types.TaskListRe
 		return nil, err
 	}
 
-	// Parse status: 0=全部(默认), 1=进行中, 2=已完成
-	// Priority: 0=全部(默认), 1=重要, 2=紧急
+	// Parse status: 0=全部(默认), 2=已完成
+	// Priority: 0=全部(默认), 1=重要, 2=紧急, 3=普通
 	// 用 req.Status==0 判断"全部"模式，因为前端 form 解析 int64 默认=0
 	var status int64 = -1
-	if req.Status == 1 || req.Status == 2 {
-		status = req.Status
+	if req.Status == 2 {
+		status = 2 // 已完成
 	}
 
 	var priority int64 = -1
-	if req.Priority == 1 || req.Priority == 2 {
+	if req.Priority >= 1 && req.Priority <= 3 {
 		priority = req.Priority
 	}
 
@@ -49,15 +49,31 @@ func (l *TaskListLogic) TaskList(req *types.TaskListReq) (resp *types.TaskListRe
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
+	// 批量收集 categoryId，一次查出所有分类名称
+	categoryIds := make(map[int64]bool)
+	for _, t := range tasks {
+		if t.CategoryId.Valid && t.CategoryId.Int64 > 0 {
+			categoryIds[t.CategoryId.Int64] = true
+		}
+	}
+	categoryMap := make(map[int64]string)
+	if len(categoryIds) > 0 {
+		for cid := range categoryIds {
+			category, err := l.svcCtx.CategoryModel.FindOne(l.ctx, cid)
+			if err == nil {
+				categoryMap[cid] = category.Name
+			}
+		}
+	}
+
 	var list []types.TaskItem
 	for _, t := range tasks {
 		categoryName := "未分类"
 		categoryId := int64(0)
 		if t.CategoryId.Valid && t.CategoryId.Int64 > 0 {
 			categoryId = t.CategoryId.Int64
-			category, err := l.svcCtx.CategoryModel.FindOne(l.ctx, t.CategoryId.Int64)
-			if err == nil {
-				categoryName = category.Name
+			if name, ok := categoryMap[categoryId]; ok {
+				categoryName = name
 			}
 		}
 

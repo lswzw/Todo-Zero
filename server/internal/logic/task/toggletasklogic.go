@@ -40,9 +40,9 @@ func (l *ToggleTaskLogic) ToggleTask(req *types.ToggleTaskReq) (resp *types.Togg
 		return nil, xerr.NewCodeError(xerr.NoPermission)
 	}
 
-	// 切换状态
+	// 切换状态: 0=待办 ↔ 2=已完成
 	if task.Status == 0 {
-		task.Status = 1
+		task.Status = 2
 	} else {
 		task.Status = 0
 	}

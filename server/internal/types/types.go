@@ -53,7 +53,7 @@ type CreateCategoryResp struct {
 type CreateTaskReq struct {
 	Title      string `json:"title" validate:"required,max=100"`
 	Content    string `json:"content,optional" validate:"max=1000"`
-	Priority   int64  `json:"priority,optional,default=2" options="1|2|3"`
+	Priority   int64  `json:"priority,optional,default=3" options="1|2|3"`
 	CategoryId int64  `json:"categoryId,optional"`
 }
 
@@ -185,7 +185,7 @@ type TaskItem struct {
 type TaskListReq struct {
 	Page       int64  `form:"page,default=1"`
 	PageSize   int64  `form:"pageSize,default=10"`
-	Status     int64  `form:"status,optional" options="0|1"`
+	Status     int64  `form:"status,optional" options="0|2"`
 	CategoryId int64  `form:"categoryId,optional"`
 	Priority   int64  `form:"priority,optional" options="1|2|3"`
 	Keyword    string `form:"keyword,optional"`

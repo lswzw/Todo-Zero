@@ -120,3 +120,12 @@ INSERT OR IGNORE INTO `system_configs` (`config_key`, `config_value`, `group_nam
 ('allow_register', 'false', 'basic', '是否允许新用户注册'),
 ('task_default_priority', '0', 'task', '新建任务默认优先级'),
 ('task_auto_delete_days', '30', 'task', '自动清理已完成任务天数（0=不清理）');
+
+-- ================================================
+-- Indexes for performance
+-- ================================================
+CREATE INDEX IF NOT EXISTS `idx_tasks_user_id` ON `tasks` (`user_id`, `is_deleted`);
+CREATE INDEX IF NOT EXISTS `idx_tasks_status` ON `tasks` (`user_id`, `status`, `is_deleted`);
+CREATE INDEX IF NOT EXISTS `idx_tasks_category_id` ON `tasks` (`category_id`);
+CREATE INDEX IF NOT EXISTS `idx_users_username` ON `users` (`username`, `is_deleted`);
+CREATE INDEX IF NOT EXISTS `idx_login_log_username` ON `login_log` (`username`);

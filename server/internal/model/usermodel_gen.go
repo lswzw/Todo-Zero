@@ -93,7 +93,7 @@ func (m *defaultUserModel) FindList(ctx context.Context, username string, status
 	}
 
 	offset := (page - 1) * pageSize
-	listQuery := `SELECT id, username, password, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM ` + m.tableName() + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
+	listQuery := `SELECT id, username, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM ` + m.tableName() + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
 	listArgs := append(args, pageSize, offset)
 
 	rows, err := m.db.QueryContext(ctx, listQuery, listArgs...)
@@ -105,7 +105,7 @@ func (m *defaultUserModel) FindList(ctx context.Context, username string, status
 	var list []*User
 	for rows.Next() {
 		var u User
-		err := rows.Scan(&u.Id, &u.Username, &u.Password, &u.Nickname, &u.Email, &u.Phone, &u.Avatar, &u.Role, &u.Status, &u.IsDeleted, &u.CreateTime, &u.UpdateTime)
+		err := rows.Scan(&u.Id, &u.Username, &u.Nickname, &u.Email, &u.Phone, &u.Avatar, &u.Role, &u.Status, &u.IsDeleted, &u.CreateTime, &u.UpdateTime)
 		if err != nil {
 			return nil, 0, err
 		}

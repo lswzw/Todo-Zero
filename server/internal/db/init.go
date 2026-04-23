@@ -42,9 +42,31 @@ func InitDB(dataDir, dbFile string) (*sql.DB, error) {
 			return nil, fmt.Errorf("failed to initialize database: %w", err)
 		}
 		fmt.Println("[DB] Database initialized successfully")
+	} else {
+		// Ensure indexes exist for existing databases
+		if err := ensureIndexes(sqliteDB); err != nil {
+			return nil, fmt.Errorf("failed to create indexes: %w", err)
+		}
 	}
 
 	return sqliteDB, nil
+}
+
+var indexStatements = []string{
+	`CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks (user_id, is_deleted)`,
+	`CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks (user_id, status, is_deleted)`,
+	`CREATE INDEX IF NOT EXISTS idx_tasks_category_id ON tasks (category_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_users_username ON users (username, is_deleted)`,
+	`CREATE INDEX IF NOT EXISTS idx_login_log_username ON login_log (username)`,
+}
+
+func ensureIndexes(db *sql.DB) error {
+	for _, stmt := range indexStatements {
+		if _, err := db.Exec(stmt); err != nil {
+			return fmt.Errorf("failed to create index: %w", err)
+		}
+	}
+	return nil
 }
 
 func getTables(db *sql.DB) ([]string, error) {

@@ -6,23 +6,22 @@
 
 ## P0 — 必须修复（影响正确性/性能）
 
-- [ ] **前后端状态/优先级映射不一致**
-  - 后端：Status 0=待办 1=进行中 2=已完成，Priority 0=普通 1=重要 2=紧急
-  - 前端筛选：状态只有"待办(0)/已完成(1)"，遗漏"进行中"；优先级显示"高/中/低"与后端定义不匹配
-  - TaskListLogic 状态解析逻辑与前端选项值矛盾
-  - → 对齐前后端枚举定义，统一映射关系
+- [x] **前后端状态/优先级映射不一致**
+  - Status 统一为: 0=待办, 2=已完成（去掉未使用的"进行中"状态）
+  - Priority 统一为: 1=重要, 2=紧急, 3=普通
+  - ToggleTask: 0↔2 切换（原来 0↔1，1 不是"已完成"）
+  - BatchTask: complete→status=2, undo→status=0（原来 complete→1）
+  - 前端筛选/显示/表单全部对齐
 
-- [ ] **任务列表 N+1 查询**
-  - `TaskListLogic` 为每个任务单独查询分类名称，数据量大时性能极差
-  - → 改为 JOIN 查询或批量 IN 查询
+- [x] **任务列表 N+1 查询**
+  - 改为批量收集 categoryId → 一次查出所有分类名称 → map 查找
 
-- [ ] **数据库缺少索引**
-  - `tasks` 表按 `user_id`、`status`、`category_id` 频繁查询但无索引
-  - → 添加 `(user_id, is_deleted)`、`(user_id, status, is_deleted)`、`category_id` 索引
+- [x] **数据库缺少索引**
+  - 添加 `idx_tasks_user_id`、`idx_tasks_status`、`idx_tasks_category_id`、`idx_users_username`、`idx_login_log_username`
+  - init.sql 和 ensureIndexes() 双重保障（新库/旧库都有索引）
 
-- [ ] **用户列表返回密码哈希**
-  - `UserModel.FindList` 查询包含 `password` 字段，数据层暴露敏感信息
-  - → 查询时排除 password 列
+- [x] **用户列表返回密码哈希**
+  - `UserModel.FindList` 查询排除 `password` 字段
 
 ---
 
