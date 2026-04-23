@@ -79,12 +79,45 @@
 
 ---
 
-## 阶段四：联调 & 部署
+## 阶段四：单体二进制改造
 
-- [ ] ① 前后端联调，解决跨域等问题
-- [ ] ② 后端编译部署（Docker / 直接编译）
-- [ ] ③ 前端构建 + 部署（Nginx 托管静态资源）
-- [ ] ④ 完整功能测试
+> **目标**：最终产物为一个独立二进制文件，无需外部依赖（MySQL/Redis/Nginx），`./todo-app` 即可运行。
+
+### 设计思路
+
+- **SQLite 替代 MySQL**：使用 `modernc.org/sqlite`（纯 Go 实现，无需 CGO），数据存储为本地文件 `data/todo.db`
+- **去掉 Redis**：SQLite 本地文件访问速度快，缓存意义不大；所有查询直接走数据库
+- **Go embed 嵌入前端**：`//go:embed dist/` 将 Vue 构建产物嵌入二进制，通过 `http.FS` 提供静态文件服务
+- **自动初始化**：启动时检测 SQLite 文件是否存在，不存在则自动建库建表、创建默认管理员
+
+### 改造清单
+
+- [ ] ① MySQL → SQLite：替换驱动、调整 SQL 语法（`AUTO_INCREMENT` → `AUTOINCREMENT`、去掉反引号等）
+- [ ] ② 去掉 Redis：移除缓存配置和逻辑，Model 层改为纯数据库查询
+- [ ] ③ 配置精简：`todo-api.yaml` 去掉 Redis/MySQL 配置，仅保留 JWT 等必要项
+- [ ] ④ 启动自动初始化：检测并创建 SQLite 数据库 + 建表 + 默认数据
+- [ ] ⑤ 嵌入前端静态文件：`embed dist/` + go-zero 路由兜底返回 `index.html`
+- [ ] ⑥ 编译测试：`go build -o todo-app` 生成单体二进制，验证功能完整性
+
+### 最终效果
+
+```bash
+# 编译
+go build -o todo-app
+
+# 运行（一个文件搞定）
+./todo-app
+# → 自动创建 data/todo.db，自动建表
+# → 浏览器访问 http://localhost:8888 直接使用
+```
+
+---
+
+## 阶段五：完整测试 & 发布
+
+- [ ] ① 完整功能测试（所有 CRUD + 管理员功能）
+- [ ] ② 多平台编译（Linux / macOS / Windows）
+- [ ] ③ 打标签发布
 
 ---
 
@@ -96,7 +129,8 @@
 | Day 2 | 需求设计 + API 设计 + 建表 | AI 编写 .api 文件和 SQL | [ ] |
 | Day 3-4 | 后端业务逻辑开发 | AI 编写 CRUD 逻辑代码 | [ ] |
 | Day 5-6 | 前端页面开发 | AI 生成页面和组件 | [ ] |
-| Day 7 | 联调 + 测试 + 修复 | AI 辅助定位和修复 Bug | [ ] |
+| Day 7 | 单体二进制改造 + 联调 | MySQL→SQLite，去Redis，embed前端 | [ ] |
+| Day 8 | 完整测试 + 发布 | AI 辅助定位和修复 Bug | [ ] |
 
 ---
 
@@ -107,8 +141,16 @@
 | 后端框架 | go-zero | 高性能微服务框架 |
 | 前端框架 | Vue3 | 上手快，中文生态好 |
 | UI 组件库 | Element Plus | 企业级组件库，文档齐全 |
-| 数据库 | MySQL | 最通用，学习资料最多 |
-| 缓存 | Redis | go-zero 原生支持 |
+| 数据库 | SQLite（`modernc.org/sqlite`） | 纯 Go 实现，无需 CGO，单文件部署 |
+| ~~缓存~~ | ~~Redis~~ → 去掉 | SQLite 本地访问快，无需缓存层 |
 | ORM | 原生 SQL / sqlx | go-zero 官方推荐 |
 | API 风格 | RESTful | go-zero 原生支持 |
 | 认证方式 | JWT | go-zero 内置支持 |
+| 静态资源 | Go embed | 前端产物嵌入二进制，单体部署 |
+
+### 架构演进说明
+
+| 阶段 | 数据库 | 缓存 | 前端部署 | 部署方式 |
+|------|--------|------|----------|----------|
+| 开发期（阶段二） | MySQL | Redis | — | 前后端分离 |
+| **最终目标（阶段四）** | **SQLite** | **无** | **Go embed** | **单体二进制** |
