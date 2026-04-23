@@ -48,7 +48,6 @@ jobs:
           cd web
           npm ci
           npm run build
-          cp -r dist ../server/dist
 
       - uses: actions/setup-go@v5
         with:
