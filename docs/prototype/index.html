@@ -63,18 +63,6 @@
     .stat-card .value.accent { color: #667eea; }
     .stat-card .value.success { color: #67c23a; }
     .stat-card .value.warning { color: #e6a23c; }
-    .filter-bar {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .filter-bar .el-input { width: 240px; }
     .task-section {
       background: #fff;
       border-radius: 12px;
@@ -113,6 +101,19 @@
       transition: background 0.2s;
     }
     .add-btn:hover { background: #5a6fe0; }
+    .filter-select {
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #606266;
+      outline: none;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .filter-select:focus { border-color: #667eea; }
     .select-btn {
       height: 32px;
       padding: 0 14px;
@@ -278,25 +279,25 @@
         </div>
       </div>
 
-      <div class="filter-bar">
-        <el-select v-model="filterStatus" placeholder="状态" clearable style="width:120px">
-          <el-option label="待办" :value="0" />
-          <el-option label="已完成" :value="1" />
-        </el-select>
-        <el-select v-model="filterCategory" placeholder="分类" clearable style="width:120px">
-          <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
-        </el-select>
-        <el-select v-model="filterPriority" placeholder="优先级" clearable style="width:120px">
-          <el-option label="高" :value="1" />
-          <el-option label="中" :value="2" />
-          <el-option label="低" :value="3" />
-        </el-select>
-      </div>
-
       <div class="task-section">
         <div class="section-header">
           <h2>任务列表</h2>
           <div class="section-actions">
+            <select v-model="filterStatus" class="filter-select">
+              <option value="">状态</option>
+              <option :value="0">待办</option>
+              <option :value="1">已完成</option>
+            </select>
+            <select v-model="filterCategory" class="filter-select">
+              <option value="">分类</option>
+              <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+            <select v-model="filterPriority" class="filter-select">
+              <option value="">优先级</option>
+              <option :value="1">高</option>
+              <option :value="2">中</option>
+              <option :value="3">低</option>
+            </select>
             <button :class="['select-btn', selectMode ? 'active' : '']" @click="toggleSelectMode">{{ selectMode ? '取消多选' : '多选' }}</button>
             <input class="search-input" v-model="keyword" placeholder="搜索任务..." @input="keyword=$event.target.value" />
             <button class="add-btn" @click="openCreateDialog">+ 新增任务</button>
