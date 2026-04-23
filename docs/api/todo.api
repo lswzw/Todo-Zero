@@ -1,437 +1,430 @@
 syntax = "v1"
 
 info (
-    title: "Todo App API"
-    desc: "个人待办事项管理平台接口"
-    author: "kub"
-    version: "1.0.0"
+	title:   "Todo App API"
+	desc:    "个人待办事项管理平台接口"
+	author:  "kub"
+	version: "1.0.0"
 )
 
 // =============================================
 // 用户模块
 // =============================================
-
 // 注册
 type (
-    RegisterReq {
-        Username string `json:"username" validate:"required,min=3,max=20"`
-        Password string `json:"password" validate:"required,min=6,max=20"`
-    }
-    RegisterResp {
-        Id       int64  `json:"id"`
-        Username string `json:"username"`
-    }
+	RegisterReq {
+		Username string `json:"username" validate:"required,min=3,max=20"`
+		Password string `json:"password" validate:"required,min=6,max=20"`
+	}
+	RegisterResp {
+		Id       int64  `json:"id"`
+		Username string `json:"username"`
+	}
 )
 
 // 登录
 type (
-    LoginReq {
-        Username string `json:"username"`
-        Password string `json:"password"`
-    }
-    LoginResp {
-        Token   string `json:"token"`
-        IsAdmin int64  `json:"isAdmin"`
-    }
+	LoginReq {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	LoginResp {
+		Token   string `json:"token"`
+		IsAdmin int64  `json:"isAdmin"`
+	}
 )
 
 // 修改密码(用户自助)
 type (
-    ChangePasswordReq {
-        OldPassword string `json:"oldPassword" validate:"required"`
-        NewPassword string `json:"newPassword" validate:"required,min=6,max=20"`
-    }
-    ChangePasswordResp {}
+	ChangePasswordReq {
+		OldPassword string `json:"oldPassword" validate:"required"`
+		NewPassword string `json:"newPassword" validate:"required,min=6,max=20"`
+	}
+	ChangePasswordResp  {}
 )
 
 // 获取用户信息
 type (
-    UserInfoResp {
-        Id       int64  `json:"id"`
-        Username string `json:"username"`
-        IsAdmin  int64  `json:"isAdmin"`
-        Status   int64  `json:"status"`
-    }
+	UserInfoResp {
+		Id       int64  `json:"id"`
+		Username string `json:"username"`
+		IsAdmin  int64  `json:"isAdmin"`
+		Status   int64  `json:"status"`
+	}
 )
 
 // =============================================
 // 任务模块
 // =============================================
-
 // 创建任务
 type (
-    CreateTaskReq {
-        Title      string `json:"title" validate:"required,max=100"`
-        Content    string `json:"content,optional" validate:"max=1000"`
-        Priority   int64  `json:"priority,optional,default=2" options="1|2|3"`
-        CategoryId int64  `json:"categoryId,optional"`
-    }
-    CreateTaskResp {
-        Id int64 `json:"id"`
-    }
+	CreateTaskReq {
+		Title      string `json:"title" validate:"required,max=100"`
+		Content    string `json:"content,optional" validate:"max=1000"`
+		Priority   int64  `json:"priority,optional,default=2" options="1|2|3"`
+		CategoryId int64  `json:"categoryId,optional"`
+	}
+	CreateTaskResp {
+		Id int64 `json:"id"`
+	}
 )
 
 // 更新任务
 type (
-    UpdateTaskReq {
-        Id         int64  `path:"id"`
-        Title      string `json:"title,optional" validate:"max=100"`
-        Content    string `json:"content,optional" validate:"max=1000"`
-        Priority   int64  `json:"priority,optional" options="1|2|3"`
-        CategoryId int64  `json:"categoryId,optional"`
-    }
-    UpdateTaskResp {}
+	UpdateTaskReq {
+		Id         int64  `path:"id"`
+		Title      string `json:"title,optional" validate:"max=100"`
+		Content    string `json:"content,optional" validate:"max=1000"`
+		Priority   int64  `json:"priority,optional" options="1|2|3"`
+		CategoryId int64  `json:"categoryId,optional"`
+	}
+	UpdateTaskResp  {}
 )
 
 // 切换任务状态
 type (
-    ToggleTaskReq {
-        Id int64 `path:"id"`
-    }
-    ToggleTaskResp {}
+	ToggleTaskReq {
+		Id int64 `path:"id"`
+	}
+	ToggleTaskResp  {}
 )
 
 // 删除任务
 type (
-    DeleteTaskReq {
-        Id int64 `path:"id"`
-    }
-    DeleteTaskResp {}
+	DeleteTaskReq {
+		Id int64 `path:"id"`
+	}
+	DeleteTaskResp  {}
 )
 
 // 任务详情
 type (
-    TaskDetailReq {
-        Id int64 `path:"id"`
-    }
-    TaskDetailResp {
-        Id           int64  `json:"id"`
-        Title        string `json:"title"`
-        Content      string `json:"content"`
-        Status       int64  `json:"status"`
-        Priority     int64  `json:"priority"`
-        CategoryId   int64  `json:"categoryId"`
-        CategoryName string `json:"categoryName"`
-        CreateTime   string `json:"createTime"`
-        UpdateTime   string `json:"updateTime"`
-    }
+	TaskDetailReq {
+		Id int64 `path:"id"`
+	}
+	TaskDetailResp {
+		Id           int64  `json:"id"`
+		Title        string `json:"title"`
+		Content      string `json:"content"`
+		Status       int64  `json:"status"`
+		Priority     int64  `json:"priority"`
+		CategoryId   int64  `json:"categoryId"`
+		CategoryName string `json:"categoryName"`
+		CreateTime   string `json:"createTime"`
+		UpdateTime   string `json:"updateTime"`
+	}
 )
 
 // 任务列表
 type (
-    TaskListReq {
-        Page       int64  `form:"page,default=1"`
-        PageSize   int64  `form:"pageSize,default=10"`
-        Status     int64  `form:"status,optional" options="0|1"`
-        CategoryId int64  `form:"categoryId,optional"`
-        Priority   int64  `form:"priority,optional" options="1|2|3"`
-        Keyword    string `form:"keyword,optional"`
-    }
-    TaskItem {
-        Id           int64  `json:"id"`
-        Title        string `json:"title"`
-        Content      string `json:"content"`
-        Status       int64  `json:"status"`
-        Priority     int64  `json:"priority"`
-        CategoryId   int64  `json:"categoryId"`
-        CategoryName string `json:"categoryName"`
-        CreateTime   string `json:"createTime"`
-    }
-    TaskListResp {
-        Total int64      `json:"total"`
-        List  []TaskItem `json:"list"`
-    }
+	TaskListReq {
+		Page       int64  `form:"page,default=1"`
+		PageSize   int64  `form:"pageSize,default=10"`
+		Status     int64  `form:"status,optional" options="0|1"`
+		CategoryId int64  `form:"categoryId,optional"`
+		Priority   int64  `form:"priority,optional" options="1|2|3"`
+		Keyword    string `form:"keyword,optional"`
+	}
+	TaskItem {
+		Id           int64  `json:"id"`
+		Title        string `json:"title"`
+		Content      string `json:"content"`
+		Status       int64  `json:"status"`
+		Priority     int64  `json:"priority"`
+		CategoryId   int64  `json:"categoryId"`
+		CategoryName string `json:"categoryName"`
+		CreateTime   string `json:"createTime"`
+	}
+	TaskListResp {
+		Total int64      `json:"total"`
+		List  []TaskItem `json:"list"`
+	}
 )
 
 // 批量操作
 type (
-    BatchTaskReq {
-        Ids    []int64 `json:"ids" validate:"required"`
-        Action string  `json:"action" validate:"required" options:"complete|undo|delete"`
-    }
-    BatchTaskResp {}
+	BatchTaskReq {
+		Ids    []int64 `json:"ids" validate:"required"`
+		Action string  `json:"action" validate:"required" options:"complete|undo|delete"`
+	}
+	BatchTaskResp  {}
 )
 
 // =============================================
 // 分类模块
 // =============================================
-
 // 分类项
 type CategoryItem {
-    Id   int64  `json:"id"`
-    Name string `json:"name"`
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
 }
 
 // 分类列表
 type (
-    CategoryListResp {
-        List []CategoryItem `json:"list"`
-    }
+	CategoryListResp {
+		List []CategoryItem `json:"list"`
+	}
 )
 
 // 新增分类
 type (
-    CreateCategoryReq {
-        Name string `json:"name" validate:"required,max=20"`
-    }
-    CreateCategoryResp {
-        Id int64 `json:"id"`
-    }
+	CreateCategoryReq {
+		Name string `json:"name" validate:"required,max=20"`
+	}
+	CreateCategoryResp {
+		Id int64 `json:"id"`
+	}
 )
 
 // =============================================
 // 统计模块
 // =============================================
-
 type (
-    StatResp {
-        Total    int64 `json:"total"`
-        Done     int64 `json:"done"`
-        Todo     int64 `json:"todo"`
-        DoneRate int64 `json:"doneRate"`
-    }
+	StatResp {
+		Total    int64 `json:"total"`
+		Done     int64 `json:"done"`
+		Todo     int64 `json:"todo"`
+		DoneRate int64 `json:"doneRate"`
+	}
 )
 
 // =============================================
 // 用户管理模块(管理员)
 // =============================================
-
 type (
-    UserListItem {
-        Id         int64  `json:"id"`
-        Username   string `json:"username"`
-        IsAdmin    int64  `json:"isAdmin"`
-        Status     int64  `json:"status"`
-        CreateTime string `json:"createTime"`
-    }
-    UserListReq {
-        Page     int64  `form:"page,default=1"`
-        PageSize int64  `form:"pageSize,default=10"`
-        Keyword  string `form:"keyword,optional"`
-    }
-    UserListResp {
-        Total int64          `json:"total"`
-        List  []UserListItem `json:"list"`
-    }
+	UserListItem {
+		Id         int64  `json:"id"`
+		Username   string `json:"username"`
+		IsAdmin    int64  `json:"isAdmin"`
+		Status     int64  `json:"status"`
+		CreateTime string `json:"createTime"`
+	}
+	UserListReq {
+		Page     int64  `form:"page,default=1"`
+		PageSize int64  `form:"pageSize,default=10"`
+		Keyword  string `form:"keyword,optional"`
+	}
+	UserListResp {
+		Total int64          `json:"total"`
+		List  []UserListItem `json:"list"`
+	}
 )
 
 // 重置用户密码
 type (
-    ResetPasswordReq {
-        Id          int64  `path:"id"`
-        NewPassword string `json:"newPassword" validate:"required,min=6,max=20"`
-    }
-    ResetPasswordResp {}
+	ResetPasswordReq {
+		Id          int64  `path:"id"`
+		NewPassword string `json:"newPassword" validate:"required,min=6,max=20"`
+	}
+	ResetPasswordResp  {}
 )
 
 // 切换用户状态(禁用/启用)
 type (
-    ToggleUserStatusReq {
-        Id int64 `path:"id"`
-    }
-    ToggleUserStatusResp {}
+	ToggleUserStatusReq {
+		Id int64 `path:"id"`
+	}
+	ToggleUserStatusResp  {}
 )
 
 // 删除用户
 type (
-    DeleteUserReq {
-        Id int64 `path:"id"`
-    }
-    DeleteUserResp {}
+	DeleteUserReq {
+		Id int64 `path:"id"`
+	}
+	DeleteUserResp  {}
 )
 
 // =============================================
 // 系统配置模块(管理员)
 // =============================================
-
 type (
-    ConfigItem {
-        Key   string `json:"key"`
-        Value string `json:"value"`
-        Remark string `json:"remark"`
-    }
-    ConfigListResp {
-        List []ConfigItem `json:"list"`
-    }
+	ConfigItem {
+		Key    string `json:"key"`
+		Value  string `json:"value"`
+		Remark string `json:"remark"`
+	}
+	ConfigListResp {
+		List []ConfigItem `json:"list"`
+	}
 )
 
 type (
-    UpdateConfigReq {
-        Key   string `json:"key" validate:"required"`
-        Value string `json:"value" validate:"required"`
-    }
-    UpdateConfigResp {}
+	UpdateConfigReq {
+		Key   string `json:"key" validate:"required"`
+		Value string `json:"value" validate:"required"`
+	}
+	UpdateConfigResp  {}
 )
 
 // 检查注册开关(公开接口)
 type (
-    CheckRegisterResp {
-        AllowRegister bool `json:"allowRegister"`
-    }
+	CheckRegisterResp {
+		AllowRegister bool `json:"allowRegister"`
+	}
 )
 
 // =============================================
 // 日志模块(管理员)
 // =============================================
-
 type (
-    OperationLogItem {
-        Id         int64  `json:"id"`
-        UserId     int64  `json:"userId"`
-        Username   string `json:"username"`
-        Action     string `json:"action"`
-        TargetType string `json:"targetType"`
-        TargetId   int64  `json:"targetId"`
-        Detail     string `json:"detail"`
-        Ip         string `json:"ip"`
-        CreateTime string `json:"createTime"`
-    }
-    OperationLogReq {
-        Page     int64  `form:"page,default=1"`
-        PageSize int64  `form:"pageSize,default=10"`
-        Action   string `form:"action,optional"`
-        Username string `form:"username,optional"`
-    }
-    OperationLogResp {
-        Total int64              `json:"total"`
-        List  []OperationLogItem `json:"list"`
-    }
+	OperationLogItem {
+		Id         int64  `json:"id"`
+		UserId     int64  `json:"userId"`
+		Username   string `json:"username"`
+		Action     string `json:"action"`
+		TargetType string `json:"targetType"`
+		TargetId   int64  `json:"targetId"`
+		Detail     string `json:"detail"`
+		Ip         string `json:"ip"`
+		CreateTime string `json:"createTime"`
+	}
+	OperationLogReq {
+		Page     int64  `form:"page,default=1"`
+		PageSize int64  `form:"pageSize,default=10"`
+		Action   string `form:"action,optional"`
+		Username string `form:"username,optional"`
+	}
+	OperationLogResp {
+		Total int64              `json:"total"`
+		List  []OperationLogItem `json:"list"`
+	}
 )
 
 type (
-    LoginLogItem {
-        Id         int64  `json:"id"`
-        UserId     int64  `json:"userId"`
-        Username   string `json:"username"`
-        Ip         string `json:"ip"`
-        Status     int64  `json:"status"`
-        Remark     string `json:"remark"`
-        CreateTime string `json:"createTime"`
-    }
-    LoginLogReq {
-        Page     int64  `form:"page,default=1"`
-        PageSize int64  `form:"pageSize,default=10"`
-        Username string `form:"username,optional"`
-    }
-    LoginLogResp {
-        Total int64          `json:"total"`
-        List  []LoginLogItem `json:"list"`
-    }
+	LoginLogItem {
+		Id         int64  `json:"id"`
+		UserId     int64  `json:"userId"`
+		Username   string `json:"username"`
+		Ip         string `json:"ip"`
+		Status     int64  `json:"status"`
+		Remark     string `json:"remark"`
+		CreateTime string `json:"createTime"`
+	}
+	LoginLogReq {
+		Page     int64  `form:"page,default=1"`
+		PageSize int64  `form:"pageSize,default=10"`
+		Username string `form:"username,optional"`
+	}
+	LoginLogResp {
+		Total int64          `json:"total"`
+		List  []LoginLogItem `json:"list"`
+	}
 )
 
 // =============================================
 // 路由定义
 // =============================================
-
 // 公开接口（无需登录）
 @server (
-    prefix: /api/v1
-    group:  user
+	prefix: /api/v1
+	group:  user
 )
 service todo-api {
-    @handler Register
-    post /user/register (RegisterReq) returns (RegisterResp)
+	@handler Register
+	post /user/register (RegisterReq) returns (RegisterResp)
 
-    @handler Login
-    post /user/login (LoginReq) returns (LoginResp)
+	@handler Login
+	post /user/login (LoginReq) returns (LoginResp)
 
-    @handler CheckRegister
-    get /user/check-register returns (CheckRegisterResp)
+	@handler CheckRegister
+	get /user/check-register returns (CheckRegisterResp)
 }
 
 // 需要登录的接口
 @server (
-    prefix: /api/v1
-    group:  user
-    jwt:    Auth
+	prefix: /api/v1
+	group:  user
+	jwt:    Auth
 )
 service todo-api {
-    @handler UserInfo
-    get /user/info returns (UserInfoResp)
+	@handler UserInfo
+	get /user/info returns (UserInfoResp)
 
-    @handler ChangePassword
-    put /user/password (ChangePasswordReq) returns (ChangePasswordResp)
+	@handler ChangePassword
+	put /user/password (ChangePasswordReq) returns (ChangePasswordResp)
 }
 
 @server (
-    prefix: /api/v1
-    group:  task
-    jwt:    Auth
+	prefix: /api/v1
+	group:  task
+	jwt:    Auth
 )
 service todo-api {
-    @handler CreateTask
-    post /task (CreateTaskReq) returns (CreateTaskResp)
+	@handler CreateTask
+	post /task (CreateTaskReq) returns (CreateTaskResp)
 
-    @handler UpdateTask
-    put /task/:id (UpdateTaskReq) returns (UpdateTaskResp)
+	@handler UpdateTask
+	put /task/:id (UpdateTaskReq) returns (UpdateTaskResp)
 
-    @handler ToggleTask
-    patch /task/:id/toggle (ToggleTaskReq) returns (ToggleTaskResp)
+	@handler ToggleTask
+	patch /task/:id/toggle (ToggleTaskReq) returns (ToggleTaskResp)
 
-    @handler DeleteTask
-    delete /task/:id (DeleteTaskReq) returns (DeleteTaskResp)
+	@handler DeleteTask
+	delete /task/:id (DeleteTaskReq) returns (DeleteTaskResp)
 
-    @handler TaskDetail
-    get /task/:id (TaskDetailReq) returns (TaskDetailResp)
+	@handler TaskDetail
+	get /task/:id (TaskDetailReq) returns (TaskDetailResp)
 
-    @handler TaskList
-    get /task (TaskListReq) returns (TaskListResp)
+	@handler TaskList
+	get /task (TaskListReq) returns (TaskListResp)
 
-    @handler BatchTask
-    post /task/batch (BatchTaskReq) returns (BatchTaskResp)
+	@handler BatchTask
+	post /task/batch (BatchTaskReq) returns (BatchTaskResp)
 }
 
 @server (
-    prefix: /api/v1
-    group:  category
-    jwt:    Auth
+	prefix: /api/v1
+	group:  category
+	jwt:    Auth
 )
 service todo-api {
-    @handler CategoryList
-    get /category returns (CategoryListResp)
+	@handler CategoryList
+	get /category returns (CategoryListResp)
 
-    @handler CreateCategory
-    post /category (CreateCategoryReq) returns (CreateCategoryResp)
+	@handler CreateCategory
+	post /category (CreateCategoryReq) returns (CreateCategoryResp)
 }
 
 @server (
-    prefix: /api/v1
-    group:  stat
-    jwt:    Auth
+	prefix: /api/v1
+	group:  stat
+	jwt:    Auth
 )
 service todo-api {
-    @handler Stat
-    get /stat returns (StatResp)
+	@handler Stat
+	get /stat returns (StatResp)
 }
 
 // 管理员接口
 @server (
-    prefix: /api/v1/admin
-    group:  admin
-    jwt:    Auth
+	prefix: /api/v1/admin
+	group:  admin
+	jwt:    Auth
 )
 service todo-api {
-    @handler UserList
-    get /user (UserListReq) returns (UserListResp)
+	@handler UserList
+	get /user (UserListReq) returns (UserListResp)
 
-    @handler ResetPassword
-    put /user/:id/password (ResetPasswordReq) returns (ResetPasswordResp)
+	@handler ResetPassword
+	put /user/:id/password (ResetPasswordReq) returns (ResetPasswordResp)
 
-    @handler ToggleUserStatus
-    patch /user/:id/toggle (ToggleUserStatusReq) returns (ToggleUserStatusResp)
+	@handler ToggleUserStatus
+	patch /user/:id/toggle (ToggleUserStatusReq) returns (ToggleUserStatusResp)
 
-    @handler DeleteUser
-    delete /user/:id (DeleteUserReq) returns (DeleteUserResp)
+	@handler DeleteUser
+	delete /user/:id (DeleteUserReq) returns (DeleteUserResp)
 
-    @handler ConfigList
-    get /config returns (ConfigListResp)
+	@handler ConfigList
+	get /config returns (ConfigListResp)
 
-    @handler UpdateConfig
-    put /config (UpdateConfigReq) returns (UpdateConfigResp)
+	@handler UpdateConfig
+	put /config (UpdateConfigReq) returns (UpdateConfigResp)
 
-    @handler OperationLogList
-    get /log/operation (OperationLogReq) returns (OperationLogResp)
+	@handler OperationLogList
+	get /log/operation (OperationLogReq) returns (OperationLogResp)
 
-    @handler LoginLogList
-    get /log/login (LoginLogReq) returns (LoginLogResp)
+	@handler LoginLogList
+	get /log/login (LoginLogReq) returns (LoginLogResp)
 }
+
