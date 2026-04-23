@@ -1,8 +1,10 @@
 package db
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"embed"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -85,6 +87,36 @@ func getTables(db *sql.DB) ([]string, error) {
 		tables = append(tables, name)
 	}
 	return tables, rows.Err()
+}
+
+// GetOrCreateJWTSecret retrieves the JWT secret from system_configs,
+// or generates a new random one if it doesn't exist.
+// Returns the secret and whether it was newly generated.
+func GetOrCreateJWTSecret(db *sql.DB) (string, bool, error) {
+	// Try to read existing secret from DB
+	var secret string
+	err := db.QueryRow("SELECT config_value FROM system_configs WHERE config_key = 'jwt_secret'").Scan(&secret)
+	if err == nil && secret != "" {
+		return secret, false, nil
+	}
+
+	// Generate a new random secret
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", false, fmt.Errorf("failed to generate random secret: %w", err)
+	}
+	secret = hex.EncodeToString(bytes)
+
+	// Persist to database
+	_, err = db.Exec(
+		"INSERT OR IGNORE INTO system_configs (config_key, config_value, group_name, description) VALUES (?, ?, ?, ?)",
+		"jwt_secret", secret, "security", "JWT签名密钥（自动生成，请勿修改）",
+	)
+	if err != nil {
+		return "", false, fmt.Errorf("failed to persist jwt_secret: %w", err)
+	}
+
+	return secret, true, nil
 }
 
 func runInitSQL(db *sql.DB) error {

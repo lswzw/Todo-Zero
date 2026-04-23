@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"server/internal/config"
+	"server/internal/middleware"
 	"server/internal/model"
 )
 
@@ -16,16 +17,24 @@ type ServiceContext struct {
 	SystemConfigModel model.SystemConfigModel
 	OperationLogModel model.OperationLogModel
 	LoginLogModel     model.LoginLogModel
+
+	AdminMiddleware        *middleware.AdminMiddleware
+	OperationLogMiddleware *middleware.OperationLogMiddleware
 }
 
 func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
+	userModel := model.NewUserModel(db)
+	opLogModel := model.NewOperationLogModel(db)
+
 	return &ServiceContext{
-		Config:            c,
-		UserModel:         model.NewUserModel(db),
-		TaskModel:         model.NewTaskModel(db),
-		CategoryModel:     model.NewCategoryModel(db),
-		SystemConfigModel: model.NewSystemConfigModel(db),
-		OperationLogModel: model.NewOperationLogModel(db),
-		LoginLogModel:     model.NewLoginLogModel(db),
+		Config:                 c,
+		UserModel:              userModel,
+		TaskModel:              model.NewTaskModel(db),
+		CategoryModel:          model.NewCategoryModel(db),
+		SystemConfigModel:      model.NewSystemConfigModel(db),
+		OperationLogModel:      opLogModel,
+		LoginLogModel:          model.NewLoginLogModel(db),
+		AdminMiddleware:        middleware.NewAdminMiddleware(),
+		OperationLogMiddleware: middleware.NewOperationLogMiddleware(userModel, opLogModel),
 	}
 }

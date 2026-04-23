@@ -3,7 +3,6 @@ package admin
 import (
 	"context"
 
-	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -26,10 +25,6 @@ func NewConfigListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Config
 }
 
 func (l *ConfigListLogic) ConfigList() (resp *types.ConfigListResp, err error) {
-	if err := l.checkAdmin(); err != nil {
-		return nil, err
-	}
-
 	configs, err := l.svcCtx.SystemConfigModel.FindAll(l.ctx)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
@@ -45,12 +40,4 @@ func (l *ConfigListLogic) ConfigList() (resp *types.ConfigListResp, err error) {
 	}
 
 	return &types.ConfigListResp{List: list}, nil
-}
-
-func (l *ConfigListLogic) checkAdmin() error {
-	isAdmin, err := jwtx.GetIsAdminFromCtx(l.ctx)
-	if err != nil || isAdmin != 1 {
-		return xerr.NewCodeError(xerr.AdminRequired)
-	}
-	return nil
 }

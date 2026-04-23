@@ -26,14 +26,19 @@ func NewDeleteUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 }
 
 func (l *DeleteUserLogic) DeleteUser(req *types.DeleteUserReq) (resp *types.DeleteUserResp, err error) {
-	if err := l.checkAdmin(); err != nil {
-		return nil, err
-	}
-
 	// 不能删除自己
 	userId, _ := jwtx.GetUserIdFromCtx(l.ctx)
 	if userId == req.Id {
 		return nil, xerr.NewCodeErrFromMsg("不能删除自己")
+	}
+
+	// 不能删除其他管理员
+	targetUser, err := l.svcCtx.UserModel.FindOne(l.ctx, req.Id)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.UserNotFoundError)
+	}
+	if targetUser.Role == 1 {
+		return nil, xerr.NewCodeErrFromMsg("不能删除管理员账户")
 	}
 
 	if err := l.svcCtx.UserModel.Delete(l.ctx, req.Id); err != nil {
@@ -41,12 +46,4 @@ func (l *DeleteUserLogic) DeleteUser(req *types.DeleteUserReq) (resp *types.Dele
 	}
 
 	return &types.DeleteUserResp{}, nil
-}
-
-func (l *DeleteUserLogic) checkAdmin() error {
-	isAdmin, err := jwtx.GetIsAdminFromCtx(l.ctx)
-	if err != nil || isAdmin != 1 {
-		return xerr.NewCodeError(xerr.AdminRequired)
-	}
-	return nil
 }

@@ -3,7 +3,6 @@ package admin
 import (
 	"context"
 
-	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -27,10 +26,6 @@ func NewResetPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Res
 }
 
 func (l *ResetPasswordLogic) ResetPassword(req *types.ResetPasswordReq) (resp *types.ResetPasswordResp, err error) {
-	if err := l.checkAdmin(); err != nil {
-		return nil, err
-	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
@@ -41,12 +36,4 @@ func (l *ResetPasswordLogic) ResetPassword(req *types.ResetPasswordReq) (resp *t
 	}
 
 	return &types.ResetPasswordResp{}, nil
-}
-
-func (l *ResetPasswordLogic) checkAdmin() error {
-	isAdmin, err := jwtx.GetIsAdminFromCtx(l.ctx)
-	if err != nil || isAdmin != 1 {
-		return xerr.NewCodeError(xerr.AdminRequired)
-	}
-	return nil
 }

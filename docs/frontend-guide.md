@@ -1,7 +1,7 @@
 # Todo App 前端开发文档
 
 > 技术栈：Vue 3 + TypeScript + Vite + Element Plus
-> 版本：v1.1.0
+> 版本：v1.2.0
 
 ---
 

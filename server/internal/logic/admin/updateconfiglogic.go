@@ -3,7 +3,6 @@ package admin
 import (
 	"context"
 
-	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -26,10 +25,6 @@ func NewUpdateConfigLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upda
 }
 
 func (l *UpdateConfigLogic) UpdateConfig(req *types.UpdateConfigReq) (resp *types.UpdateConfigResp, err error) {
-	if err := l.checkAdmin(); err != nil {
-		return nil, err
-	}
-
 	config, err := l.svcCtx.SystemConfigModel.FindOneByKey(l.ctx, req.Key)
 	if err != nil {
 		return nil, xerr.NewCodeErrFromMsg("配置项不存在")
@@ -41,12 +36,4 @@ func (l *UpdateConfigLogic) UpdateConfig(req *types.UpdateConfigReq) (resp *type
 	}
 
 	return &types.UpdateConfigResp{}, nil
-}
-
-func (l *UpdateConfigLogic) checkAdmin() error {
-	isAdmin, err := jwtx.GetIsAdminFromCtx(l.ctx)
-	if err != nil || isAdmin != 1 {
-		return xerr.NewCodeError(xerr.AdminRequired)
-	}
-	return nil
 }

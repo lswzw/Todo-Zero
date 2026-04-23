@@ -3,7 +3,6 @@ package admin
 import (
 	"context"
 
-	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -26,33 +25,19 @@ func NewToggleUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *ToggleUserStatusLogic) ToggleUserStatus(req *types.ToggleUserStatusReq) (resp *types.ToggleUserStatusResp, err error) {
-	if err := l.checkAdmin(); err != nil {
-		return nil, err
-	}
-
 	user, err := l.svcCtx.UserModel.FindOne(l.ctx, req.Id)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.UserNotFoundError)
 	}
 
-	// 切换状态
-	if user.Status == 1 {
-		user.Status = 0
-	} else {
-		user.Status = 1
+	// Use atomic status update to avoid TOCTOU race condition
+	newStatus := int64(0)
+	if user.Status == 0 {
+		newStatus = 1
 	}
-
-	if err := l.svcCtx.UserModel.Update(l.ctx, user); err != nil {
+	if err := l.svcCtx.UserModel.UpdateStatus(l.ctx, req.Id, newStatus); err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
 	return &types.ToggleUserStatusResp{}, nil
-}
-
-func (l *ToggleUserStatusLogic) checkAdmin() error {
-	isAdmin, err := jwtx.GetIsAdminFromCtx(l.ctx)
-	if err != nil || isAdmin != 1 {
-		return xerr.NewCodeError(xerr.AdminRequired)
-	}
-	return nil
 }

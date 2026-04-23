@@ -3,7 +3,6 @@ package admin
 import (
 	"context"
 
-	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -26,10 +25,6 @@ func NewUserListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserList
 }
 
 func (l *UserListLogic) UserList(req *types.UserListReq) (resp *types.UserListResp, err error) {
-	if err := l.checkAdmin(); err != nil {
-		return nil, err
-	}
-
 	users, total, err := l.svcCtx.UserModel.FindList(l.ctx, req.Keyword, -1, req.Page, req.PageSize)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
@@ -50,12 +45,4 @@ func (l *UserListLogic) UserList(req *types.UserListReq) (resp *types.UserListRe
 		Total: total,
 		List:  list,
 	}, nil
-}
-
-func (l *UserListLogic) checkAdmin() error {
-	isAdmin, err := jwtx.GetIsAdminFromCtx(l.ctx)
-	if err != nil || isAdmin != 1 {
-		return xerr.NewCodeError(xerr.AdminRequired)
-	}
-	return nil
 }

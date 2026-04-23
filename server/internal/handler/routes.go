@@ -17,49 +17,56 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
-	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodGet,
-				Path:    "/config",
-				Handler: admin.ConfigListHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPut,
-				Path:    "/config",
-				Handler: admin.UpdateConfigHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/log/login",
-				Handler: admin.LoginLogListHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/log/operation",
-				Handler: admin.OperationLogListHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/user",
-				Handler: admin.UserListHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodDelete,
-				Path:    "/user/:id",
-				Handler: admin.DeleteUserHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPut,
-				Path:    "/user/:id/password",
-				Handler: admin.ResetPasswordHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPatch,
-				Path:    "/user/:id/toggle",
-				Handler: admin.ToggleUserStatusHandler(serverCtx),
-			},
+	// Admin routes: protected by JWT + AdminMiddleware + OperationLogMiddleware
+	adminRoutes := []rest.Route{
+		{
+			Method:  http.MethodGet,
+			Path:    "/config",
+			Handler: admin.ConfigListHandler(serverCtx),
 		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/config",
+			Handler: admin.UpdateConfigHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/log/login",
+			Handler: admin.LoginLogListHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/log/operation",
+			Handler: admin.OperationLogListHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/user",
+			Handler: admin.UserListHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/user/:id",
+			Handler: admin.DeleteUserHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/user/:id/password",
+			Handler: admin.ResetPasswordHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPatch,
+			Path:    "/user/:id/toggle",
+			Handler: admin.ToggleUserStatusHandler(serverCtx),
+		},
+	}
+
+	// Apply admin middleware and operation log middleware to all admin routes
+	adminRoutes = rest.WithMiddleware(serverCtx.OperationLogMiddleware.Handle, adminRoutes...)
+	adminRoutes = rest.WithMiddleware(serverCtx.AdminMiddleware.Handle, adminRoutes...)
+
+	server.AddRoutes(
+		adminRoutes,
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1/admin"),
 	)

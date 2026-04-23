@@ -76,6 +76,25 @@ func main() {
 		fmt.Printf("[DB] Failed to initialize database: %v\n", err)
 		os.Exit(1)
 	}
+
+	// JWT Secret security: auto-generate and persist if using default
+	const defaultJWTSecret = "todo-app-jwt-secret-key-2024"
+	if c.Auth.AccessSecret == defaultJWTSecret {
+		secret, generated, err := db.GetOrCreateJWTSecret(sqliteDB)
+		if err != nil {
+			fmt.Printf("[Security] WARNING: Failed to manage JWT secret: %v\n", err)
+		} else {
+			c.Auth.AccessSecret = secret
+			if generated {
+				fmt.Println("[Security] JWT secret auto-generated and persisted to database")
+				fmt.Println("[Security] All existing tokens are now invalid, please re-login")
+			} else {
+				fmt.Println("[Security] JWT secret loaded from database")
+			}
+		}
+	} else {
+		fmt.Println("[Security] Using JWT secret from configuration")
+	}
 	// Create sub filesystem for embedded frontend (strip "dist/" prefix)
 	distFS, err := fs.Sub(staticFiles, "dist")
 	if err != nil {

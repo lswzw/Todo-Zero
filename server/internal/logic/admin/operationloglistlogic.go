@@ -3,7 +3,6 @@ package admin
 import (
 	"context"
 
-	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -26,10 +25,6 @@ func NewOperationLogListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *OperationLogListLogic) OperationLogList(req *types.OperationLogReq) (resp *types.OperationLogResp, err error) {
-	if err := l.checkAdmin(); err != nil {
-		return nil, err
-	}
-
 	logs, total, err := l.svcCtx.OperationLogModel.FindList(l.ctx, req.Page, req.PageSize)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
@@ -37,12 +32,16 @@ func (l *OperationLogListLogic) OperationLogList(req *types.OperationLogReq) (re
 
 	var list []types.OperationLogItem
 	for _, log := range logs {
+		userId := int64(0)
+		if log.UserId.Valid {
+			userId = log.UserId.Int64
+		}
 		list = append(list, types.OperationLogItem{
 			Id:         log.Id,
-			UserId:     0,
+			UserId:     userId,
 			Username:   log.Username,
 			Action:     log.Action,
-			TargetType: "",
+			TargetType: log.Module,
 			TargetId:   0,
 			Detail:     log.Params,
 			Ip:         log.Ip,
@@ -54,12 +53,4 @@ func (l *OperationLogListLogic) OperationLogList(req *types.OperationLogReq) (re
 		Total: total,
 		List:  list,
 	}, nil
-}
-
-func (l *OperationLogListLogic) checkAdmin() error {
-	isAdmin, err := jwtx.GetIsAdminFromCtx(l.ctx)
-	if err != nil || isAdmin != 1 {
-		return xerr.NewCodeError(xerr.AdminRequired)
-	}
-	return nil
 }

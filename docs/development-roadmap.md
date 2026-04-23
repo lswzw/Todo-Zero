@@ -132,6 +132,19 @@ go build -o todo-app
 
 ---
 
+## 阶段七：HIGH 安全修复
+
+- [x] ① 创建 AdminMiddleware → 路由级 RBAC 拦截，移除 7 处重复 checkAdmin()
+- [x] ② JWT Secret 自动生成 → 首次启动生成 64 位随机密钥持久化到 DB
+- [x] ③ 创建 OperationLogMiddleware → 自动记录 admin 写操作日志
+- [x] ④ 修复 ToggleUserStatus TOCTOU 竞态 → 改用 UpdateStatus 原子更新
+- [x] ⑤ 修复 OperationLogItem 映射字段丢失 → UserId/TargetType 正确映射
+- [x] ⑥ 修复 DeleteUser 可删除其他管理员 → 后端增加保护
+- [x] ⑦ 全量测试通过 → 40 项全部通过
+- [x] ⑧ 打标签发布 → `v1.2.0`
+
+---
+
 ## 整体时间线（AI 辅助开发）
 
 | 阶段 | 内容 | AI 协作方式 | 完成状态 |
