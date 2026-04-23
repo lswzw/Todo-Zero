@@ -25,8 +25,11 @@ Thumbs.db
 
 # Frontend
 node_modules/
-dist/
+web/dist/
 *.local
+
+# AI
+.codebuddy/
 
 # Build
 bin/
