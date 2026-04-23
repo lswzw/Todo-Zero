@@ -1,6 +1,6 @@
-# Todo App
+# Todo-Zero
 
-一个基于 Go + Vue3 的全栈待办事项管理应用，**编译为单个二进制文件**，无需 MySQL、Redis、Nginx 等外部依赖，`./todo-api` 即可运行。
+零依赖全栈待办引擎 — Go 后端 + Vue3 前端编译为**单一二进制**，一行命令即可部署。无需 MySQL、Redis、Nginx，开箱即用。
 
 ## 特性
 
@@ -78,7 +78,7 @@ go build -o todo-api .
 │   ├── development-roadmap.md
 │   ├── frontend-guide.md
 │   ├── api/                 # API定义文件
-│   ├── sql/                 # MySQL原始建表SQL
+│   ├── sql/                 # SQLite建表SQL
 │   └── prototype/           # 页面原型
 └── data/                    # 运行时数据（SQLite数据库，.gitignore）
 ```
