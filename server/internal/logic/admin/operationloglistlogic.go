@@ -25,7 +25,7 @@ func NewOperationLogListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *OperationLogListLogic) OperationLogList(req *types.OperationLogReq) (resp *types.OperationLogResp, err error) {
-	logs, total, err := l.svcCtx.OperationLogModel.FindList(l.ctx, req.Page, req.PageSize)
+	logs, total, err := l.svcCtx.OperationLogModel.FindList(l.ctx, req.Action, req.Username, req.Page, req.PageSize)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}

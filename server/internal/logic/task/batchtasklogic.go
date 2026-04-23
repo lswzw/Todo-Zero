@@ -35,26 +35,37 @@ func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTa
 		return nil, xerr.NewCodeError(xerr.RequestParamError)
 	}
 
+	var failedIds []int64
 	for _, id := range req.Ids {
 		task, err := l.svcCtx.TaskModel.FindOne(l.ctx, id)
 		if err != nil {
+			failedIds = append(failedIds, id)
 			continue
 		}
 
 		if task.UserId != userId {
+			failedIds = append(failedIds, id)
 			continue
 		}
 
 		switch req.Action {
 		case "complete":
-			task.Status = 2 // 已完成
-			_ = l.svcCtx.TaskModel.Update(l.ctx, task)
+			if err := l.svcCtx.TaskModel.UpdateStatus(l.ctx, id, 2); err != nil {
+				failedIds = append(failedIds, id)
+			}
 		case "undo":
-			task.Status = 0 // 待办
-			_ = l.svcCtx.TaskModel.Update(l.ctx, task)
+			if err := l.svcCtx.TaskModel.UpdateStatus(l.ctx, id, 0); err != nil {
+				failedIds = append(failedIds, id)
+			}
 		case "delete":
-			_ = l.svcCtx.TaskModel.Delete(l.ctx, id)
+			if err := l.svcCtx.TaskModel.Delete(l.ctx, id); err != nil {
+				failedIds = append(failedIds, id)
+			}
 		}
+	}
+
+	if len(failedIds) > 0 {
+		logx.Errorf("[BatchTask] failed ids: %v, action: %s", failedIds, req.Action)
 	}
 
 	return &types.BatchTaskResp{}, nil

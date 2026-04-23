@@ -13,7 +13,7 @@ var _ OperationLogModel = (*defaultOperationLogModel)(nil)
 type (
 	OperationLogModel interface {
 		Insert(ctx context.Context, data *OperationLog) (sql.Result, error)
-		FindList(ctx context.Context, page, pageSize int64) ([]*OperationLog, int64, error)
+		FindList(ctx context.Context, action, username string, page, pageSize int64) ([]*OperationLog, int64, error)
 		Count(ctx context.Context) (int64, error)
 		DeleteById(ctx context.Context, id int64) error
 		DeleteBatch(ctx context.Context, ids []int64) error
@@ -36,16 +36,28 @@ func (m *defaultOperationLogModel) Insert(ctx context.Context, data *OperationLo
 	return m.db.ExecContext(ctx, query, data.UserId, data.Username, data.Module, data.Action, data.Method, data.Ip, data.Location, data.Params, data.Status, data.ErrorMsg, data.Duration, data.CreatedAt)
 }
 
-func (m *defaultOperationLogModel) FindList(ctx context.Context, page, pageSize int64) ([]*OperationLog, int64, error) {
+func (m *defaultOperationLogModel) FindList(ctx context.Context, action, username string, page, pageSize int64) ([]*OperationLog, int64, error) {
+	where := " WHERE 1=1"
+	var args []interface{}
+	if action != "" {
+		where += " AND action = ?"
+		args = append(args, action)
+	}
+	if username != "" {
+		where += " AND username LIKE ?"
+		args = append(args, "%"+username+"%")
+	}
+
 	var total int64
-	countQuery := `SELECT COUNT(*) FROM ` + m.tableName()
-	if err := m.db.QueryRowContext(ctx, countQuery).Scan(&total); err != nil {
+	countQuery := `SELECT COUNT(*) FROM ` + m.tableName() + where
+	if err := m.db.QueryRowContext(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
 	offset := (page - 1) * pageSize
-	query := `SELECT id, user_id, username, module, action, method, ip, location, params, status, error_msg, duration, created_at FROM ` + m.tableName() + ` ORDER BY id DESC LIMIT ? OFFSET ?`
-	rows, err := m.db.QueryContext(ctx, query, pageSize, offset)
+	query := `SELECT id, user_id, username, module, action, method, ip, location, params, status, error_msg, duration, created_at FROM ` + m.tableName() + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
+	args = append(args, pageSize, offset)
+	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, 0, err
 	}

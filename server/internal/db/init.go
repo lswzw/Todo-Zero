@@ -30,6 +30,11 @@ func InitDB(dataDir, dbFile string) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
+	// Configure connection pool for SQLite
+	// SQLite only supports one writer at a time, limit connections
+	sqliteDB.SetMaxOpenConns(1)
+	sqliteDB.SetMaxIdleConns(1)
+
 	if _, err := sqliteDB.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
 	}
@@ -125,29 +130,14 @@ func runInitSQL(db *sql.DB) error {
 		return fmt.Errorf("failed to read init.sql: %w", err)
 	}
 
-	// Remove SQL comments and normalize whitespace
+	// Parse SQL: remove comments carefully, handling strings
 	lines := strings.Split(string(content), "\n")
 	var cleanLines []string
-	inBlockComment := false
 	for _, line := range lines {
-		// Handle block comments /* */
-		if strings.Contains(line, "/*") {
-			inBlockComment = true
-		}
-		if !inBlockComment {
-			// Remove line comments
-			idx := strings.Index(line, "--")
-			if idx >= 0 {
-				line = strings.TrimSpace(line[:idx])
-			} else {
-				line = strings.TrimSpace(line)
-			}
-			if line != "" {
-				cleanLines = append(cleanLines, line)
-			}
-		}
-		if strings.Contains(line, "*/") {
-			inBlockComment = false
+		line = removeLineComment(line)
+		line = strings.TrimSpace(line)
+		if line != "" {
+			cleanLines = append(cleanLines, line)
 		}
 	}
 
@@ -167,4 +157,20 @@ func runInitSQL(db *sql.DB) error {
 		}
 	}
 	return nil
+}
+
+// removeLineComment removes a line comment (-- ...) that is NOT inside a string literal.
+// It scans the line tracking whether we are inside a single-quoted string.
+func removeLineComment(line string) string {
+	inString := false
+	for i := 0; i < len(line); i++ {
+		ch := line[i]
+		if ch == '\'' {
+			// Toggle string state (handles escaped '' as two separate toggles, which is correct)
+			inString = !inString
+		} else if !inString && i+1 < len(line) && line[i] == '-' && line[i+1] == '-' {
+			return line[:i]
+		}
+	}
+	return line
 }

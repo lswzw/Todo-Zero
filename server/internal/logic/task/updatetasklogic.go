@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"database/sql"
 
 	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
@@ -41,20 +42,18 @@ func (l *UpdateTaskLogic) UpdateTask(req *types.UpdateTaskReq) (resp *types.Upda
 		return nil, xerr.NewCodeError(xerr.NoPermission)
 	}
 
-	// 更新字段
-	if req.Title != "" {
-		task.Title = req.Title
+	// 使用指针类型区分"未提供"(nil)和"清空"(非nil零值)
+	if req.Title != nil {
+		task.Title = *req.Title
 	}
-	if req.Content != "" {
-		task.Content.String = req.Content
-		task.Content.Valid = true
+	if req.Content != nil {
+		task.Content = sql.NullString{String: *req.Content, Valid: *req.Content != ""}
 	}
-	if req.Priority != 0 {
-		task.Priority = req.Priority
+	if req.Priority != nil {
+		task.Priority = *req.Priority
 	}
-	if req.CategoryId != 0 {
-		task.CategoryId.Int64 = req.CategoryId
-		task.CategoryId.Valid = true
+	if req.CategoryId != nil {
+		task.CategoryId = sql.NullInt64{Int64: *req.CategoryId, Valid: *req.CategoryId != 0}
 	}
 
 	if err := l.svcCtx.TaskModel.Update(l.ctx, task); err != nil {

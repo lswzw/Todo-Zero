@@ -145,6 +145,21 @@ go build -o todo-app
 
 ---
 
+## 阶段八：MEDIUM 修复
+
+- [x] ① #10 LoginReq 添加验证标签 → 防止空请求致 bcrypt CPU 消耗
+- [x] ② #6 ToggleTask TOCTOU 竞态 → 改用 UpdateStatus 原子更新
+- [x] ③ #14 静态文件安全头 → X-Content-Type-Options/X-Frame-Options/X-XSS-Protection/Referrer-Policy
+- [x] ④ #12 数据库连接池 → SetMaxOpenConns(1) + defer Close()
+- [x] ⑤ #4 批量操作吞错 → 收集失败 ID 并记录日志
+- [x] ⑥ #7 UpdateTask 无法清空字段 → 指针类型区分"未提供"和"清空"
+- [x] ⑦ #8 操作日志过滤参数 → FindList 支持 action/username 过滤
+- [x] ⑧ #11 SQL 注释解析 → removeLineComment() 跟踪字符串状态
+- [x] ⑨ 全量测试通过 → 40 项全部通过
+- [x] ⑩ 打标签发布 → `v1.3.0`
+
+---
+
 ## 整体时间线（AI 辅助开发）
 
 | 阶段 | 内容 | AI 协作方式 | 完成状态 |

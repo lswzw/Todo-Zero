@@ -76,6 +76,7 @@ func main() {
 		fmt.Printf("[DB] Failed to initialize database: %v\n", err)
 		os.Exit(1)
 	}
+	defer sqliteDB.Close()
 
 	// JWT Secret security: auto-generate and persist if using default
 	const defaultJWTSecret = "todo-app-jwt-secret-key-2024"
@@ -126,6 +127,12 @@ func main() {
 // - Other paths fall back to index.html for client-side routing
 func staticFileHandler(content fs.FS) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Security headers for all responses
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+
 		path := r.URL.Path
 
 		// Root path or SPA route → serve index.html

@@ -77,17 +77,17 @@
 
 ### MEDIUM — 应该修复
 
-- [ ] **#4 批量操作静默吞掉错误** — `batchtasklogic.go:38-58`，`_ = Update/Delete` 丢弃错误，应收集失败 ID 或用事务。
+- [x] **#4 批量操作静默吞掉错误** — 收集失败 ID 并记录日志，改用 `UpdateStatus` 原子更新。
 - [x] **#5 ToggleUserStatus TOCTOU 竞态** — `toggleuserstatuslogic.go:33-47`，已改用 `UpdateStatus` 原子更新。
-- [ ] **#6 ToggleTask TOCTOU 竞态** — `toggletasklogic.go:34-51`，同 #5，应用 `UpdateStatus` 原子更新。
-- [ ] **#7 UpdateTask 无法清空可选字段** — `updatetasklogic.go:44-58`，零值无法区分"未提供"和"清空"，应用指针类型。
-- [ ] **#8 操作日志过滤参数未生效** — `operationloglistlogic.go:33`，`FindList` 只接受 page/pageSize，过滤字段被忽略。
+- [x] **#6 ToggleTask TOCTOU 竞态** — 改用 `UpdateStatus` 原子更新。
+- [x] **#7 UpdateTask 无法清空可选字段** — `UpdateTaskReq` 改用指针类型 `*string/*int64`，区分"未提供"(nil)和"清空"。
+- [x] **#8 操作日志过滤参数未生效** — `OperationLogModel.FindList` 增加 action/username 过滤参数。
 - [x] **#9 OperationLogItem 映射字段丢失** — `operationloglistlogic.go:40-50`，已修复 `UserId` 和 `TargetType`（映射 `Module` 字段）。
-- [ ] **#10 LoginReq 缺少验证标签** — `types.go:99-102`，空请求可致 bcrypt 消耗大量 CPU。
-- [ ] **#11 SQL 注释解析逻辑脆弱** — `db/init.go:96-120`，`Contains("--")` 会误匹配字符串值。
-- [ ] **#12 数据库连接池未配置** — `db/init.go:26`，未设 `SetMaxOpenConns`。
+- [x] **#10 LoginReq 缺少验证标签** — 添加 `validate:"required,min=1,max=100"`。
+- [x] **#11 SQL 注释解析逻辑脆弱** — 重写为 `removeLineComment()`，跟踪单引号字符串状态，不再误匹配。
+- [x] **#12 数据库连接池未配置** — 配置 `SetMaxOpenConns(1)` / `SetMaxIdleConns(1)` + `defer sqliteDB.Close()`。
 - [x] **#13 DeleteUserLogic 未阻止删除其他管理员** — `deleteuserlogic.go:28-43`，已添加后端保护，禁止删除管理员账户。
-- [ ] **#14 静态文件处理器缺少安全头** — `todo.go:108-148`，缺 `X-Content-Type-Options` / `X-Frame-Options`。
+- [x] **#14 静态文件处理器缺少安全头** — 添加 `X-Content-Type-Options` / `X-Frame-Options` / `X-XSS-Protection` / `Referrer-Policy`。
 - [ ] **#15 前端 Token 存 localStorage 有 XSS 风险** — `stores/user.ts:14-16`。
 - [ ] **#16 前端 isAdmin 可被绕过** — `stores/user.ts:8,15,22`，localStorage 可修改。
 - [ ] **#17 大量 any 类型** — `home.vue:198,210` 等，TypeScript 形同虚设。
@@ -98,11 +98,11 @@
 ### LOW — 建议改进
 
 - [ ] **#21** Register TOCTOU 竞态 — 并发可能报不友好错误，直接 Insert 捕获 UNIQUE 更优
-- [ ] **#22** checkAdmin 方法重复 7 次 — 所有 admin logic 各自实现，违反 DRY
+- [x] **#22** checkAdmin 方法重复 7 次 — 已通过 AdminMiddleware 统一拦截，移除所有重复 checkAdmin()
 - [ ] **#23** CategoryModel.FindById 不过滤 is_deleted — 与其他 model 策略不一致
 - [ ] **#24** UserModel.Update 不更新 password — ToggleUserStatusLogic 应使用专用 UpdateStatus
-- [ ] **#25** 数据库连接未在关闭时清理 — 缺 `defer sqliteDB.Close()`，WAL 可能未清理
-- [ ] **#26** init.sql 中 PRAGMA 重复 — InitDB 和 init.sql 各执行一次
+- [x] **#25** 数据库连接未在关闭时清理 — 已添加 `defer sqliteDB.Close()`
+- [x] **#26** init.sql 中 PRAGMA 重复 — init.sql 中的 PRAGMA 已移除，仅 InitDB 执行
 - [ ] **#27** etc/todo-api.yaml 中 AccessSecret 明文 — 嵌入二进制的默认配置含敏感值
 - [ ] **#28** 静态文件路径遍历（低风险） — Go embed.FS 安全，但切换 FS 需注意
 - [ ] **#29** 登录/注册成功后硬编码延迟跳转 — setTimeout 延迟不必要

@@ -3,8 +3,6 @@
 -- Run automatically on first startup
 -- ================================================
 
-PRAGMA foreign_keys = ON;
-
 -- Users table
 CREATE TABLE IF NOT EXISTS `users` (
     `id` integer NOT NULL PRIMARY KEY AUTOINCREMENT,

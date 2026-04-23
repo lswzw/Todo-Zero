@@ -97,8 +97,8 @@ type LoginLogResp struct {
 }
 
 type LoginReq struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required,min=1,max=100"`
+	Password string `json:"password" validate:"required,min=1,max=100"`
 }
 
 type LoginResp struct {
@@ -219,11 +219,11 @@ type UpdateConfigResp struct {
 }
 
 type UpdateTaskReq struct {
-	Id         int64  `path:"id"`
-	Title      string `json:"title,optional" validate:"max=100"`
-	Content    string `json:"content,optional" validate:"max=1000"`
-	Priority   int64  `json:"priority,optional" options="1|2|3"`
-	CategoryId int64  `json:"categoryId,optional"`
+	Id         int64   `path:"id"`
+	Title      *string `json:"title,optional" validate:"omitempty,max=100"`
+	Content    *string `json:"content,optional" validate:"omitempty,max=1000"`
+	Priority   *int64  `json:"priority,optional" options:"1|2|3"`
+	CategoryId *int64  `json:"categoryId,optional"`
 }
 
 type UpdateTaskResp struct {

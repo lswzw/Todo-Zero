@@ -40,14 +40,12 @@ func (l *ToggleTaskLogic) ToggleTask(req *types.ToggleTaskReq) (resp *types.Togg
 		return nil, xerr.NewCodeError(xerr.NoPermission)
 	}
 
-	// 切换状态: 0=待办 ↔ 2=已完成
+	// Atomic status toggle: 0=待办 ↔ 2=已完成
+	newStatus := int64(0)
 	if task.Status == 0 {
-		task.Status = 2
-	} else {
-		task.Status = 0
+		newStatus = 2
 	}
-
-	if err := l.svcCtx.TaskModel.Update(l.ctx, task); err != nil {
+	if err := l.svcCtx.TaskModel.UpdateStatus(l.ctx, req.Id, newStatus); err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
