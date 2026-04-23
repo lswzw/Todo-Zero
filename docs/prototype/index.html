@@ -88,6 +88,45 @@
       margin-bottom: 20px;
     }
     .task-section .section-header h2 { font-size: 18px; color: #303133; }
+    .section-actions { display: flex; align-items: center; gap: 12px; }
+    .search-input {
+      width: 180px;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: #667eea; }
+    .add-btn {
+      height: 32px;
+      padding: 0 16px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .add-btn:hover { background: #5a6fe0; }
+    .select-btn {
+      height: 32px;
+      padding: 0 14px;
+      background: #fff;
+      color: #606266;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .select-btn:hover { color: #667eea; border-color: #667eea; }
+    .select-btn.active { background: #667eea; color: #fff; border-color: #667eea; }
     .batch-bar {
       display: flex;
       align-items: center;
@@ -137,6 +176,51 @@
       color: #909399;
     }
     .task-item .task-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    /* 状态徽章 - Linear 风格 */
+    .task-badge {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.25s ease;
+      font-size: 11px;
+    }
+    .task-badge.todo {
+      background: #e8e8e8;
+      border: 2px solid #d0d0d0;
+    }
+    .task-badge.todo:hover {
+      border-color: #67c23a;
+      background: #f0f9eb;
+    }
+    .task-badge.done {
+      background: #67c23a;
+      border: 2px solid #67c23a;
+      color: #fff;
+    }
+    .task-badge.done:hover {
+      background: #85ce61;
+      border-color: #85ce61;
+    }
+    /* 批量选择圆点 */
+    .task-select {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #dcdfe6;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .task-select:hover { border-color: #409eff; }
+    .task-select.selected {
+      background: #409eff;
+      border-color: #409eff;
+    }
     .priority-tag {
       display: inline-flex;
       align-items: center;
@@ -195,7 +279,6 @@
       </div>
 
       <div class="filter-bar">
-        <el-input v-model="keyword" placeholder="搜索任务..." clearable prefix-icon="Search" />
         <el-select v-model="filterStatus" placeholder="状态" clearable style="width:120px">
           <el-option label="待办" :value="0" />
           <el-option label="已完成" :value="1" />
@@ -213,7 +296,11 @@
       <div class="task-section">
         <div class="section-header">
           <h2>任务列表</h2>
-          <el-button type="primary" @click="openCreateDialog">+ 新增任务</el-button>
+          <div class="section-actions">
+            <button :class="['select-btn', selectMode ? 'active' : '']" @click="toggleSelectMode">{{ selectMode ? '取消多选' : '多选' }}</button>
+            <input class="search-input" v-model="keyword" placeholder="搜索任务..." @input="keyword=$event.target.value" />
+            <button class="add-btn" @click="openCreateDialog">+ 新增任务</button>
+          </div>
         </div>
 
         <!-- 批量操作栏 -->
@@ -233,15 +320,16 @@
         </div>
 
         <div v-for="task in pagedTasks" :key="task.id" class="task-item" :class="{ done: task.status === 1 }">
-          <el-checkbox
-            v-model="task._selected"
-            @change="(val) => toggleSelect(task, val)"
-          />
-          <el-checkbox
-            :model-value="task.status === 1"
-            @change="toggleTask(task)"
-            size="large"
-          />
+          <div v-if="selectMode"
+            :class="['task-select', task._selected ? 'selected' : '']"
+            @click="toggleSelect(task, !task._selected)"
+          ></div>
+          <div
+            :class="['task-badge', task.status === 1 ? 'done' : 'todo']"
+            @click="toggleTask(task)"
+          >
+            <span v-if="task.status === 1">✓</span>
+          </div>
           <div class="task-content">
             <div class="task-title">{{ task.title }}</div>
             <div class="task-desc" v-if="task.content">{{ task.content }}</div>
@@ -339,6 +427,7 @@
         const isEdit = ref(false)
         const taskFormRef = ref()
         const selectedTasks = ref([])
+        const selectMode = ref(false)
 
         // 修改密码
         const passwordDialogVisible = ref(false)
@@ -416,6 +505,14 @@
           const idx = selectedTasks.value.indexOf(task.id)
           if (val && idx === -1) selectedTasks.value.push(task.id)
           else if (!val && idx > -1) selectedTasks.value.splice(idx, 1)
+        }
+
+        const toggleSelectMode = () => {
+          selectMode.value = !selectMode.value
+          if (!selectMode.value) {
+            selectedTasks.value = []
+            tasks.forEach(t => t._selected = false)
+          }
         }
 
         const batchAction = (action) => {
@@ -513,10 +610,10 @@
 
         return {
           currentUser, keyword, filterStatus, filterCategory, filterPriority,
-          currentPage, pageSize, categories, tasks, selectedTasks,
+          currentPage, pageSize, categories, tasks, selectedTasks, selectMode,
           todoCount, doneCount, doneRate, filteredTasks, pagedTasks,
           dialogVisible, isEdit, taskForm, taskFormRef, taskRules,
-          priorityLabel, getCategoryName, toggleSelect, batchAction,
+          priorityLabel, getCategoryName, toggleSelect, toggleSelectMode, batchAction,
           toggleTask, deleteTask, openCreateDialog, openEditDialog, submitTask, handleLogout,
           passwordDialogVisible, passwordFormRef, passwordForm, passwordRules, changePassword
         }
