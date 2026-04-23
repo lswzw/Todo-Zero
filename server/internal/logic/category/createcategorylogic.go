@@ -34,9 +34,10 @@ func (l *CreateCategoryLogic) CreateCategory(req *types.CreateCategoryReq) (resp
 	}
 
 	result, err := l.svcCtx.CategoryModel.Insert(l.ctx, &model.Category{
-		Name:      req.Name,
-		UserId:    sql.NullInt64{Int64: userId, Valid: true},
-		SortOrder: 0,
+		Name:   req.Name,
+		Color:  "#1890ff",
+		UserId: sql.NullInt64{Int64: userId, Valid: true},
+		Sort:   0,
 	})
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)

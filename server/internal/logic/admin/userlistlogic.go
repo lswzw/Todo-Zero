@@ -30,7 +30,7 @@ func (l *UserListLogic) UserList(req *types.UserListReq) (resp *types.UserListRe
 		return nil, err
 	}
 
-	users, total, err := l.svcCtx.UserModel.FindList(l.ctx, req.Keyword, req.Page, req.PageSize)
+	users, total, err := l.svcCtx.UserModel.FindList(l.ctx, req.Keyword, -1, req.Page, req.PageSize)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
@@ -40,7 +40,7 @@ func (l *UserListLogic) UserList(req *types.UserListReq) (resp *types.UserListRe
 		list = append(list, types.UserListItem{
 			Id:         u.Id,
 			Username:   u.Username,
-			IsAdmin:    u.IsAdmin,
+			IsAdmin:    u.Role,
 			Status:     u.Status,
 			CreateTime: u.CreateTime.Format("2006-01-02 15:04"),
 		})

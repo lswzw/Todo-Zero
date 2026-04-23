@@ -92,12 +92,12 @@
 
 ### 改造清单
 
-- [ ] ① MySQL → SQLite：替换驱动、调整 SQL 语法（`AUTO_INCREMENT` → `AUTOINCREMENT`、去掉反引号等）
-- [ ] ② 去掉 Redis：移除缓存配置和逻辑，Model 层改为纯数据库查询
-- [ ] ③ 配置精简：`todo-api.yaml` 去掉 Redis/MySQL 配置，仅保留 JWT 等必要项
-- [ ] ④ 启动自动初始化：检测并创建 SQLite 数据库 + 建表 + 默认数据
-- [ ] ⑤ 嵌入前端静态文件：`embed dist/` + go-zero 路由兜底返回 `index.html`
-- [ ] ⑥ 编译测试：`go build -o todo-app` 生成单体二进制，验证功能完整性
+- [x] ① MySQL → SQLite：替换驱动、调整 SQL 语法（`AUTO_INCREMENT` → `AUTOINCREMENT`、去掉反引号等）
+- [x] ② 去掉 Redis：移除缓存配置和逻辑，Model 层改为纯数据库查询
+- [x] ③ 配置精简：`todo-api.yaml` 去掉 Redis/MySQL 配置，仅保留 JWT 等必要项
+- [x] ④ 启动自动初始化：检测并创建 SQLite 数据库 + 建表 + 默认数据
+- [x] ⑤ 嵌入前端静态文件：`embed dist/` + go-zero NotFoundHandler 兜底返回 `index.html`
+- [x] ⑥ 编译测试：`go build -o todo-api` 生成单体二进制，全部接口功能验证通过
 
 ### 最终效果
 

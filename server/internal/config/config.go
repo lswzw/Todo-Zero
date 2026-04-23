@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/rest"
 )
 
@@ -9,10 +8,10 @@ type Config struct {
 	rest.RestConf
 	Auth struct {
 		AccessSecret string
-		AccessExpire int64
+		AccessExpire  int64
 	}
-	MySQL struct {
-		DataSource string
+	Database struct {
+		DataDir string // e.g. "data"
+		DBFile  string // e.g. "todo.db"
 	}
-	CacheRedis cache.CacheConf
 }

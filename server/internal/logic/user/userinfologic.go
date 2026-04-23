@@ -39,7 +39,7 @@ func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResp, err error) {
 	return &types.UserInfoResp{
 		Id:       user.Id,
 		Username: user.Username,
-		IsAdmin:  user.IsAdmin,
+		IsAdmin:  user.Role,
 		Status:   user.Status,
 	}, nil
 }

@@ -40,7 +40,7 @@ func (l *ConfigListLogic) ConfigList() (resp *types.ConfigListResp, err error) {
 		list = append(list, types.ConfigItem{
 			Key:    c.ConfigKey,
 			Value:  c.ConfigValue,
-			Remark: c.Remark.String,
+			Remark: c.Description,
 		})
 	}
 

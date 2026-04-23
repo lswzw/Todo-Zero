@@ -37,7 +37,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 			_ , _ = l.svcCtx.LoginLogModel.Insert(l.ctx, &model.LoginLog{
 				Username: req.Username,
 				Status:   0,
-				Remark:   sql.NullString{String: "用户不存在", Valid: true},
+				Remark:   "用户不存在",
 			})
 			return nil, xerr.NewCodeError(xerr.UserNotFoundError)
 		}
@@ -50,7 +50,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 			UserId:   sql.NullInt64{Int64: user.Id, Valid: true},
 			Username: req.Username,
 			Status:   0,
-			Remark:   sql.NullString{String: "用户已被禁用", Valid: true},
+			Remark:   "用户已被禁用",
 		})
 		return nil, xerr.NewCodeError(xerr.UserDisabled)
 	}
@@ -61,14 +61,14 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 			UserId:   sql.NullInt64{Int64: user.Id, Valid: true},
 			Username: req.Username,
 			Status:   0,
-			Remark:   sql.NullString{String: "密码错误", Valid: true},
+			Remark:   "密码错误",
 		})
 		return nil, xerr.NewCodeError(xerr.PasswordError)
 	}
 
 	// 4. 生成 JWT Token
 	now := time.Now()
-	token, err := l.generateToken(user.Id, user.IsAdmin, now)
+	token, err := l.generateToken(user.Id, user.Role, now)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
@@ -78,12 +78,12 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 		UserId:   sql.NullInt64{Int64: user.Id, Valid: true},
 		Username: req.Username,
 		Status:   1,
-		Remark:   sql.NullString{String: "登录成功", Valid: true},
+		Remark:   "登录成功",
 	})
 
 	return &types.LoginResp{
 		Token:   token,
-		IsAdmin: user.IsAdmin,
+		IsAdmin: user.Role,
 	}, nil
 }
 

@@ -1,0 +1,116 @@
+package db
+
+import (
+	"database/sql"
+	"embed"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	_ "modernc.org/sqlite"
+)
+
+//go:embed init.sql
+var initSQL embed.FS
+
+// InitDB initializes the SQLite database and returns the connection.
+func InitDB(dataDir, dbFile string) (*sql.DB, error) {
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create data directory: %w", err)
+	}
+
+	dbPath := filepath.Join(dataDir, dbFile)
+	connStr := dbPath + "?_journal_mode=WAL&_busy_timeout=5000"
+
+	sqliteDB, err := sql.Open("sqlite", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
+
+	if _, err := sqliteDB.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
+	}
+
+	tables, err := getTables(sqliteDB)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check tables: %w", err)
+	}
+
+	if len(tables) == 0 {
+		if err := runInitSQL(sqliteDB); err != nil {
+			return nil, fmt.Errorf("failed to initialize database: %w", err)
+		}
+		fmt.Println("[DB] Database initialized successfully")
+	}
+
+	return sqliteDB, nil
+}
+
+func getTables(db *sql.DB) ([]string, error) {
+	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type='table'")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tables []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		tables = append(tables, name)
+	}
+	return tables, rows.Err()
+}
+
+func runInitSQL(db *sql.DB) error {
+	content, err := initSQL.ReadFile("init.sql")
+	if err != nil {
+		return fmt.Errorf("failed to read init.sql: %w", err)
+	}
+
+	// Remove SQL comments and normalize whitespace
+	lines := strings.Split(string(content), "\n")
+	var cleanLines []string
+	inBlockComment := false
+	for _, line := range lines {
+		// Handle block comments /* */
+		if strings.Contains(line, "/*") {
+			inBlockComment = true
+		}
+		if !inBlockComment {
+			// Remove line comments
+			idx := strings.Index(line, "--")
+			if idx >= 0 {
+				line = strings.TrimSpace(line[:idx])
+			} else {
+				line = strings.TrimSpace(line)
+			}
+			if line != "" {
+				cleanLines = append(cleanLines, line)
+			}
+		}
+		if strings.Contains(line, "*/") {
+			inBlockComment = false
+		}
+	}
+
+	// Join and split by semicolon
+	cleanSQL := strings.Join(cleanLines, "\n")
+	statements := strings.Split(cleanSQL, ";")
+	for _, stmt := range statements {
+		stmt = strings.TrimSpace(stmt)
+		if stmt == "" {
+			continue
+		}
+		if _, err := db.Exec(stmt); err != nil {
+			// Ignore UNIQUE constraint failures (INSERT OR IGNORE)
+			if !strings.Contains(err.Error(), "UNIQUE constraint failed") {
+				return fmt.Errorf("failed to execute: %s\nerror: %w", stmt, err)
+			}
+		}
+	}
+	return nil
+}

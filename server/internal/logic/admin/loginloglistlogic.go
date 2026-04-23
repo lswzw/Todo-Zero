@@ -37,13 +37,17 @@ func (l *LoginLogListLogic) LoginLogList(req *types.LoginLogReq) (resp *types.Lo
 
 	var list []types.LoginLogItem
 	for _, log := range logs {
+		userId := int64(0)
+		if log.UserId.Valid {
+			userId = log.UserId.Int64
+		}
 		list = append(list, types.LoginLogItem{
 			Id:         log.Id,
-			UserId:     log.UserId.Int64,
+			UserId:     userId,
 			Username:   log.Username,
-			Ip:         log.Ip.String,
+			Ip:         log.Ip,
 			Status:     log.Status,
-			Remark:     log.Remark.String,
+			Remark:     log.Remark,
 			CreateTime: log.CreateTime.Format("2006-01-02 15:04"),
 		})
 	}

@@ -5,14 +5,9 @@ Port: 8888
 # JWT 配置
 Auth:
   AccessSecret: "todo-app-jwt-secret-key-2024"
-  AccessExpire: 86400  # 24小时过期
+  AccessExpire: 86400
 
-# MySQL 配置
-MySQL:
-  DataSource: "zero:zero@tcp(192.168.100.192:3306)/zero?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai"
-
-# Redis 缓存配置（go-zero 标准格式）
-CacheRedis:
-  - Host: 192.168.102.77:6379
-    Pass: "zero"
-    Type: "node"
+# 数据库配置（运行时注入）
+Database:
+  DataDir: "data"
+  DBFile: "todo.db"

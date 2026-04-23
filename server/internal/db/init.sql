@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS `login_log` (
 -- Username: admin  Password: admin123
 -- ================================================
 INSERT OR IGNORE INTO `users` (`username`, `password`, `nickname`, `role`, `status`)
-VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '管理员', 1, 1);
+VALUES ('admin', '$2a$10$ktZcnwXDUmrcYXI.gOkjOuDeeivJNiuVLgW696nNDV7zYHzaNqgaW', '管理员', 1, 1);
 
 -- ================================================
 -- System preset categories

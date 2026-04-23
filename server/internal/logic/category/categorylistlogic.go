@@ -3,6 +3,7 @@ package category
 import (
 	"context"
 
+	"server/internal/pkg/jwtx"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -24,7 +25,8 @@ func NewCategoryListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cate
 }
 
 func (l *CategoryListLogic) CategoryList() (resp *types.CategoryListResp, err error) {
-	categories, err := l.svcCtx.CategoryModel.FindAll(l.ctx)
+	userId, _ := jwtx.GetUserIdFromCtx(l.ctx)
+	categories, err := l.svcCtx.CategoryModel.FindAll(l.ctx, userId)
 	if err != nil {
 		return nil, err
 	}

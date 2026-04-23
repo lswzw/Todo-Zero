@@ -53,7 +53,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 	result, err := l.svcCtx.UserModel.Insert(l.ctx, &model.User{
 		Username: req.Username,
 		Password: string(hashedPassword),
-		IsAdmin:  0,
+		Role:     0,
 		Status:   1,
 	})
 	if err != nil {
@@ -64,12 +64,12 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 
 	// 5. 记录操作日志
 	_ , _ = l.svcCtx.OperationLogModel.Insert(l.ctx, &model.OperationLog{
-		UserId:     id,
-		Username:   req.Username,
-		Action:     "register",
-		TargetType: sql.NullString{String: "user", Valid: true},
-		TargetId:   sql.NullInt64{Int64: id, Valid: true},
-		Detail:     sql.NullString{String: "用户注册", Valid: true},
+		UserId:   sql.NullInt64{Int64: id, Valid: true},
+		Username: req.Username,
+		Module:   "user",
+		Action:   "register",
+		Method:   "POST",
+		Status:   1,
 	})
 
 	return &types.RegisterResp{

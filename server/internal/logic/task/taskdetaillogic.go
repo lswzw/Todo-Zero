@@ -42,20 +42,27 @@ func (l *TaskDetailLogic) TaskDetail(req *types.TaskDetailReq) (resp *types.Task
 
 	// 获取分类名称
 	categoryName := "未分类"
+	categoryId := int64(0)
 	if task.CategoryId.Valid && task.CategoryId.Int64 > 0 {
+		categoryId = task.CategoryId.Int64
 		category, err := l.svcCtx.CategoryModel.FindOne(l.ctx, task.CategoryId.Int64)
 		if err == nil {
 			categoryName = category.Name
 		}
 	}
 
+	content := ""
+	if task.Content.Valid {
+		content = task.Content.String
+	}
+
 	return &types.TaskDetailResp{
 		Id:           task.Id,
 		Title:        task.Title,
-		Content:      task.Content.String,
+		Content:      content,
 		Status:       task.Status,
 		Priority:     task.Priority,
-		CategoryId:   task.CategoryId.Int64,
+		CategoryId:   categoryId,
 		CategoryName: categoryName,
 		CreateTime:   task.CreateTime.Format("2006-01-02 15:04"),
 		UpdateTime:   task.UpdateTime.Format("2006-01-02 15:04"),

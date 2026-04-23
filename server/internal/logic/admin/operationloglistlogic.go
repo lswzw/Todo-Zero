@@ -30,7 +30,7 @@ func (l *OperationLogListLogic) OperationLogList(req *types.OperationLogReq) (re
 		return nil, err
 	}
 
-	logs, total, err := l.svcCtx.OperationLogModel.FindList(l.ctx, req.Action, req.Username, req.Page, req.PageSize)
+	logs, total, err := l.svcCtx.OperationLogModel.FindList(l.ctx, req.Page, req.PageSize)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
@@ -39,14 +39,14 @@ func (l *OperationLogListLogic) OperationLogList(req *types.OperationLogReq) (re
 	for _, log := range logs {
 		list = append(list, types.OperationLogItem{
 			Id:         log.Id,
-			UserId:     log.UserId,
+			UserId:     0,
 			Username:   log.Username,
 			Action:     log.Action,
-			TargetType: log.TargetType.String,
-			TargetId:   log.TargetId.Int64,
-			Detail:     log.Detail.String,
-			Ip:         log.Ip.String,
-			CreateTime: log.CreateTime.Format("2006-01-02 15:04"),
+			TargetType: "",
+			TargetId:   0,
+			Detail:     log.Params,
+			Ip:         log.Ip,
+			CreateTime: log.CreatedAt.Format("2006-01-02 15:04"),
 		})
 	}
 
