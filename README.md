@@ -23,9 +23,22 @@ npm run build        # 输出到 ../server/dist/
 # 2. 编译后端（前端已嵌入）
 cd ../server
 go build -o todo-api .
+```
 
-# 3. 运行
-./todo-api -f etc/todo-api.yaml
+### 运行
+
+```bash
+# 直接运行（零配置）
+./todo-api
+
+# 自定义参数
+./todo-api -port 9090 -data-dir /var/todo
+
+# 使用配置文件
+./todo-api -f /etc/todo-api.yaml
+
+# 查看帮助
+./todo-api -h
 ```
 
 首次启动会自动创建 `data/todo.db`，并初始化表结构和默认数据。
@@ -140,7 +153,21 @@ go build -o todo-api .
 
 ## 配置说明
 
-配置文件 `server/etc/todo-api.yaml`：
+支持命令行参数和配置文件两种方式，命令行参数优先级更高。
+
+### 命令行参数
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `-host` | `0.0.0.0` | 监听地址 |
+| `-port` | `8888` | 监听端口 |
+| `-data-dir` | `data` | 数据存储目录 |
+| `-db-file` | `todo.db` | SQLite 数据库文件名 |
+| `-jwt-secret` | `todo-app-jwt-secret-key-2024` | JWT 签名密钥 |
+| `-jwt-expire` | `86400` | Token 有效期（秒） |
+| `-f` | - | 配置文件路径（指定后忽略命令行参数） |
+
+### 配置文件
 
 ```yaml
 Name: todo-api
@@ -182,7 +209,8 @@ npm run dev          # 启动开发服务器（代理API到localhost:8888）
 
 ```bash
 cd server
-go run todo.go -f etc/todo-api.yaml
+go run todo.go          # 默认配置启动
+go run todo.go -port 9090  # 自定义端口
 ```
 
 ### 重新构建前端到二进制

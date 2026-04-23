@@ -23,13 +23,52 @@ import (
 //go:embed dist
 var staticFiles embed.FS
 
-var configFile = flag.String("f", "etc/todo-api.yaml", "the config file")
+//go:embed etc/todo-api.yaml
+var defaultConfig []byte
+
+var (
+	host        = flag.String("host", "0.0.0.0", "listen host")
+	port        = flag.Int("port", 8888, "listen port")
+	dataDir     = flag.String("data-dir", "data", "data directory for SQLite database")
+	dbFile      = flag.String("db-file", "todo.db", "SQLite database filename")
+	jwtSecret   = flag.String("jwt-secret", "todo-app-jwt-secret-key-2024", "JWT signing secret")
+	jwtExpire   = flag.Int64("jwt-expire", 86400, "JWT token expiration in seconds")
+	configFile  = flag.String("f", "", "config file path (overrides command-line flags)")
+)
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Todo App - A standalone todo management application\n\n")
+		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\nExamples:\n")
+		fmt.Fprintf(os.Stderr, "  %s                          # Run with defaults\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -port 9090               # Run on port 9090\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -data-dir /var/todo      # Use custom data directory\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -f /etc/todo-api.yaml    # Use config file\n", os.Args[0])
+	}
 	flag.Parse()
 
 	var c config.Config
-	conf.MustLoad(*configFile, &c)
+
+	// If config file is specified, load it; otherwise build config from flags with defaults
+	if *configFile != "" {
+		conf.MustLoad(*configFile, &c)
+	} else {
+		// Try embedded default config first
+		if err := conf.LoadFromYamlBytes(defaultConfig, &c); err != nil {
+			fmt.Printf("[Config] Failed to load embedded config: %v\n", err)
+			os.Exit(1)
+		}
+		// Override with command-line flags (flags always take precedence)
+		c.Host = *host
+		c.Port = *port
+		c.Database.DataDir = *dataDir
+		c.Database.DBFile = *dbFile
+		c.Auth.AccessSecret = *jwtSecret
+		c.Auth.AccessExpire = *jwtExpire
+	}
 
 	// Initialize SQLite database
 	sqliteDB, err := db.InitDB(c.Database.DataDir, c.Database.DBFile)
