@@ -106,6 +106,20 @@ jobs:
           done
           ls -lh release/
 
+      - name: Extract release notes from changelog
+        id: changelog
+        run: |
+          VERSION="${{ github.ref_name }}"
+          # Extract section between "## $VERSION" and next "## v" from changelog.md
+          NOTES=$(awk "/^## ${VERSION}/{found=1; next} /^## v/{found=0} found" docs/changelog.md)
+          if [ -z "$NOTES" ]; then
+            NOTES="见 [更新日志](docs/changelog.md)"
+          fi
+          # Write to file for multiline output
+          echo "$NOTES" > release_notes.md
+          echo "--- Release Notes ---"
+          cat release_notes.md
+
       - name: Generate checksums
         run: |
           cd release
@@ -115,6 +129,6 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          body_path: release_notes.md
           files: |
             release/*
