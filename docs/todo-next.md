@@ -1,76 +1,63 @@
-# Todo-Zero 下一步开发清单
+# Todo-Zero 开发清单
 
-> 基于 v1.0.0 代码审查，P0 已在 v1.1.0 修复。
-
----
-
-## P0 — 必须修复（影响正确性/性能）
-
-- [x] **前后端状态/优先级映射不一致**
-  - Status 统一为: 0=待办, 2=已完成（去掉未使用的"进行中"状态）
-  - Priority 统一为: 1=重要, 2=紧急, 3=普通
-  - ToggleTask: 0↔2 切换（原来 0↔1，1 不是"已完成"）
-  - BatchTask: complete→status=2, undo→status=0（原来 complete→1）
-  - 前端筛选/显示/表单全部对齐
-
-- [x] **任务列表 N+1 查询**
-  - 改为批量收集 categoryId → 一次查出所有分类名称 → map 查找
-
-- [x] **数据库缺少索引**
-  - 添加 `idx_tasks_user_id`、`idx_tasks_status`、`idx_tasks_category_id`、`idx_users_username`、`idx_login_log_username`
-  - init.sql 和 ensureIndexes() 双重保障（新库/旧库都有索引）
-
-- [x] **用户列表返回密码哈希**
-  - `UserModel.FindList` 查询排除 `password` 字段
+> 基于 v1.1.0 全面代码审查，详见 `docs/code-review.md`。
 
 ---
 
-## P1 — 重要改进（安全性/功能补全）
+## HIGH — 必须修复
 
-- [ ] **登录限流** — 防止暴力破解，同 IP / 同用户短时间多次失败则锁定
-- [ ] **补全分类 CRUD** — 后端 model 已有 Update/Delete 方法，缺 API 端点和前端界面
-- [ ] **补全任务时间/标签字段** — 数据库已有 `start_time`、`end_time`、`reminder`、`tags` 字段，但 API 和前端均未暴露
-- [ ] **补全任务详情页** — 后端有 GET /task/:id，前端有 `getTaskDetail` 函数，但 UI 无入口
-- [ ] **添加 Go 单元测试** — 项目零 `_test.go` 文件，至少覆盖 model 层和核心 logic
-- [ ] **操作日志自动记录** — OperationLogModel 存在但 logic 层未自动调用，只有登录日志有记录
-- [ ] **JWT Secret 安全提醒** — 默认值硬编码，启动时若未修改应打印警告
+- [ ] **#1 管理员路由无 RBAC 中间件** — 新增 admin logic 忘记 checkAdmin 即可越权
+- [ ] **#2 JWT Secret 硬编码默认值** — 可伪造任意用户 token，首次启动应自动生成随机密钥
+- [ ] **#3 操作日志系统形同虚设** — 只有注册写了一条记录，所有管理操作均无日志
 
 ---
 
-## P2 — 体验优化
+## MEDIUM — 应该修复
 
-- [ ] **前端 TypeScript 类型化** — 消除大量 `any` 类型，定义 Task、User 等接口
-- [ ] **提取公共组件** — `components/` 目录为空，分页、搜索栏、空状态等应抽为组件
-- [ ] **空 catch 修复** — 前端几乎所有 async 函数 `catch {}` 静默吞异常，应添加错误提示
-- [ ] **实现定时清理任务** — 系统配置 `task_auto_delete_days=30` 已存在，但无后台清理逻辑
-- [ ] **日志自动清理** — 操作日志和登录日志无限增长，需定时清理策略
-- [ ] **数据库迁移机制** — 当前只有首次初始化，无版本化 schema 迁移，后续改表困难
-- [ ] **健康检查端点** — 添加 `/health` 接口用于部署探针
-- [ ] **ESLint + Prettier** — 前端无代码规范和格式化配置
-
----
-
-## P3 — 锦上添花
-
-- [ ] **暗黑模式** — Element Plus 原生支持，切换成本低
-- [ ] **数据导出** — 导出任务为 CSV/JSON
-- [ ] **回收站** — 软删除任务可恢复，已删除列表 + 恢复操作
-- [ ] **用户资料编辑** — 数据库有 avatar 字段，支持修改昵称/头像
-- [ ] **数据库自动备份** — SQLite 文件定时备份
-- [ ] **移动端优化** — 管理后台侧边栏折叠、触控交互适配
-- [ ] **PWA 离线支持** — Service Worker + 缓存策略
-- [ ] **API 文档** — Swagger/OpenAPI 规范自动生成
-- [ ] **Docker 镜像** — 多阶段构建，一键容器化部署
-- [ ] **拖拽排序** — 任务列表支持拖拽调整顺序
+- [ ] **#4 批量操作静默吞错** — BatchTask 错误被 `_ =` 丢弃，前端收到"成功"但可能部分失败
+- [ ] **#5 ToggleUserStatus TOCTOU 竞态** — 先查再改，并发可覆盖状态；应使用 SQL 原子操作
+- [ ] **#6 ToggleTask TOCTOU 竞态** — 同 #5，应使用已有的 UpdateStatus
+- [ ] **#7 UpdateTask 无法清空可选字段** — `if req.X != ""` 导致无法清空回零值
+- [ ] **#8 操作日志过滤参数未生效** — FindList 只接受 page/pageSize，action/username 被忽略
+- [ ] **#9 OperationLogItem 映射字段丢失** — UserId 硬编码 0，TargetType 为空
+- [ ] **#10 LoginReq 缺少验证标签** — 空/超长请求可导致 bcrypt DoS
+- [ ] **#11 SQL 注释解析逻辑脆弱** — `--` 在字符串值中会被误剥离
+- [ ] **#12 数据库连接池未配置** — 未设 SetMaxOpenConns，长时间运行可能连接泄漏
+- [ ] **#13 DeleteUser 未阻止删除其他管理员** — API 层面无保护
+- [ ] **#14 静态文件缺少安全响应头** — 无 nosniff/X-Frame-Options，存在 MIME 嗅探风险
+- [ ] **#15 Token 存 localStorage 有 XSS 风险** — 任何 XSS 可窃取 token
+- [ ] **#16 前端 isAdmin 可被绕过** — localStorage 可 DevTools 篡改，路由守卫应 API 验证
+- [ ] **#17 大量 any 类型** — TypeScript 形同虚设，应定义接口类型
+- [ ] **#18 空 catch 块吞掉所有错误** — 页面加载失败无提示
+- [ ] **#19 flag 与配置文件优先级不清** — 指定配置文件时 flags 完全不生效
+- [ ] **#20 API 响应拦截器未统一解包** — 调用方需 `.data` 但用 `as any` 绕过
 
 ---
 
-## 技术债备注
+## LOW — 建议改进
 
-| 问题 | 位置 | 说明 |
-|------|------|------|
-| 数据库连接池未配置 | `db/init.go` | `sql.Open` 后未设 `SetMaxOpenConns` 等 |
-| 配置热更新缺失 | admin config | 修改系统配置后需实时读取数据库 |
-| 环境变量管理 | `request.ts` | API 地址硬编码 |
-| App.vue 几乎为空 | `App.vue` (41B) | 缺全局错误处理和布局 |
-| BatchDelete SQL 拼接 | model 层 | IN 子句用循环拼接占位符，需注意安全性 |
+- [ ] **#21** Register TOCTOU 竞态 — 先查再插，直接 Insert 捕获 UNIQUE 更优
+- [ ] **#22** checkAdmin 重复 7 次 — 违反 DRY，应提取公共函数
+- [ ] **#23** 分类删除策略不一致 — categories 物理删除 vs tasks/users 软删除
+- [ ] **#24** ToggleUserStatus 应用 UpdateStatus 而非通用 Update
+- [ ] **#25** 缺少 defer sqliteDB.Close() — WAL 文件可能未清理
+- [ ] **#26** init.sql 中 PRAGMA 与 InitDB 重复
+- [ ] **#27** 嵌入配置中 AccessSecret 明文
+- [ ] **#29** 登录/注册成功后硬编码延迟跳转 — 不必要
+- [ ] **#30** 管理员登录后强制跳转管理页面 — 应可配置
+- [ ] **#31** 筛选条件改变时未重置页码
+- [ ] **#33** config.vue switchValue 单一 ref 无法多配置
+- [ ] **#34** 密码确认验证器类型不安全
+- [ ] **#35** 无障碍性缺失 — 缺 ARIA/语义化标签/键盘导航
+- [ ] **#36** 默认管理员密码 admin123 — 注释明文，应首次启动强制修改
+- [ ] **#38** StatLogic 应使用 CountStats 而非 FindList 全量加载
+- [ ] **#39** Model 层多个方法已定义但未使用（BatchDelete、UpdateStatus 等）
+
+---
+
+## P0 已完成 (v1.1.0)
+
+- [x] 前后端状态/优先级映射不一致
+- [x] 任务列表 N+1 查询
+- [x] 数据库缺少索引
+- [x] 用户列表返回密码哈希
