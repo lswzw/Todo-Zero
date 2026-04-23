@@ -70,11 +70,11 @@
 
 ## 阶段三：前端开发
 
-- [ ] ① 创建 Vue3 项目（Vite 脚手架）
-- [ ] ② 安装 Element Plus + Axios + Vue Router + Pinia
-- [ ] ③ 页面布局（登录页 / 主页 / 任务列表）
-- [ ] ④ 封装 API 请求（对接后端接口）
-- [ ] ⑤ 状态管理（Pinia 管理用户/任务数据）
+- [x] ① 创建 Vue3 项目（Vite 脚手架）→ `web/` 目录
+- [x] ② 安装 Element Plus + Axios + Vue Router + Pinia
+- [x] ③ 页面布局（登录页 / 注册页 / 任务主页 / 管理后台4页）
+- [x] ④ 封装 API 请求（对接后端 23 个接口）→ `web/src/api/`
+- [x] ⑤ 状态管理（Pinia 管理用户登录态）→ `web/src/stores/`
 - [ ] ⑥ 联调测试
 
 ---
