@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  GO_VERSION: '1.25'
+  GO_VERSION: '1.24'
   NODE_VERSION: '20'
 
 jobs:
@@ -66,12 +66,14 @@ jobs:
             -tags netgo,osusergo \
             -o ../todo-zero${{ matrix.suffix }} .
 
+      - name: Install UPX
+        if: matrix.goos != 'darwin'
+        run: |
+          sudo apt-get update && sudo apt-get install -y upx-ucl
+
       - name: Compress binary (UPX)
         if: matrix.goos != 'darwin'
-        uses: svenstaro/upx-action@v2
-        with:
-          file: todo-zero${{ matrix.suffix }}
-          args: --best --lzma
+        run: upx --best --lzma todo-zero${{ matrix.suffix }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
