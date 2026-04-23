@@ -35,6 +35,7 @@ web/dist/
 bin/
 tmp/
 todo-api
+dist
 
 # Data
 server/data/
