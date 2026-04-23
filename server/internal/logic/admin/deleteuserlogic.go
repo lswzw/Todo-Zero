@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package admin
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,27 @@ func NewDeleteUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 }
 
 func (l *DeleteUserLogic) DeleteUser(req *types.DeleteUserReq) (resp *types.DeleteUserResp, err error) {
-	// todo: add your logic here and delete this line
+	if err := l.checkAdmin(); err != nil {
+		return nil, err
+	}
 
-	return
+	// 不能删除自己
+	userId, _ := l.ctx.Value("userId").(float64)
+	if int64(userId) == req.Id {
+		return nil, xerr.NewCodeErrFromMsg("不能删除自己")
+	}
+
+	if err := l.svcCtx.UserModel.Delete(l.ctx, req.Id); err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	return &types.DeleteUserResp{}, nil
+}
+
+func (l *DeleteUserLogic) checkAdmin() error {
+	isAdmin, ok := l.ctx.Value("isAdmin").(float64)
+	if !ok || isAdmin != 1 {
+		return xerr.NewCodeError(xerr.AdminRequired)
+	}
+	return nil
 }

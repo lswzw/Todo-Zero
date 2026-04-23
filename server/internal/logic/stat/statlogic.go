@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package stat
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,34 @@ func NewStatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *StatLogic {
 }
 
 func (l *StatLogic) Stat() (resp *types.StatResp, err error) {
-	// todo: add your logic here and delete this line
+	userId, ok := l.ctx.Value("userId").(float64)
+	if !ok || userId == 0 {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
 
-	return
+	tasks, _, err := l.svcCtx.TaskModel.FindList(l.ctx, int64(userId), 0, 0, 0, "", 1, 9999)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	var total, done int64
+	total = int64(len(tasks))
+	for _, t := range tasks {
+		if t.Status == 1 {
+			done++
+		}
+	}
+
+	todo := total - done
+	var doneRate int64
+	if total > 0 {
+		doneRate = done * 100 / total
+	}
+
+	return &types.StatResp{
+		Total:    total,
+		Done:     done,
+		Todo:     todo,
+		DoneRate: doneRate,
+	}, nil
 }

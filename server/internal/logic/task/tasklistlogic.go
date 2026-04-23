@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package task
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,40 @@ func NewTaskListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *TaskList
 }
 
 func (l *TaskListLogic) TaskList(req *types.TaskListReq) (resp *types.TaskListResp, err error) {
-	// todo: add your logic here and delete this line
+	userId, ok := l.ctx.Value("userId").(float64)
+	if !ok || userId == 0 {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
 
-	return
+	tasks, total, err := l.svcCtx.TaskModel.FindList(l.ctx, int64(userId), req.Status, req.CategoryId, req.Priority, req.Keyword, req.Page, req.PageSize)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	var list []types.TaskItem
+	for _, t := range tasks {
+		categoryName := "未分类"
+		if t.CategoryId.Valid && t.CategoryId.Int64 > 0 {
+			category, err := l.svcCtx.CategoryModel.FindOne(l.ctx, t.CategoryId.Int64)
+			if err == nil {
+				categoryName = category.Name
+			}
+		}
+
+		list = append(list, types.TaskItem{
+			Id:           t.Id,
+			Title:        t.Title,
+			Content:      t.Content.String,
+			Status:       t.Status,
+			Priority:     t.Priority,
+			CategoryId:   t.CategoryId.Int64,
+			CategoryName: categoryName,
+			CreateTime:   t.CreateTime.Format("2006-01-02 15:04"),
+		})
+	}
+
+	return &types.TaskListResp{
+		Total: total,
+		List:  list,
+	}, nil
 }

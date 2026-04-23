@@ -1,6 +1,3 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package user
 
 import (
@@ -27,7 +24,16 @@ func NewCheckRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Che
 }
 
 func (l *CheckRegisterLogic) CheckRegister() (resp *types.CheckRegisterResp, err error) {
-	// todo: add your logic here and delete this line
+	// 默认允许注册
+	allowRegister := true
 
-	return
+	// 查询系统配置
+	config, err := l.svcCtx.SystemConfigModel.FindOneByKey(l.ctx, "allow_register")
+	if err == nil && config.ConfigValue == "false" {
+		allowRegister = false
+	}
+
+	return &types.CheckRegisterResp{
+		AllowRegister: allowRegister,
+	}, nil
 }

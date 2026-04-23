@@ -1,15 +1,14 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package user
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type ChangePasswordLogic struct {
@@ -27,7 +26,33 @@ func NewChangePasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ch
 }
 
 func (l *ChangePasswordLogic) ChangePassword(req *types.ChangePasswordReq) (resp *types.ChangePasswordResp, err error) {
-	// todo: add your logic here and delete this line
+	// 1. 获取当前用户
+	userId, ok := l.ctx.Value("userId").(float64)
+	if !ok || userId == 0 {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
 
-	return
+	user, err := l.svcCtx.UserModel.FindOne(l.ctx, int64(userId))
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.UserNotFoundError)
+	}
+
+	// 2. 验证旧密码
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.OldPassword)); err != nil {
+		return nil, xerr.NewCodeError(xerr.OldPasswordError)
+	}
+
+	// 3. 加密新密码
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	// 4. 更新密码
+	user.Password = string(hashedPassword)
+	if err := l.svcCtx.UserModel.Update(l.ctx, user); err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	return &types.ChangePasswordResp{}, nil
 }

@@ -9,10 +9,12 @@ import (
 
 	"server/internal/config"
 	"server/internal/handler"
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
+	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 var configFile = flag.String("f", "etc/todo-api.yaml", "the config file")
@@ -25,6 +27,9 @@ func main() {
 
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()
+
+	// 注册自定义错误处理
+	httpx.SetErrorHandlerCtx(xerr.ErrorResponse)
 
 	ctx := svc.NewServiceContext(c)
 	handler.RegisterHandlers(server, ctx)

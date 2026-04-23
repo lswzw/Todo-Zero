@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package task
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,36 @@ func NewBatchTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BatchTa
 }
 
 func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTaskResp, err error) {
-	// todo: add your logic here and delete this line
+	userId, ok := l.ctx.Value("userId").(float64)
+	if !ok || userId == 0 {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
 
-	return
+	if len(req.Ids) == 0 {
+		return nil, xerr.NewCodeError(xerr.RequestParamError)
+	}
+
+	for _, id := range req.Ids {
+		task, err := l.svcCtx.TaskModel.FindOne(l.ctx, id)
+		if err != nil {
+			continue
+		}
+
+		if task.UserId != int64(userId) {
+			continue
+		}
+
+		switch req.Action {
+		case "complete":
+			task.Status = 1
+			_ = l.svcCtx.TaskModel.Update(l.ctx, task)
+		case "undo":
+			task.Status = 0
+			_ = l.svcCtx.TaskModel.Update(l.ctx, task)
+		case "delete":
+			_ = l.svcCtx.TaskModel.Delete(l.ctx, id)
+		}
+	}
+
+	return &types.BatchTaskResp{}, nil
 }

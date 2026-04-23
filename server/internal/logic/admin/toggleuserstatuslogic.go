@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package admin
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,33 @@ func NewToggleUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *ToggleUserStatusLogic) ToggleUserStatus(req *types.ToggleUserStatusReq) (resp *types.ToggleUserStatusResp, err error) {
-	// todo: add your logic here and delete this line
+	if err := l.checkAdmin(); err != nil {
+		return nil, err
+	}
 
-	return
+	user, err := l.svcCtx.UserModel.FindOne(l.ctx, req.Id)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.UserNotFoundError)
+	}
+
+	// 切换状态
+	if user.Status == 1 {
+		user.Status = 0
+	} else {
+		user.Status = 1
+	}
+
+	if err := l.svcCtx.UserModel.Update(l.ctx, user); err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	return &types.ToggleUserStatusResp{}, nil
+}
+
+func (l *ToggleUserStatusLogic) checkAdmin() error {
+	isAdmin, ok := l.ctx.Value("isAdmin").(float64)
+	if !ok || isAdmin != 1 {
+		return xerr.NewCodeError(xerr.AdminRequired)
+	}
+	return nil
 }

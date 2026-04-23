@@ -1,11 +1,11 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package task
 
 import (
 	"context"
+	"database/sql"
 
+	"server/internal/model"
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +27,26 @@ func NewCreateTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 }
 
 func (l *CreateTaskLogic) CreateTask(req *types.CreateTaskReq) (resp *types.CreateTaskResp, err error) {
-	// todo: add your logic here and delete this line
+	userId, ok := l.ctx.Value("userId").(float64)
+	if !ok || userId == 0 {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
 
-	return
+	content := sql.NullString{String: req.Content, Valid: req.Content != ""}
+	categoryId := sql.NullInt64{Int64: req.CategoryId, Valid: req.CategoryId != 0}
+
+	result, err := l.svcCtx.TaskModel.Insert(l.ctx, &model.Task{
+		Title:      req.Title,
+		Content:    content,
+		Status:     0,
+		Priority:   req.Priority,
+		CategoryId: categoryId,
+		UserId:     int64(userId),
+	})
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	id, _ := result.LastInsertId()
+	return &types.CreateTaskResp{Id: id}, nil
 }

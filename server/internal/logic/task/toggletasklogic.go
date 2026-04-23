@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package task
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,30 @@ func NewToggleTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Toggle
 }
 
 func (l *ToggleTaskLogic) ToggleTask(req *types.ToggleTaskReq) (resp *types.ToggleTaskResp, err error) {
-	// todo: add your logic here and delete this line
+	userId, ok := l.ctx.Value("userId").(float64)
+	if !ok || userId == 0 {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
 
-	return
+	task, err := l.svcCtx.TaskModel.FindOne(l.ctx, req.Id)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.TaskNotFoundError)
+	}
+
+	if task.UserId != int64(userId) {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
+
+	// 切换状态
+	if task.Status == 0 {
+		task.Status = 1
+	} else {
+		task.Status = 0
+	}
+
+	if err := l.svcCtx.TaskModel.Update(l.ctx, task); err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	return &types.ToggleTaskResp{}, nil
 }

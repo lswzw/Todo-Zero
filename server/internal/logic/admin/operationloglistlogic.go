@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package admin
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,40 @@ func NewOperationLogListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *OperationLogListLogic) OperationLogList(req *types.OperationLogReq) (resp *types.OperationLogResp, err error) {
-	// todo: add your logic here and delete this line
+	if err := l.checkAdmin(); err != nil {
+		return nil, err
+	}
 
-	return
+	logs, total, err := l.svcCtx.OperationLogModel.FindList(l.ctx, req.Action, req.Username, req.Page, req.PageSize)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	var list []types.OperationLogItem
+	for _, log := range logs {
+		list = append(list, types.OperationLogItem{
+			Id:         log.Id,
+			UserId:     log.UserId,
+			Username:   log.Username,
+			Action:     log.Action,
+			TargetType: log.TargetType.String,
+			TargetId:   log.TargetId.Int64,
+			Detail:     log.Detail.String,
+			Ip:         log.Ip.String,
+			CreateTime: log.CreateTime.Format("2006-01-02 15:04"),
+		})
+	}
+
+	return &types.OperationLogResp{
+		Total: total,
+		List:  list,
+	}, nil
+}
+
+func (l *OperationLogListLogic) checkAdmin() error {
+	isAdmin, ok := l.ctx.Value("isAdmin").(float64)
+	if !ok || isAdmin != 1 {
+		return xerr.NewCodeError(xerr.AdminRequired)
+	}
+	return nil
 }

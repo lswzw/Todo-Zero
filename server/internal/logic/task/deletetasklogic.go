@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package task
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,23 @@ func NewDeleteTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 }
 
 func (l *DeleteTaskLogic) DeleteTask(req *types.DeleteTaskReq) (resp *types.DeleteTaskResp, err error) {
-	// todo: add your logic here and delete this line
+	userId, ok := l.ctx.Value("userId").(float64)
+	if !ok || userId == 0 {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
 
-	return
+	task, err := l.svcCtx.TaskModel.FindOne(l.ctx, req.Id)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.TaskNotFoundError)
+	}
+
+	if task.UserId != int64(userId) {
+		return nil, xerr.NewCodeError(xerr.NoPermission)
+	}
+
+	if err := l.svcCtx.TaskModel.Delete(l.ctx, req.Id); err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	return &types.DeleteTaskResp{}, nil
 }

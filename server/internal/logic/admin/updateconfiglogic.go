@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package admin
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,27 @@ func NewUpdateConfigLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upda
 }
 
 func (l *UpdateConfigLogic) UpdateConfig(req *types.UpdateConfigReq) (resp *types.UpdateConfigResp, err error) {
-	// todo: add your logic here and delete this line
+	if err := l.checkAdmin(); err != nil {
+		return nil, err
+	}
 
-	return
+	config, err := l.svcCtx.SystemConfigModel.FindOneByKey(l.ctx, req.Key)
+	if err != nil {
+		return nil, xerr.NewCodeErrFromMsg("配置项不存在")
+	}
+
+	config.ConfigValue = req.Value
+	if err := l.svcCtx.SystemConfigModel.Update(l.ctx, config); err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	return &types.UpdateConfigResp{}, nil
+}
+
+func (l *UpdateConfigLogic) checkAdmin() error {
+	isAdmin, ok := l.ctx.Value("isAdmin").(float64)
+	if !ok || isAdmin != 1 {
+		return xerr.NewCodeError(xerr.AdminRequired)
+	}
+	return nil
 }

@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package admin
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,36 @@ func NewUserListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserList
 }
 
 func (l *UserListLogic) UserList(req *types.UserListReq) (resp *types.UserListResp, err error) {
-	// todo: add your logic here and delete this line
+	if err := l.checkAdmin(); err != nil {
+		return nil, err
+	}
 
-	return
+	users, total, err := l.svcCtx.UserModel.FindList(l.ctx, req.Keyword, req.Page, req.PageSize)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	var list []types.UserListItem
+	for _, u := range users {
+		list = append(list, types.UserListItem{
+			Id:         u.Id,
+			Username:   u.Username,
+			IsAdmin:    u.IsAdmin,
+			Status:     u.Status,
+			CreateTime: u.CreateTime.Format("2006-01-02 15:04"),
+		})
+	}
+
+	return &types.UserListResp{
+		Total: total,
+		List:  list,
+	}, nil
+}
+
+func (l *UserListLogic) checkAdmin() error {
+	isAdmin, ok := l.ctx.Value("isAdmin").(float64)
+	if !ok || isAdmin != 1 {
+		return xerr.NewCodeError(xerr.AdminRequired)
+	}
+	return nil
 }

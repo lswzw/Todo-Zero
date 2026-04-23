@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package admin
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,38 @@ func NewLoginLogListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Logi
 }
 
 func (l *LoginLogListLogic) LoginLogList(req *types.LoginLogReq) (resp *types.LoginLogResp, err error) {
-	// todo: add your logic here and delete this line
+	if err := l.checkAdmin(); err != nil {
+		return nil, err
+	}
 
-	return
+	logs, total, err := l.svcCtx.LoginLogModel.FindList(l.ctx, req.Username, req.Page, req.PageSize)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	var list []types.LoginLogItem
+	for _, log := range logs {
+		list = append(list, types.LoginLogItem{
+			Id:         log.Id,
+			UserId:     log.UserId.Int64,
+			Username:   log.Username,
+			Ip:         log.Ip.String,
+			Status:     log.Status,
+			Remark:     log.Remark.String,
+			CreateTime: log.CreateTime.Format("2006-01-02 15:04"),
+		})
+	}
+
+	return &types.LoginLogResp{
+		Total: total,
+		List:  list,
+	}, nil
+}
+
+func (l *LoginLogListLogic) checkAdmin() error {
+	isAdmin, ok := l.ctx.Value("isAdmin").(float64)
+	if !ok || isAdmin != 1 {
+		return xerr.NewCodeError(xerr.AdminRequired)
+	}
+	return nil
 }

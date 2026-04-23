@@ -1,6 +1,3 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package category
 
 import (
@@ -27,7 +24,18 @@ func NewCategoryListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cate
 }
 
 func (l *CategoryListLogic) CategoryList() (resp *types.CategoryListResp, err error) {
-	// todo: add your logic here and delete this line
+	categories, err := l.svcCtx.CategoryModel.FindAll(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	var list []types.CategoryItem
+	for _, c := range categories {
+		list = append(list, types.CategoryItem{
+			Id:   c.Id,
+			Name: c.Name,
+		})
+	}
+
+	return &types.CategoryListResp{List: list}, nil
 }

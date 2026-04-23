@@ -1,11 +1,9 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.10.1
-
 package admin
 
 import (
 	"context"
 
+	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
 
@@ -27,7 +25,31 @@ func NewConfigListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Config
 }
 
 func (l *ConfigListLogic) ConfigList() (resp *types.ConfigListResp, err error) {
-	// todo: add your logic here and delete this line
+	if err := l.checkAdmin(); err != nil {
+		return nil, err
+	}
 
-	return
+	configs, err := l.svcCtx.SystemConfigModel.FindAll(l.ctx)
+	if err != nil {
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
+	}
+
+	var list []types.ConfigItem
+	for _, c := range configs {
+		list = append(list, types.ConfigItem{
+			Key:    c.ConfigKey,
+			Value:  c.ConfigValue,
+			Remark: c.Remark.String,
+		})
+	}
+
+	return &types.ConfigListResp{List: list}, nil
+}
+
+func (l *ConfigListLogic) checkAdmin() error {
+	isAdmin, ok := l.ctx.Value("isAdmin").(float64)
+	if !ok || isAdmin != 1 {
+		return xerr.NewCodeError(xerr.AdminRequired)
+	}
+	return nil
 }
