@@ -71,3 +71,14 @@
 | 数据库连接池未配置 | `db/init.go` | v1.3.0 | `SetMaxOpenConns(1)` / `SetMaxIdleConns(1)` |
 | 数据库连接未关闭 | `todo.go` | v1.3.0 | `defer sqliteDB.Close()` |
 | init.sql PRAGMA 重复 | `db/init.sql` | v1.3.0 | 移除重复 PRAGMA，仅 InitDB 执行 |
+
+---
+
+## v1.4.0 — 代码审查 MEDIUM 修复（前端安全 + 类型化 + 后端配置优先级）
+
+- [x] **#15 前端 Token 存 localStorage 有 XSS 风险** — `stores/user.ts` 不再将 `isAdmin` 存入 localStorage，改为每次路由跳转从服务端 `getUserInfo` 接口获取真实身份，防止本地篡改。
+- [x] **#16 前端 isAdmin 可被绕过** — 路由守卫增加 `fetchUserInfo()` 服务端验证机制，首次进入需认证页面时从 API 获取真实 `isAdmin`，不再信任 localStorage 中的值。登出时调用 `resetAuthVerified()` 重置验证状态。
+- [x] **#17 大量 any 类型** — 新增 `web/src/types/index.ts` 定义全部 API 响应类型（`TaskItem`、`UserListItem`、`StatResp` 等 15 个接口）。所有 `.vue` 和 `.ts` 文件中的 `any` 替换为具体类型；`FormInstance` 替代无类型 `ref()`；validator 回调类型 `any` → `(error?: Error) => void`。
+- [x] **#18 空 catch 块吞掉所有错误** — 关键数据加载（统计、分类、任务列表、用户列表、配置等）添加 `ElMessage.error` 提示；操作类 catch 保留注释说明错误已由拦截器处理。
+- [x] **#19 命令行 flag 与配置文件优先级不清** — `todo.go` 重构配置加载逻辑：先加载配置文件（或嵌入式默认），再统一由 flag 覆盖非默认值，无论是否使用 `-f` 指定配置文件，flag 始终可以覆盖。
+- [x] **#20 API 响应拦截器未统一解包** — `request.ts` 响应拦截器改为：成功时（`code === 0`）直接返回 `data` 字段，调用方无需再 `.data`；业务错误在拦截器统一 `ElMessage.error` 并 reject，调用方不再需要手动处理。

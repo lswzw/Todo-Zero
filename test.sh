@@ -360,7 +360,7 @@ RESP=$(post "/api/v1/user/login" "{\"username\":\"${TEST_USER}\",\"password\":\"
 assert_err "$RESP" "被禁用用户登录"
 
 RESP=$(get "/api/v1/admin/config" "$ADMIN_TOKEN")
-assert_eq "$RESP" "list | length" "4" "系统配置(4项)"
+assert_eq "$RESP" "list | length" "5" "系统配置(5项)"
 
 RESP=$(put "/api/v1/admin/config" "{\"key\":\"allow_register\",\"value\":\"false\"}" "$ADMIN_TOKEN")
 assert_ok "$RESP" "关闭注册"

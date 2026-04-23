@@ -6,12 +6,7 @@
 
 ## 代码审查 — MEDIUM 待修复（v1.2.0 审查）
 
-- [ ] **#15 前端 Token 存 localStorage 有 XSS 风险** — `stores/user.ts:14-16`
-- [ ] **#16 前端 isAdmin 可被绕过** — `stores/user.ts:8,15,22`，localStorage 可修改
-- [ ] **#17 大量 any 类型** — `home.vue:198,210` 等，TypeScript 形同虚设
-- [ ] **#18 空 catch 块吞掉所有错误** — 所有 `.vue` 文件，页面加载失败无提示
-- [ ] **#19 命令行 flag 与配置文件优先级不清** — `todo.go:56-71`
-- [ ] **#20 API 响应拦截器未统一解包** — `request.ts:19`，调用方需 `.data` 取业务数据
+（全部已修复，详见 [changelog.md](./changelog.md) v1.4.0）
 
 ---
 

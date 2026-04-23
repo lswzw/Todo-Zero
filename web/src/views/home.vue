@@ -178,28 +178,33 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 import { Search, Plus, Check } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { resetAuthVerified } from '@/router'
 import {
   getTaskList, createTask, updateTask, toggleTask, deleteTask, batchTask,
   getCategoryList, getStat, changePassword,
 } from '@/api'
+import type { TaskItem, StatResp, CategoryItem } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 // 统计
-const stat = ref({ total: 0, done: 0, todo: 0, doneRate: 0 })
+const stat = ref<StatResp>({ total: 0, done: 0, todo: 0, doneRate: 0 })
 
 // 分类
-const categories = ref<{ id: number; name: string }[]>([])
+const categories = ref<CategoryItem[]>([])
 
 // 任务列表
-const tasks = ref<any[]>([])
+const tasks = ref<TaskItem[]>([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
-const filters = ref<Record<string, any>>({ status: undefined, categoryId: undefined, priority: undefined, keyword: '' })
+const filters = ref<Record<string, number | string | undefined>>({
+  status: undefined, categoryId: undefined, priority: undefined, keyword: '',
+})
 
 // 多选
 const selectMode = ref(false)
@@ -207,9 +212,9 @@ const selectedIds = ref<number[]>([])
 
 // 任务弹窗
 const taskDialogVisible = ref(false)
-const editingTask = ref<any>(null)
+const editingTask = ref<TaskItem | null>(null)
 const submitting = ref(false)
-const taskFormRef = ref()
+const taskFormRef = ref<FormInstance>()
 const taskForm = ref({ title: '', content: '', priority: 3, categoryId: undefined as number | undefined })
 const taskRules = {
   title: [
@@ -221,9 +226,9 @@ const taskRules = {
 // 密码弹窗
 const showPasswordDialog = ref(false)
 const pwdLoading = ref(false)
-const pwdFormRef = ref()
+const pwdFormRef = ref<FormInstance>()
 const pwdForm = ref({ oldPassword: '', newPassword: '', confirmPassword: '' })
-const validatePwdConfirm = (_rule: any, value: string, callback: any) => {
+const validatePwdConfirm = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (value !== pwdForm.value.newPassword) callback(new Error('两次输入的密码不一致'))
   else callback()
 }
@@ -246,27 +251,35 @@ onMounted(() => {
 })
 
 async function loadStat() {
-  try { stat.value = await getStat() as any } catch {}
+  try {
+    stat.value = await getStat()
+  } catch {
+    ElMessage.error('加载统计数据失败')
+  }
 }
 
 async function loadCategories() {
   try {
-    const res = await getCategoryList() as any
+    const res = await getCategoryList()
     categories.value = res.list || []
-  } catch {}
+  } catch {
+    ElMessage.error('加载分类失败')
+  }
 }
 
 async function loadTasks() {
   try {
-    const params: Record<string, any> = { page: page.value, pageSize: pageSize.value }
+    const params: Record<string, unknown> = { page: page.value, pageSize: pageSize.value }
     if (filters.value.status !== undefined && filters.value.status !== '') params.status = filters.value.status
     if (filters.value.categoryId) params.categoryId = filters.value.categoryId
     if (filters.value.priority) params.priority = filters.value.priority
     if (filters.value.keyword) params.keyword = filters.value.keyword
-    const res = await getTaskList(params) as any
+    const res = await getTaskList(params)
     tasks.value = res.list || []
     total.value = res.total || 0
-  } catch {}
+  } catch {
+    ElMessage.error('加载任务列表失败')
+  }
 }
 
 function toggleSelectMode() {
@@ -280,13 +293,15 @@ function toggleSelect(id: number) {
   else selectedIds.value.push(id)
 }
 
-async function handleToggle(task: any) {
+async function handleToggle(task: TaskItem) {
   try {
     await toggleTask(task.id)
     ElMessage.success(task.status === 0 ? '已标记完成' : '已标记待办')
     loadTasks()
     loadStat()
-  } catch {}
+  } catch {
+    // 错误已由拦截器处理
+  }
 }
 
 async function handleDelete(id: number) {
@@ -295,7 +310,9 @@ async function handleDelete(id: number) {
     ElMessage.success('已删除')
     loadTasks()
     loadStat()
-  } catch {}
+  } catch {
+    // 错误已由拦截器处理
+  }
 }
 
 async function handleBatch(action: string) {
@@ -305,10 +322,12 @@ async function handleBatch(action: string) {
     selectedIds.value = []
     loadTasks()
     loadStat()
-  } catch {}
+  } catch {
+    // 错误已由拦截器处理
+  }
 }
 
-function openTaskDialog(task?: any) {
+function openTaskDialog(task?: TaskItem) {
   editingTask.value = task || null
   if (task) {
     taskForm.value = { title: task.title, content: task.content || '', priority: task.priority, categoryId: task.categoryId || undefined }
@@ -332,6 +351,8 @@ async function handleSubmitTask() {
     taskDialogVisible.value = false
     loadTasks()
     loadStat()
+  } catch {
+    // 错误已由拦截器处理
   } finally {
     submitting.value = false
   }
@@ -344,8 +365,11 @@ async function handleChangePassword() {
     await changePassword({ oldPassword: pwdForm.value.oldPassword, newPassword: pwdForm.value.newPassword })
     ElMessage.success('密码修改成功，请重新登录')
     showPasswordDialog.value = false
+    resetAuthVerified()
     userStore.logout()
     router.push('/login')
+  } catch {
+    // 错误已由拦截器处理
   } finally {
     pwdLoading.value = false
   }
@@ -353,6 +377,7 @@ async function handleChangePassword() {
 
 function handleLogout() {
   ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' }).then(() => {
+    resetAuthVerified()
     userStore.logout()
     router.push('/login')
   }).catch(() => {})

@@ -63,21 +63,33 @@ func main() {
 
 	var c config.Config
 
-	// If config file is specified, load it; otherwise build config from flags with defaults
+	// Load configuration: config file → embedded default, then flags override
 	if *configFile != "" {
 		conf.MustLoad(*configFile, &c)
 	} else {
-		// Try embedded default config first
 		if err := conf.LoadFromYamlBytes(defaultConfig, &c); err != nil {
 			fmt.Printf("[Config] Failed to load embedded config: %v\n", err)
 			os.Exit(1)
 		}
-		// Override with command-line flags (flags always take precedence)
+	}
+
+	// Command-line flags always override config file / defaults (only non-zero values)
+	if *host != "0.0.0.0" {
 		c.Host = *host
+	}
+	if *port != 8888 {
 		c.Port = *port
+	}
+	if *dataDir != "data" {
 		c.Database.DataDir = *dataDir
+	}
+	if *dbFile != "todo.db" {
 		c.Database.DBFile = *dbFile
+	}
+	if *jwtSecret != "todo-app-jwt-secret-key-2024" {
 		c.Auth.AccessSecret = *jwtSecret
+	}
+	if *jwtExpire != 86400 {
 		c.Auth.AccessExpire = *jwtExpire
 	}
 

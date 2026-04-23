@@ -31,12 +31,13 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 import { login, checkRegister } from '@/api'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const userStore = useUserStore()
-const formRef = ref()
+const formRef = ref<FormInstance>()
 const loading = ref(false)
 const allowRegister = ref(true)
 
@@ -48,21 +49,23 @@ const rules = {
 
 onMounted(async () => {
   try {
-    const res = await checkRegister() as any
+    const res = await checkRegister()
     allowRegister.value = res.allowRegister
-  } catch {}
+  } catch {
+    // 非关键，忽略
+  }
 })
 
 const handleLogin = async () => {
   await formRef.value?.validate()
   loading.value = true
   try {
-    const res = await login(form.value) as any
+    const res = await login(form.value)
     userStore.setLogin(res, form.value.username)
     ElMessage.success('登录成功')
-    setTimeout(() => {
-      router.push(res.isAdmin === 1 ? '/admin/user' : '/')
-    }, 500)
+    router.push(res.isAdmin === 1 ? '/admin/user' : '/')
+  } catch {
+    // 错误已由拦截器处理
   } finally {
     loading.value = false
   }

@@ -42,12 +42,14 @@
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { resetAuthVerified } from '@/router'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 function handleLogout() {
   ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' }).then(() => {
+    resetAuthVerified()
     userStore.logout()
     router.push('/login')
     ElMessage.success('已退出登录')

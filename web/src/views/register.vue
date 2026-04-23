@@ -44,16 +44,17 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 import { register, checkRegister } from '@/api'
 
 const router = useRouter()
-const formRef = ref()
+const formRef = ref<FormInstance>()
 const loading = ref(false)
 const allowRegister = ref(true)
 
 const form = ref({ username: '', password: '', confirmPassword: '' })
 
-const validateConfirm = (_rule: any, value: string, callback: any) => {
+const validateConfirm = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (value !== form.value.password) {
     callback(new Error('两次输入的密码不一致'))
   } else {
@@ -78,9 +79,11 @@ const rules = {
 
 onMounted(async () => {
   try {
-    const res = await checkRegister() as any
+    const res = await checkRegister()
     allowRegister.value = res.allowRegister
-  } catch {}
+  } catch {
+    // 非关键，忽略
+  }
 })
 
 const handleRegister = async () => {
@@ -88,8 +91,10 @@ const handleRegister = async () => {
   loading.value = true
   try {
     await register({ username: form.value.username, password: form.value.password })
-    ElMessage.success('注册成功')
-    setTimeout(() => router.push('/login'), 800)
+    ElMessage.success('注册成功，请登录')
+    router.push('/login')
+  } catch {
+    // 错误已由拦截器处理
   } finally {
     loading.value = false
   }

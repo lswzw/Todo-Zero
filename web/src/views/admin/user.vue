@@ -63,17 +63,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { getUserList, resetPassword, toggleUserStatus, deleteUser } from '@/api'
+import type { UserListItem } from '@/types'
 
-const users = ref<any[]>([])
+const users = ref<UserListItem[]>([])
 const total = ref(0)
 const page = ref(1)
 const keyword = ref('')
 
 const resetDialogVisible = ref(false)
 const resetLoading = ref(false)
-const resetFormRef = ref()
+const resetFormRef = ref<FormInstance>()
 const resetForm = ref({ id: 0, username: '', newPassword: '' })
 const resetRules = {
   newPassword: [
@@ -86,15 +88,17 @@ onMounted(() => loadUsers())
 
 async function loadUsers() {
   try {
-    const params: Record<string, any> = { page: page.value, pageSize: 10 }
+    const params: Record<string, unknown> = { page: page.value, pageSize: 10 }
     if (keyword.value) params.keyword = keyword.value
-    const res = await getUserList(params) as any
+    const res = await getUserList(params)
     users.value = res.list || []
     total.value = res.total || 0
-  } catch {}
+  } catch {
+    ElMessage.error('加载用户列表失败')
+  }
 }
 
-function openResetDialog(row: any) {
+function openResetDialog(row: UserListItem) {
   resetForm.value = { id: row.id, username: row.username, newPassword: '' }
   resetDialogVisible.value = true
 }
@@ -107,25 +111,31 @@ async function handleResetPassword() {
     ElMessage.success('密码重置成功')
     resetDialogVisible.value = false
     loadUsers()
+  } catch {
+    // 错误已由拦截器处理
   } finally {
     resetLoading.value = false
   }
 }
 
-async function handleToggleStatus(row: any) {
+async function handleToggleStatus(row: UserListItem) {
   try {
     await toggleUserStatus(row.id)
     ElMessage.success(row.status === 1 ? '已禁用' : '已启用')
     loadUsers()
-  } catch {}
+  } catch {
+    // 错误已由拦截器处理
+  }
 }
 
-async function handleDelete(row: any) {
+async function handleDelete(row: UserListItem) {
   try {
     await deleteUser(row.id)
     ElMessage.success('已删除')
     loadUsers()
-  } catch {}
+  } catch {
+    // 错误已由拦截器处理
+  }
 }
 </script>
 

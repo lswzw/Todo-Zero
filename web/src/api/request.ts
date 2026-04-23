@@ -16,7 +16,22 @@ request.interceptors.request.use((config) => {
 })
 
 request.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    const res = response.data
+    // 业务成功：解包 data 字段，调用方直接拿到业务数据
+    if (res.code === 0) {
+      return res.data
+    }
+    // 业务错误（非 code=0）
+    if (res.code === 40001) {
+      localStorage.removeItem('token')
+      router.push('/login')
+      ElMessage.error('登录已过期，请重新登录')
+    } else {
+      ElMessage.error(res.msg || '请求失败')
+    }
+    return Promise.reject(new Error(res.msg || '请求失败'))
+  },
   (error) => {
     if (error.response) {
       const data = error.response.data

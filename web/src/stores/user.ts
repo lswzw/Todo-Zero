@@ -1,28 +1,39 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { getUserInfo } from '@/api'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
   const userId = ref(Number(localStorage.getItem('userId')) || 0)
   const username = ref(localStorage.getItem('username') || '')
-  const isAdmin = ref(localStorage.getItem('isAdmin') === '1')
+  const isAdmin = ref(false)
 
   function setLogin(data: { token: string; isAdmin: number }, name: string) {
     token.value = data.token
     isAdmin.value = data.isAdmin === 1
     username.value = name
     localStorage.setItem('token', data.token)
-    localStorage.setItem('isAdmin', String(data.isAdmin))
-    localStorage.setItem('username', name)
+    // 不再存储 isAdmin 到 localStorage，防止篡改
+  }
+
+  // 从服务端获取真实用户信息，覆盖本地缓存
+  async function fetchUserInfo() {
+    try {
+      const res = await getUserInfo() as any
+      userId.value = res.id
+      username.value = res.username
+      isAdmin.value = res.isAdmin === 1
+    } catch {
+      // token 无效时清空
+      logout()
+    }
   }
 
   function setUserInfo(data: { id: number; username: string; isAdmin: number; status: number }) {
     userId.value = data.id
     username.value = data.username
     isAdmin.value = data.isAdmin === 1
-    localStorage.setItem('userId', String(data.id))
     localStorage.setItem('username', data.username)
-    localStorage.setItem('isAdmin', String(data.isAdmin))
   }
 
   function logout() {
@@ -33,8 +44,7 @@ export const useUserStore = defineStore('user', () => {
     localStorage.removeItem('token')
     localStorage.removeItem('userId')
     localStorage.removeItem('username')
-    localStorage.removeItem('isAdmin')
   }
 
-  return { token, userId, username, isAdmin, setLogin, setUserInfo, logout }
+  return { token, userId, username, isAdmin, setLogin, setUserInfo, fetchUserInfo, logout }
 })

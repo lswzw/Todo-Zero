@@ -31,8 +31,9 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getConfigList, updateConfig } from '@/api'
+import type { ConfigItem } from '@/types'
 
-const configs = ref<any[]>([])
+const configs = ref<ConfigItem[]>([])
 const switchValue = ref(false)
 
 const configMeta: Record<string, { title: string; desc: string }> = {
@@ -50,11 +51,13 @@ onMounted(() => loadConfigs())
 
 async function loadConfigs() {
   try {
-    const res = await getConfigList() as any
-    configs.value = (res.list || []).map((item: any) => ({ ...item, _value: item.value }))
-    const registerConfig = configs.value.find((c: any) => c.key === 'allow_register')
+    const res = await getConfigList()
+    configs.value = (res.list || []).map((item: ConfigItem) => ({ ...item, _value: item.value }))
+    const registerConfig = configs.value.find((c: ConfigItem) => c.key === 'allow_register')
     if (registerConfig) switchValue.value = registerConfig.value === 'true'
-  } catch {}
+  } catch {
+    ElMessage.error('加载配置失败')
+  }
 }
 
 async function handleUpdate(key: string, value: string) {
@@ -62,7 +65,9 @@ async function handleUpdate(key: string, value: string) {
     await updateConfig({ key, value })
     ElMessage.success(`配置已保存：${key}`)
     loadConfigs()
-  } catch {}
+  } catch {
+    // 错误已由拦截器处理
+  }
 }
 </script>
 

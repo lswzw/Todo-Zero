@@ -32,8 +32,9 @@
 import { ref, onMounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { getLoginLogList } from '@/api'
+import type { LoginLogItem } from '@/types'
 
-const logs = ref<any[]>([])
+const logs = ref<LoginLogItem[]>([])
 const total = ref(0)
 const page = ref(1)
 const keyword = ref('')
@@ -42,12 +43,14 @@ onMounted(() => loadLogs())
 
 async function loadLogs() {
   try {
-    const params: Record<string, any> = { page: page.value, pageSize: 10 }
+    const params: Record<string, unknown> = { page: page.value, pageSize: 10 }
     if (keyword.value) params.username = keyword.value
-    const res = await getLoginLogList(params) as any
+    const res = await getLoginLogList(params)
     logs.value = res.list || []
     total.value = res.total || 0
-  } catch {}
+  } catch {
+    // 错误已由拦截器处理
+  }
 }
 </script>
 
