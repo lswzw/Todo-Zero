@@ -1,0 +1,6 @@
+[submodule ".codebuddy/skills/zero-skills"]
+	path = .codebuddy/skills/zero-skills
+	url = https://github.com/zeromicro/zero-skills.git
+[submodule ".codebuddy/skills/ai-context"]
+	path = .codebuddy/skills/ai-context
+	url = https://github.com/zeromicro/ai-context.git
