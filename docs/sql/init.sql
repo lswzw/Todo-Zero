@@ -116,7 +116,7 @@ INSERT INTO `category` (`name`, `sort_order`) VALUES
 
 -- 默认管理员 (密码: admin123)
 INSERT INTO `user` (`username`, `password`, `is_admin`, `status`) VALUES
-('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJHd1F6d0m2', 1, 1);
+('admin', '$2a$10$Tk7DIAefjeGgpCWVhIEZFefbb2RgsKmmkFsg8hzTsiDGNJGd9Ljt.', 1, 1);
 
 -- 系统默认配置
 INSERT INTO `system_config` (`config_key`, `config_value`, `remark`) VALUES

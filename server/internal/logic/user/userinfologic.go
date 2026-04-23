@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 
+	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -45,9 +46,5 @@ func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResp, err error) {
 
 // getJwtUserId 从 context 获取 JWT 中的 userId
 func (l *UserInfoLogic) getJwtUserId() (int64, error) {
-	userId, ok := l.ctx.Value("userId").(float64)
-	if !ok || userId == 0 {
-		return 0, xerr.NewCodeError(xerr.NoPermission)
-	}
-	return int64(userId), nil
+	return jwtx.GetUserIdFromCtx(l.ctx)
 }

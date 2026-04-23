@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"server/internal/model"
+	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -27,9 +28,9 @@ func NewCreateTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 }
 
 func (l *CreateTaskLogic) CreateTask(req *types.CreateTaskReq) (resp *types.CreateTaskResp, err error) {
-	userId, ok := l.ctx.Value("userId").(float64)
-	if !ok || userId == 0 {
-		return nil, xerr.NewCodeError(xerr.NoPermission)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	content := sql.NullString{String: req.Content, Valid: req.Content != ""}
@@ -41,7 +42,7 @@ func (l *CreateTaskLogic) CreateTask(req *types.CreateTaskReq) (resp *types.Crea
 		Status:     0,
 		Priority:   req.Priority,
 		CategoryId: categoryId,
-		UserId:     int64(userId),
+		UserId:     userId,
 	})
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)

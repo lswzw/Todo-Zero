@@ -59,12 +59,12 @@
 
 ## 阶段二：后端开发
 
-- [ ] ① 编写 .api 文件（定义接口）
-- [ ] ② goctl 生成项目骨架代码
-- [ ] ③ 建表 + 编写 SQL
-- [ ] ④ 编写业务逻辑（handler → logic → model）
-- [ ] ⑤ 配置 etc 文件（MySQL/Redis/JWT 等）
-- [ ] ⑥ 接口测试（用 curl / Postman 验证）
+- [x] ① 编写 .api 文件（定义接口）→ `docs/api/todo.api`
+- [x] ② goctl 生成项目骨架代码 → `server/` 目录
+- [x] ③ 建表 + 编写 SQL → `docs/sql/init.sql`（需在数据库服务器执行）
+- [x] ④ 编写业务逻辑（handler → logic → model）→ 24个接口全部完成
+- [x] ⑤ 配置 etc 文件（MySQL/Redis/JWT 等）→ `server/etc/todo-api.yaml`
+- [x] ⑥ 接口测试（用 curl / Postman 验证）→ 全部 23 个接口测试通过
 
 ---
 

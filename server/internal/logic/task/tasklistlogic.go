@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 
+	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -25,12 +26,12 @@ func NewTaskListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *TaskList
 }
 
 func (l *TaskListLogic) TaskList(req *types.TaskListReq) (resp *types.TaskListResp, err error) {
-	userId, ok := l.ctx.Value("userId").(float64)
-	if !ok || userId == 0 {
-		return nil, xerr.NewCodeError(xerr.NoPermission)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	tasks, total, err := l.svcCtx.TaskModel.FindList(l.ctx, int64(userId), req.Status, req.CategoryId, req.Priority, req.Keyword, req.Page, req.PageSize)
+	tasks, total, err := l.svcCtx.TaskModel.FindList(l.ctx, userId, req.Status, req.CategoryId, req.Priority, req.Keyword, req.Page, req.PageSize)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}

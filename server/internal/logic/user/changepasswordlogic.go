@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 
+	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -27,12 +28,12 @@ func NewChangePasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ch
 
 func (l *ChangePasswordLogic) ChangePassword(req *types.ChangePasswordReq) (resp *types.ChangePasswordResp, err error) {
 	// 1. 获取当前用户
-	userId, ok := l.ctx.Value("userId").(float64)
-	if !ok || userId == 0 {
-		return nil, xerr.NewCodeError(xerr.NoPermission)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	user, err := l.svcCtx.UserModel.FindOne(l.ctx, int64(userId))
+	user, err := l.svcCtx.UserModel.FindOne(l.ctx, userId)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.UserNotFoundError)
 	}

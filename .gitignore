@@ -31,3 +31,4 @@ dist/
 # Build
 bin/
 tmp/
+todo-api

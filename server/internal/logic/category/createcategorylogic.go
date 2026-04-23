@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"server/internal/model"
+	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -27,14 +28,14 @@ func NewCreateCategoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cr
 }
 
 func (l *CreateCategoryLogic) CreateCategory(req *types.CreateCategoryReq) (resp *types.CreateCategoryResp, err error) {
-	userId, ok := l.ctx.Value("userId").(float64)
-	if !ok || userId == 0 {
-		return nil, xerr.NewCodeError(xerr.NoPermission)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	result, err := l.svcCtx.CategoryModel.Insert(l.ctx, &model.Category{
 		Name:      req.Name,
-		UserId:    sql.NullInt64{Int64: int64(userId), Valid: true},
+		UserId:    sql.NullInt64{Int64: userId, Valid: true},
 		SortOrder: 0,
 	})
 	if err != nil {

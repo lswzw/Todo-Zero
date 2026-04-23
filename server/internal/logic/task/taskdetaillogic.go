@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 
+	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -25,9 +26,9 @@ func NewTaskDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *TaskDe
 }
 
 func (l *TaskDetailLogic) TaskDetail(req *types.TaskDetailReq) (resp *types.TaskDetailResp, err error) {
-	userId, ok := l.ctx.Value("userId").(float64)
-	if !ok || userId == 0 {
-		return nil, xerr.NewCodeError(xerr.NoPermission)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	task, err := l.svcCtx.TaskModel.FindOne(l.ctx, req.Id)
@@ -35,7 +36,7 @@ func (l *TaskDetailLogic) TaskDetail(req *types.TaskDetailReq) (resp *types.Task
 		return nil, xerr.NewCodeError(xerr.TaskNotFoundError)
 	}
 
-	if task.UserId != int64(userId) {
+	if task.UserId != userId {
 		return nil, xerr.NewCodeError(xerr.NoPermission)
 	}
 

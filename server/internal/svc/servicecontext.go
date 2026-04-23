@@ -4,7 +4,6 @@ import (
 	"server/internal/config"
 	"server/internal/model"
 
-	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
@@ -23,31 +22,18 @@ type ServiceContext struct {
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	conn := sqlx.NewMysql(c.MySQL.DataSource)
-	rds := redis.MustNewRedis(redis.RedisConf{
-		Host: c.Redis.Host,
-		Pass: c.Redis.Pass,
-		Type: c.Redis.Type,
-	})
 
-	// 带 Redis 缓存的 model
-	cacheConf := cache.CacheConf{
-		{
-			RedisConf: redis.RedisConf{
-				Host: c.Redis.Host,
-				Pass: c.Redis.Pass,
-				Type: c.Redis.Type,
-			},
-		},
-	}
+	// 从 CacheRedis 配置中取第一个节点创建 Redis 实例
+	rds := redis.MustNewRedis(c.CacheRedis[0].RedisConf)
 
 	return &ServiceContext{
 		Config:            c,
 		Redis:             rds,
-		UserModel:         model.NewUserModel(conn, cacheConf),
-		TaskModel:         model.NewTaskModel(conn, cacheConf),
-		CategoryModel:     model.NewCategoryModel(conn, cacheConf),
-		SystemConfigModel: model.NewSystemConfigModel(conn, cacheConf),
-		OperationLogModel: model.NewOperationLogModel(conn, cacheConf),
-		LoginLogModel:     model.NewLoginLogModel(conn, cacheConf),
+		UserModel:         model.NewUserModel(conn, c.CacheRedis),
+		TaskModel:         model.NewTaskModel(conn, c.CacheRedis),
+		CategoryModel:     model.NewCategoryModel(conn, c.CacheRedis),
+		SystemConfigModel: model.NewSystemConfigModel(conn, c.CacheRedis),
+		OperationLogModel: model.NewOperationLogModel(conn, c.CacheRedis),
+		LoginLogModel:     model.NewLoginLogModel(conn, c.CacheRedis),
 	}
 }

@@ -3,6 +3,7 @@ package stat
 import (
 	"context"
 
+	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -25,12 +26,12 @@ func NewStatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *StatLogic {
 }
 
 func (l *StatLogic) Stat() (resp *types.StatResp, err error) {
-	userId, ok := l.ctx.Value("userId").(float64)
-	if !ok || userId == 0 {
-		return nil, xerr.NewCodeError(xerr.NoPermission)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	tasks, _, err := l.svcCtx.TaskModel.FindList(l.ctx, int64(userId), 0, 0, 0, "", 1, 9999)
+	tasks, _, err := l.svcCtx.TaskModel.FindList(l.ctx, userId, 0, 0, 0, "", 1, 9999)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}

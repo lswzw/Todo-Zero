@@ -1,23 +1,51 @@
 package jwtx
 
-import "github.com/golang-jwt/jwt/v4"
+import (
+	"encoding/json"
+
+	"server/internal/pkg/xerr"
+)
 
 // GetUserIdFromCtx 从 JWT context 中获取用户ID
-func GetUserIdFromCtx(claims jwt.MapClaims) int64 {
-	if userId, ok := claims["userId"]; ok {
-		if id, ok := userId.(float64); ok {
-			return int64(id)
-		}
+func GetUserIdFromCtx(ctx interface{ Value(any) any }) (int64, error) {
+	val := ctx.Value("userId")
+	if val == nil {
+		return 0, xerr.NewCodeError(xerr.NoPermission)
 	}
-	return 0
+	switch v := val.(type) {
+	case json.Number:
+		n, err := v.Int64()
+		if err != nil {
+			return 0, xerr.NewCodeError(xerr.NoPermission)
+		}
+		return n, nil
+	case float64:
+		return int64(v), nil
+	case int64:
+		return v, nil
+	default:
+		return 0, xerr.NewCodeError(xerr.NoPermission)
+	}
 }
 
 // GetIsAdminFromCtx 从 JWT context 中获取是否管理员
-func GetIsAdminFromCtx(claims jwt.MapClaims) int64 {
-	if isAdmin, ok := claims["isAdmin"]; ok {
-		if v, ok := isAdmin.(float64); ok {
-			return int64(v)
-		}
+func GetIsAdminFromCtx(ctx interface{ Value(any) any }) (int64, error) {
+	val := ctx.Value("isAdmin")
+	if val == nil {
+		return 0, xerr.NewCodeError(xerr.AdminRequired)
 	}
-	return 0
+	switch v := val.(type) {
+	case json.Number:
+		n, err := v.Int64()
+		if err != nil {
+			return 0, xerr.NewCodeError(xerr.AdminRequired)
+		}
+		return n, nil
+	case float64:
+		return int64(v), nil
+	case int64:
+		return v, nil
+	default:
+		return 0, xerr.NewCodeError(xerr.AdminRequired)
+	}
 }

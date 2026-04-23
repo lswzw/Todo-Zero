@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 
+	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
 	"server/internal/types"
@@ -25,9 +26,9 @@ func NewBatchTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BatchTa
 }
 
 func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTaskResp, err error) {
-	userId, ok := l.ctx.Value("userId").(float64)
-	if !ok || userId == 0 {
-		return nil, xerr.NewCodeError(xerr.NoPermission)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	if len(req.Ids) == 0 {
@@ -40,7 +41,7 @@ func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTa
 			continue
 		}
 
-		if task.UserId != int64(userId) {
+		if task.UserId != userId {
 			continue
 		}
 
