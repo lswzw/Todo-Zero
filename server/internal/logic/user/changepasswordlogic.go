@@ -50,8 +50,7 @@ func (l *ChangePasswordLogic) ChangePassword(req *types.ChangePasswordReq) (resp
 	}
 
 	// 4. 更新密码
-	user.Password = string(hashedPassword)
-	if err := l.svcCtx.UserModel.Update(l.ctx, user); err != nil {
+	if err := l.svcCtx.UserModel.UpdatePassword(l.ctx, userId, string(hashedPassword)); err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 

@@ -31,18 +31,12 @@ func (l *ResetPasswordLogic) ResetPassword(req *types.ResetPasswordReq) (resp *t
 		return nil, err
 	}
 
-	user, err := l.svcCtx.UserModel.FindOne(l.ctx, req.Id)
-	if err != nil {
-		return nil, xerr.NewCodeError(xerr.UserNotFoundError)
-	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
-	user.Password = string(hashedPassword)
-	if err := l.svcCtx.UserModel.Update(l.ctx, user); err != nil {
+	if err := l.svcCtx.UserModel.UpdatePassword(l.ctx, req.Id, string(hashedPassword)); err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
