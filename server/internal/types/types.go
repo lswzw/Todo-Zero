@@ -4,8 +4,8 @@
 package types
 
 type BatchTaskReq struct {
-	Ids    []int64 `json:"ids" validate:"required"`
-	Action string  `json:"action" validate:"required" options:"complete|undo|delete"`
+	Ids    []int64 `json:"ids"`
+	Action string  `json:"action,options=complete|undo|delete"`
 }
 
 type BatchTaskResp struct {
@@ -21,8 +21,8 @@ type CategoryListResp struct {
 }
 
 type ChangePasswordReq struct {
-	OldPassword string `json:"oldPassword" validate:"required"`
-	NewPassword string `json:"newPassword" validate:"required,min=6,max=20"`
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
 }
 
 type ChangePasswordResp struct {
@@ -43,7 +43,7 @@ type ConfigListResp struct {
 }
 
 type CreateCategoryReq struct {
-	Name string `json:"name" validate:"required,max=20"`
+	Name string `json:"name"`
 }
 
 type CreateCategoryResp struct {
@@ -51,9 +51,9 @@ type CreateCategoryResp struct {
 }
 
 type CreateTaskReq struct {
-	Title      string `json:"title" validate:"required,max=100"`
-	Content    string `json:"content,optional" validate:"max=1000"`
-	Priority   int64  `json:"priority,optional,default=3" options="1|2|3"`
+	Title      string `json:"title"`
+	Content    string `json:"content,optional"`
+	Priority   int64  `json:"priority,optional,default=3,options=1|2|3"`
 	CategoryId int64  `json:"categoryId,optional"`
 }
 
@@ -97,8 +97,8 @@ type LoginLogResp struct {
 }
 
 type LoginReq struct {
-	Username string `json:"username" validate:"required,min=1,max=100"`
-	Password string `json:"password" validate:"required,min=1,max=100"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type LoginResp struct {
@@ -131,8 +131,8 @@ type OperationLogResp struct {
 }
 
 type RegisterReq struct {
-	Username string `json:"username" validate:"required,min=3,max=20"`
-	Password string `json:"password" validate:"required,min=6,max=20"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type RegisterResp struct {
@@ -142,7 +142,7 @@ type RegisterResp struct {
 
 type ResetPasswordReq struct {
 	Id          int64  `path:"id"`
-	NewPassword string `json:"newPassword" validate:"required,min=6,max=20"`
+	NewPassword string `json:"newPassword"`
 }
 
 type ResetPasswordResp struct {
@@ -185,9 +185,9 @@ type TaskItem struct {
 type TaskListReq struct {
 	Page       int64  `form:"page,default=1"`
 	PageSize   int64  `form:"pageSize,default=10"`
-	Status     int64  `form:"status,optional" options="0|2"`
+	Status     int64  `form:"status,optional,options=0|2"`
 	CategoryId int64  `form:"categoryId,optional"`
-	Priority   int64  `form:"priority,optional" options="1|2|3"`
+	Priority   int64  `form:"priority,optional,options=1|2|3"`
 	Keyword    string `form:"keyword,optional"`
 }
 
@@ -211,8 +211,8 @@ type ToggleUserStatusResp struct {
 }
 
 type UpdateConfigReq struct {
-	Key   string `json:"key" validate:"required"`
-	Value string `json:"value" validate:"required"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type UpdateConfigResp struct {
@@ -220,9 +220,9 @@ type UpdateConfigResp struct {
 
 type UpdateTaskReq struct {
 	Id         int64   `path:"id"`
-	Title      *string `json:"title,optional" validate:"omitempty,max=100"`
-	Content    *string `json:"content,optional" validate:"omitempty,max=1000"`
-	Priority   *int64  `json:"priority,optional" options:"1|2|3"`
+	Title      *string `json:"title,optional"`
+	Content    *string `json:"content,optional"`
+	Priority   *int64  `json:"priority,optional,options=1|2|3"`
 	CategoryId *int64  `json:"categoryId,optional"`
 }
 

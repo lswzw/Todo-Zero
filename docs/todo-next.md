@@ -33,9 +33,9 @@
 
 ## 输入验证 & 注入安全审计 — HIGH（v1.3.0 审查）
 
-- [ ] **#40 `validate` 标签可能未在运行时执行** — `types.go` 中定义了 `validate:"required,max=100"` 等标签，但项目未引入 `go-playground/validator` 依赖（go.mod 中不存在），也未手动调用 `validate.Struct()`。所有 handler 仅用 `httpx.Parse(r, &req)` 反序列化，该函数默认不校验 validate 标签。长度限制、必填校验可能形同虚设。
-- [ ] **#41 `options` 标签完全无效** — `options:"1|2|3"`、`options:"complete|undo|delete"` 等标签是自定义的，go-zero 框架不识别，项目中也无解析代码。`Priority` 可传任意 int64，`Action` 可传任意字符串，`Status` 筛选不受约束。
-- [ ] **#42 `BatchTaskReq.Action` 无枚举校验** — 实际影响：可传入非 `complete|undo|delete` 的任意值，logic 层 default 分支静默忽略，用户以为操作成功实际未执行。
+- [x] **#40 `validate` 标签可能未在运行时执行** — 已修复：删除无效 `validate` 标签，为每个结构体实现 `Validate()` 方法（go-zero `validation.Validator` 接口），`httpx.Parse` 自动调用。
+- [x] **#41 `options` 标签完全无效** — 已修复：将 `options:"xxx"` 独立标签改为 go-zero 原生的 `json/form:"xxx,options=xxx"` 内联语法，框架自动校验枚举值。
+- [x] **#42 `BatchTaskReq.Action` 无枚举校验** — 已修复：`Validate()` 方法校验枚举 + logic 层双重校验，非法 Action 返回错误而非静默忽略。
 
 ---
 

@@ -31,6 +31,12 @@ func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTa
 		return nil, err
 	}
 
+	switch req.Action {
+	case "complete", "undo", "delete":
+	default:
+		return nil, xerr.NewCodeError(xerr.RequestParamError)
+	}
+
 	if len(req.Ids) == 0 {
 		return nil, xerr.NewCodeError(xerr.RequestParamError)
 	}
