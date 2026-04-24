@@ -12,10 +12,10 @@
       <div class="config-control">
         <template v-if="item.key === 'allow_register'">
           <el-switch
-            v-model="switchValue"
+            :model-value="item._value === 'true'"
             active-text="开启"
             inactive-text="关闭"
-            @change="(val: any) => handleUpdate(item.key, String(val))"
+            @change="(val: boolean) => handleUpdate(item.key, String(val))"
           />
         </template>
         <template v-else>
@@ -34,7 +34,6 @@ import { getConfigList, updateConfig } from '@/api'
 import type { ConfigItem } from '@/types'
 
 const configs = ref<ConfigItem[]>([])
-const switchValue = ref(false)
 
 const configMeta: Record<string, { title: string; desc: string }> = {
   allow_register: {
@@ -53,8 +52,6 @@ async function loadConfigs() {
   try {
     const res = await getConfigList()
     configs.value = (res.list || []).map((item: ConfigItem) => ({ ...item, _value: item.value }))
-    const registerConfig = configs.value.find((c: ConfigItem) => c.key === 'allow_register')
-    if (registerConfig) switchValue.value = registerConfig.value === 'true'
   } catch {
     ElMessage.error('加载配置失败')
   }

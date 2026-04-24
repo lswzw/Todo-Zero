@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS `login_log` (
 
 -- ================================================
 -- Default admin account
--- Username: admin  Password: admin123
+-- Default admin account (password is hashed, please change after first login)
 -- ================================================
 INSERT OR IGNORE INTO `users` (`username`, `password`, `nickname`, `role`, `status`)
 VALUES ('admin', '$2a$10$ktZcnwXDUmrcYXI.gOkjOuDeeivJNiuVLgW696nNDV7zYHzaNqgaW', '管理员', 1, 1);

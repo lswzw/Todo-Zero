@@ -28,7 +28,7 @@ func (l *CheckRegisterLogic) CheckRegister() (resp *types.CheckRegisterResp, err
 	allowRegister := true
 
 	// 查询系统配置
-	config, err := l.svcCtx.SystemConfigModel.FindOneByKey(l.ctx, "allow_register")
+	config, err := l.svcCtx.SystemConfigModel.FindByKey(l.ctx, "allow_register")
 	if err == nil && config.ConfigValue == "false" {
 		allowRegister = false
 	}

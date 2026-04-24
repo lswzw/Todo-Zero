@@ -16,7 +16,6 @@ type (
 		FindAll(ctx context.Context, userId int64) ([]*Category, error)
 		FindSystem(ctx context.Context) ([]*Category, error)
 		FindOne(ctx context.Context, id int64) (*Category, error)
-		FindById(ctx context.Context, id int64) (*Category, error)
 		CountByUser(ctx context.Context, userId int64) (int64, error)
 	}
 
@@ -91,10 +90,6 @@ func (m *defaultCategoryModel) FindSystem(ctx context.Context) ([]*Category, err
 }
 
 func (m *defaultCategoryModel) FindOne(ctx context.Context, id int64) (*Category, error) {
-	return m.FindById(ctx, id)
-}
-
-func (m *defaultCategoryModel) FindById(ctx context.Context, id int64) (*Category, error) {
 	query := `SELECT id, name, color, icon, sort, user_id, is_system, create_time, update_time FROM ` + m.tableName() + ` WHERE id = ? LIMIT 1`
 	var c Category
 	err := m.db.QueryRowContext(ctx, query, id).Scan(&c.Id, &c.Name, &c.Color, &c.Icon, &c.Sort, &c.UserId, &c.IsSystem, &c.CreateTime, &c.UpdateTime)

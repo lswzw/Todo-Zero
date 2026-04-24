@@ -25,7 +25,7 @@ func NewUpdateConfigLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upda
 }
 
 func (l *UpdateConfigLogic) UpdateConfig(req *types.UpdateConfigReq) (resp *types.UpdateConfigResp, err error) {
-	config, err := l.svcCtx.SystemConfigModel.FindOneByKey(l.ctx, req.Key)
+	config, err := l.svcCtx.SystemConfigModel.FindByKey(l.ctx, req.Key)
 	if err != nil {
 		return nil, xerr.NewCodeErrFromMsg("配置项不存在")
 	}

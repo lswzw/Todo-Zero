@@ -16,7 +16,6 @@ type (
 		FindAll(ctx context.Context) ([]*SystemConfig, error)
 		FindByKey(ctx context.Context, key string) (*SystemConfig, error)
 		FindByGroup(ctx context.Context, group string) ([]*SystemConfig, error)
-		FindOneByKey(ctx context.Context, key string) (*SystemConfig, error)
 	}
 
 	defaultSystemConfigModel struct {
@@ -78,10 +77,6 @@ func (m *defaultSystemConfigModel) FindByKey(ctx context.Context, key string) (*
 		return nil, ErrNotFound
 	}
 	return &c, err
-}
-
-func (m *defaultSystemConfigModel) FindOneByKey(ctx context.Context, key string) (*SystemConfig, error) {
-	return m.FindByKey(ctx, key)
 }
 
 func (m *defaultSystemConfigModel) FindByGroup(ctx context.Context, group string) ([]*SystemConfig, error) {

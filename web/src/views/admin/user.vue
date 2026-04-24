@@ -39,7 +39,7 @@
     </el-table>
 
     <div class="pagination">
-      <el-pagination v-model:current-page="page" :page-size="10" :total="total" layout="total, prev, pager, next" @current-change="loadUsers" />
+      <el-pagination v-model:current-page="page" :page-size="10" :total="total" layout="total, prev, pager, next" />
     </div>
 
     <!-- 重置密码弹窗 -->
@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
@@ -85,6 +85,8 @@ const resetRules = {
 }
 
 onMounted(() => loadUsers())
+
+watch(page, () => loadUsers())
 
 async function loadUsers() {
   try {

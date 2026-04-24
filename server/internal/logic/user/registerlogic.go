@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	"server/internal/model"
 	"server/internal/pkg/xerr"
@@ -29,27 +30,18 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 
 func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterResp, err error) {
 	// 1. 检查注册开关
-	config, err := l.svcCtx.SystemConfigModel.FindOneByKey(l.ctx, "allow_register")
+	config, err := l.svcCtx.SystemConfigModel.FindByKey(l.ctx, "allow_register")
 	if err == nil && config.ConfigValue == "false" {
 		return nil, xerr.NewCodeError(xerr.RegisterClosed)
 	}
 
-	// 2. 检查用户名是否已存在
-	_, err = l.svcCtx.UserModel.FindOneByUsername(l.ctx, req.Username)
-	if err == nil {
-		return nil, xerr.NewCodeError(xerr.UserAlreadyExist)
-	}
-	if err != model.ErrNotFound {
-		return nil, xerr.NewCodeError(xerr.ServerCommonError)
-	}
-
-	// 3. 密码加密
+	// 2. 密码加密
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
-	// 4. 插入用户
+	// 3. 插入用户（直接 Insert，依赖 UNIQUE 约束避免 TOCTOU 竞态）
 	result, err := l.svcCtx.UserModel.Insert(l.ctx, &model.User{
 		Username: req.Username,
 		Password: string(hashedPassword),
@@ -57,6 +49,9 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 		Status:   1,
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return nil, xerr.NewCodeError(xerr.UserAlreadyExist)
+		}
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 

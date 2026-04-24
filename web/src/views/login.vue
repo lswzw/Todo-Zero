@@ -63,7 +63,7 @@ const handleLogin = async () => {
     const res = await login(form.value)
     userStore.setLogin(res, form.value.username)
     ElMessage.success('登录成功')
-    router.push(res.isAdmin === 1 ? '/admin/user' : '/')
+    router.push('/')
   } catch {
     // 错误已由拦截器处理
   } finally {

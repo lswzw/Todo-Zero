@@ -30,13 +30,13 @@
     </el-table>
 
     <div class="pagination">
-      <el-pagination v-model:current-page="page" :page-size="10" :total="total" layout="total, prev, pager, next" @current-change="loadLogs" />
+      <el-pagination v-model:current-page="page" :page-size="10" :total="total" layout="total, prev, pager, next" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { getOperationLogList } from '@/api'
 import type { OperationLogItem } from '@/types'
@@ -48,6 +48,8 @@ const keyword = ref('')
 const action = ref('')
 
 onMounted(() => loadLogs())
+
+watch(page, () => loadLogs())
 
 async function loadLogs() {
   try {

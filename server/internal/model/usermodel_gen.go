@@ -16,7 +16,6 @@ type (
 		Update(ctx context.Context, data *User) error
 		Delete(ctx context.Context, id int64) error
 		FindList(ctx context.Context, username string, status, page, pageSize int64) ([]*User, int64, error)
-		FindById(ctx context.Context, id int64) (*User, error)
 		UpdateStatus(ctx context.Context, id, status int64) error
 		UpdatePassword(ctx context.Context, id int64, password string) error
 	}
@@ -112,10 +111,6 @@ func (m *defaultUserModel) FindList(ctx context.Context, username string, status
 		list = append(list, &u)
 	}
 	return list, total, rows.Err()
-}
-
-func (m *defaultUserModel) FindById(ctx context.Context, id int64) (*User, error) {
-	return m.FindOne(ctx, id)
 }
 
 func (m *defaultUserModel) UpdateStatus(ctx context.Context, id, status int64) error {

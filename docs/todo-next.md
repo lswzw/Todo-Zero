@@ -12,22 +12,22 @@
 
 ## 代码审查 — LOW 待改进（v1.2.0 审查）
 
-- [ ] **#21** Register TOCTOU 竞态 — 并发可能报不友好错误，直接 Insert 捕获 UNIQUE 更优
-- [ ] **#23** CategoryModel.FindById 不过滤 is_deleted — 与其他 model 策略不一致
-- [ ] **#24** UserModel.Update 不更新 password — ToggleUserStatusLogic 应使用专用 UpdateStatus
-- [ ] **#27** etc/todo-api.yaml 中 AccessSecret 明文 — 嵌入二进制的默认配置含敏感值
-- [ ] **#28** 静态文件路径遍历（低风险） — Go embed.FS 安全，但切换 FS 需注意
-- [ ] **#29** 登录/注册成功后硬编码延迟跳转 — setTimeout 延迟不必要
-- [ ] **#30** 管理员登录后强制跳转管理页面 — 管理员可能想先使用 todo 功能
-- [ ] **#31** 筛选条件改变时未重置页码 — 第 3 页切换筛选可能返回空
-- [ ] **#32** v-model:current-page 与 @current-change 冲突 — 可能有时序问题
-- [ ] **#33** config.vue el-switch 状态管理 — switchValue 无法处理多个布尔配置项
-- [ ] **#34** 密码确认验证器类型不安全 — `callback: any` 应为 `(error?: Error) => void`
-- [ ] **#35** 无障碍性缺失 — 缺少 ARIA 属性、语义化标签、键盘导航
-- [ ] **#36** 默认管理员密码 admin123 — 明文写在注释中，建议首次启动后强制修改
-- [ ] **#37** Model 层冗余别名方法 — FindOne→FindById 等多余包装
-- [ ] **#38** TaskModel.CountStats 未被使用 — StatLogic 用 FindList 全量计算，应改用 CountStats
-- [ ] **#39** TaskModel 多个方法未被使用 — FindByUserId、FindByCategoryId 等已定义未使用
+- [x] **#21** Register TOCTOU 竞态 — 已修复：去掉 FindOneByUsername 预检查，直接 Insert 捕获 UNIQUE 约束错误映射为 UserAlreadyExist
+- [x] **#23** CategoryModel.FindById 不过滤 is_deleted — 已验证：categories 表无 is_deleted 字段，Delete 为硬删除，无需过滤
+- [x] **#24** UserModel.Update 不更新 password — 已验证：ToggleUserStatusLogic 已使用 UpdateStatus，Update 不含 password 是正确设计
+- [x] **#27** etc/todo-api.yaml 中 AccessSecret 明文 — 已修复：添加注释说明首次启动自动生成，yaml 仅为 fallback
+- [x] **#28** 静态文件路径遍历（低风险） — 已验证：Go embed.FS 天然防路径遍历，无需修改
+- [x] **#29** 登录/注册成功后硬编码延迟跳转 — 已验证：当前代码无 setTimeout，立即 router.push
+- [x] **#30** 管理员登录后强制跳转管理页面 — 已修复：管理员登录后也跳转首页，通过导航栏进入管理
+- [x] **#31** 筛选条件改变时未重置页码 — 已修复：筛选 @change 触发 onFilterChange 重置 page=1 再 loadTasks
+- [x] **#32** v-model:current-page 与 @current-change 冲突 — 已修复：移除 @current-change，改用 watch(page) 加载数据
+- [x] **#33** config.vue el-switch 状态管理 — 已修复：移除共享 switchValue，改为 :model-value="item._value === 'true'" 绑定
+- [x] **#34** 密码确认验证器类型不安全 — 已验证：当前签名 `(error?: Error) => void` 比 `any` 更安全，无需修改
+- [ ] **#35** 无障碍性缺失 — 缺少 ARIA 属性、语义化标签、键盘导航（推迟到 P3）
+- [x] **#36** 默认管理员密码 admin123 — 已修复：移除 init.sql 中的明文密码注释
+- [x] **#37** Model 层冗余别名方法 — 已修复：删除 CategoryModel.FindById、UserModel.FindById、SystemConfigModel.FindOneByKey 及实现
+- [x] **#38** TaskModel.CountStats 未被使用 — 已修复：StatLogic 改用 CountStats SQL 聚合，不再 FindList 全量加载
+- [x] **#39** TaskModel 多个方法未被使用 — 已修复：删除 FindByUserId、FindByCategoryId、CountByStatus、BatchDelete 方法及实现
 
 ---
 

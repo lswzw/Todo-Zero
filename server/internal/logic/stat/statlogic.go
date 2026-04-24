@@ -31,20 +31,11 @@ func (l *StatLogic) Stat() (resp *types.StatResp, err error) {
 		return nil, err
 	}
 
-	tasks, _, err := l.svcCtx.TaskModel.FindList(l.ctx, userId, "", -1, -1, 0, 1, 9999)
+	total, todo, done, _, err := l.svcCtx.TaskModel.CountStats(l.ctx, userId)
 	if err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
-	var total, done int64
-	total = int64(len(tasks))
-	for _, t := range tasks {
-		if t.Status == 2 {
-			done++
-		}
-	}
-
-	todo := total - done
 	var doneRate int64
 	if total > 0 {
 		doneRate = done * 100 / total

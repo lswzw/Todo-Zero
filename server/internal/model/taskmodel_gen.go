@@ -3,7 +3,6 @@ package model
 import (
 	"context"
 	"database/sql"
-	"strings"
 	"time"
 )
 
@@ -15,10 +14,6 @@ type (
 		Update(ctx context.Context, data *Task) error
 		Delete(ctx context.Context, id int64) error
 		FindOne(ctx context.Context, id int64) (*Task, error)
-		FindByUserId(ctx context.Context, userId int64) ([]*Task, error)
-		FindByCategoryId(ctx context.Context, categoryId int64) ([]*Task, error)
-		CountByStatus(ctx context.Context, userId int64, status int64) (int64, error)
-		BatchDelete(ctx context.Context, ids []int64) error
 		FindList(ctx context.Context, userId int64, keyword string, status, priority, categoryId, page, pageSize int64) ([]*Task, int64, error)
 		UpdateStatus(ctx context.Context, id, status int64) error
 		CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error)
@@ -64,67 +59,6 @@ func (m *defaultTaskModel) FindOne(ctx context.Context, id int64) (*Task, error)
 		return nil, ErrNotFound
 	}
 	return &resp, err
-}
-
-func (m *defaultTaskModel) FindByUserId(ctx context.Context, userId int64) ([]*Task, error) {
-	query := `SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM ` + m.tableName() + ` WHERE user_id = ? AND is_deleted = 0 ORDER BY id DESC`
-	rows, err := m.db.QueryContext(ctx, query, userId)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var list []*Task
-	for rows.Next() {
-		var t Task
-		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
-		if err != nil {
-			return nil, err
-		}
-		list = append(list, &t)
-	}
-	return list, rows.Err()
-}
-
-func (m *defaultTaskModel) FindByCategoryId(ctx context.Context, categoryId int64) ([]*Task, error) {
-	query := `SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM ` + m.tableName() + ` WHERE category_id = ? AND is_deleted = 0 ORDER BY id DESC`
-	rows, err := m.db.QueryContext(ctx, query, categoryId)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var list []*Task
-	for rows.Next() {
-		var t Task
-		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
-		if err != nil {
-			return nil, err
-		}
-		list = append(list, &t)
-	}
-	return list, rows.Err()
-}
-
-func (m *defaultTaskModel) CountByStatus(ctx context.Context, userId int64, status int64) (int64, error) {
-	query := `SELECT COUNT(*) FROM ` + m.tableName() + ` WHERE user_id = ? AND status = ? AND is_deleted = 0`
-	var count int64
-	err := m.db.QueryRowContext(ctx, query, userId, status).Scan(&count)
-	return count, err
-}
-
-func (m *defaultTaskModel) BatchDelete(ctx context.Context, ids []int64) error {
-	if len(ids) == 0 {
-		return nil
-	}
-	placeholders := make([]string, len(ids))
-	args := make([]interface{}, len(ids))
-	for i, id := range ids {
-		placeholders[i] = "?"
-		args[i] = id
-	}
-	query := `UPDATE ` + m.tableName() + ` SET is_deleted = 1, update_time = ? WHERE id IN (` + strings.Join(placeholders, ",") + `)`
-	args = append([]interface{}{time.Now()}, args...)
-	_, err := m.db.ExecContext(ctx, query, args...)
-	return err
 }
 
 func (m *defaultTaskModel) FindList(ctx context.Context, userId int64, keyword string, status, priority, categoryId, page, pageSize int64) ([]*Task, int64, error) {

@@ -42,14 +42,14 @@
         <div class="section-header">
           <h2>任务列表</h2>
           <div class="section-actions">
-            <el-select v-model="filters.status" placeholder="状态" clearable style="width: 100px" @change="loadTasks">
+            <el-select v-model="filters.status" placeholder="状态" clearable style="width: 100px" @change="onFilterChange">
               <el-option label="待办" :value="0" />
               <el-option label="已完成" :value="2" />
             </el-select>
-            <el-select v-model="filters.categoryId" placeholder="分类" clearable style="width: 100px" @change="loadTasks">
+            <el-select v-model="filters.categoryId" placeholder="分类" clearable style="width: 100px" @change="onFilterChange">
               <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
             </el-select>
-            <el-select v-model="filters.priority" placeholder="优先级" clearable style="width: 100px" @change="loadTasks">
+            <el-select v-model="filters.priority" placeholder="优先级" clearable style="width: 100px" @change="onFilterChange">
               <el-option label="紧急" :value="2" />
               <el-option label="重要" :value="1" />
               <el-option label="普通" :value="3" />
@@ -57,7 +57,7 @@
             <el-button :type="selectMode ? 'primary' : ''" @click="toggleSelectMode">
               {{ selectMode ? '退出多选' : '多选' }}
             </el-button>
-            <el-input v-model="filters.keyword" placeholder="搜索" clearable style="width: 180px" @clear="loadTasks" @keyup.enter="loadTasks">
+            <el-input v-model="filters.keyword" placeholder="搜索" clearable style="width: 180px" @clear="onFilterChange" @keyup.enter="onFilterChange">
               <template #prefix><el-icon><Search /></el-icon></template>
             </el-input>
             <el-button type="primary" @click="openTaskDialog()">
@@ -119,7 +119,6 @@
             :page-size="pageSize"
             :total="total"
             layout="prev, pager, next"
-            @current-change="loadTasks"
           />
         </div>
       </div>
@@ -175,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -243,6 +242,13 @@ const pwdRules = {
     { validator: validatePwdConfirm, trigger: 'blur' },
   ],
 }
+
+function onFilterChange() {
+  page.value = 1
+  loadTasks()
+}
+
+watch(page, () => loadTasks())
 
 onMounted(() => {
   loadStat()
