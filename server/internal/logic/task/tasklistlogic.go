@@ -31,12 +31,12 @@ func (l *TaskListLogic) TaskList(req *types.TaskListReq) (resp *types.TaskListRe
 		return nil, err
 	}
 
-	// Parse status: 0=全部(默认), 2=已完成
-	// Priority: 0=全部(默认), 1=重要, 2=紧急, 3=普通
-	// 用 req.Status==0 判断"全部"模式，因为前端 form 解析 int64 默认=0
+	// Status: -1=全部, 0=待办, 2=已完成
+	// Priority: -1=全部, 1=重要, 2=紧急, 3=普通
+	// 用 default=-1 区分"未传"和"传了0"，解决 go-zero optional int 零值问题
 	var status int64 = -1
-	if req.Status == 2 {
-		status = 2 // 已完成
+	if req.Status == 0 || req.Status == 2 {
+		status = req.Status
 	}
 
 	var priority int64 = -1

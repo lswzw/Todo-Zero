@@ -18,8 +18,9 @@ type ServiceContext struct {
 	OperationLogModel model.OperationLogModel
 	LoginLogModel     model.LoginLogModel
 
-	AdminMiddleware        *middleware.AdminMiddleware
-	OperationLogMiddleware *middleware.OperationLogMiddleware
+	AdminMiddleware          *middleware.AdminMiddleware
+	OperationLogMiddleware   *middleware.OperationLogMiddleware
+	SecurityHeadersMiddleware *middleware.SecurityHeadersMiddleware
 }
 
 func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
@@ -34,7 +35,8 @@ func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
 		SystemConfigModel:      model.NewSystemConfigModel(db),
 		OperationLogModel:      opLogModel,
 		LoginLogModel:          model.NewLoginLogModel(db),
-		AdminMiddleware:        middleware.NewAdminMiddleware(),
-		OperationLogMiddleware: middleware.NewOperationLogMiddleware(userModel, opLogModel),
+		AdminMiddleware:           middleware.NewAdminMiddleware(),
+		OperationLogMiddleware:    middleware.NewOperationLogMiddleware(userModel, opLogModel),
+		SecurityHeadersMiddleware: middleware.NewSecurityHeadersMiddleware(),
 	}
 }

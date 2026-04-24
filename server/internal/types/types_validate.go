@@ -11,6 +11,9 @@ func (r *BatchTaskReq) Validate() error {
 	if len(r.Ids) == 0 {
 		return fmt.Errorf("ids不能为空")
 	}
+	if len(r.Ids) > 100 {
+		return fmt.Errorf("批量操作最多100条")
+	}
 	if r.Action == "" {
 		return fmt.Errorf("action不能为空")
 	}
@@ -61,17 +64,53 @@ func (r *CreateTaskReq) Validate() error {
 	if r.Priority != 1 && r.Priority != 2 && r.Priority != 3 {
 		return fmt.Errorf("优先级必须是1、2或3")
 	}
+	if r.CategoryId < 0 {
+		return fmt.Errorf("分类ID无效")
+	}
+	return nil
+}
+
+// --- LoginLogReq ---
+
+func (r *LoginLogReq) Validate() error {
+	if r.Page < 1 {
+		return fmt.Errorf("页码必须大于0")
+	}
+	if r.PageSize < 1 || r.PageSize > 100 {
+		return fmt.Errorf("每页数量必须在1-100之间")
+	}
+	if utf8.RuneCountInString(r.Username) > 20 {
+		return fmt.Errorf("用户名最多20个字符")
+	}
 	return nil
 }
 
 // --- LoginReq ---
 
 func (r *LoginReq) Validate() error {
-	if err := validateUsername(r.Username, 1, 100); err != nil {
+	if err := validateUsername(r.Username, 1, 50); err != nil {
 		return err
 	}
 	if r.Password == "" {
 		return fmt.Errorf("密码不能为空")
+	}
+	return nil
+}
+
+// --- OperationLogReq ---
+
+func (r *OperationLogReq) Validate() error {
+	if r.Page < 1 {
+		return fmt.Errorf("页码必须大于0")
+	}
+	if r.PageSize < 1 || r.PageSize > 100 {
+		return fmt.Errorf("每页数量必须在1-100之间")
+	}
+	if utf8.RuneCountInString(r.Action) > 20 {
+		return fmt.Errorf("操作类型最多20个字符")
+	}
+	if utf8.RuneCountInString(r.Username) > 20 {
+		return fmt.Errorf("用户名最多20个字符")
 	}
 	return nil
 }
@@ -97,11 +136,37 @@ func (r *ResetPasswordReq) Validate() error {
 	return nil
 }
 
+// --- TaskListReq ---
+
+func (r *TaskListReq) Validate() error {
+	if r.Page < 1 {
+		return fmt.Errorf("页码必须大于0")
+	}
+	if r.PageSize < 1 || r.PageSize > 100 {
+		return fmt.Errorf("每页数量必须在1-100之间")
+	}
+	// Status: -1=全部, 0=待办, 2=已完成
+	if r.Status != -1 && r.Status != 0 && r.Status != 2 {
+		return fmt.Errorf("状态参数无效")
+	}
+	// Priority: -1=全部, 1=重要, 2=紧急, 3=普通
+	if r.Priority != -1 && r.Priority != 1 && r.Priority != 2 && r.Priority != 3 {
+		return fmt.Errorf("优先级参数无效")
+	}
+	if utf8.RuneCountInString(r.Keyword) > 50 {
+		return fmt.Errorf("搜索关键词最多50个字符")
+	}
+	return nil
+}
+
 // --- UpdateConfigReq ---
 
 func (r *UpdateConfigReq) Validate() error {
 	if r.Key == "" {
 		return fmt.Errorf("配置键不能为空")
+	}
+	if utf8.RuneCountInString(r.Key) > 50 {
+		return fmt.Errorf("配置键最多50个字符")
 	}
 	if r.Value == "" {
 		return fmt.Errorf("配置值不能为空")
@@ -129,6 +194,24 @@ func (r *UpdateTaskReq) Validate() error {
 		if *r.Priority != 1 && *r.Priority != 2 && *r.Priority != 3 {
 			return fmt.Errorf("优先级必须是1、2或3")
 		}
+	}
+	if r.CategoryId != nil && *r.CategoryId < 0 {
+		return fmt.Errorf("分类ID无效")
+	}
+	return nil
+}
+
+// --- UserListReq ---
+
+func (r *UserListReq) Validate() error {
+	if r.Page < 1 {
+		return fmt.Errorf("页码必须大于0")
+	}
+	if r.PageSize < 1 || r.PageSize > 100 {
+		return fmt.Errorf("每页数量必须在1-100之间")
+	}
+	if utf8.RuneCountInString(r.Keyword) > 50 {
+		return fmt.Errorf("搜索关键词最多50个字符")
 	}
 	return nil
 }
@@ -159,6 +242,20 @@ func validatePassword(password string, field string) error {
 	}
 	if n > 20 {
 		return fmt.Errorf("%s最多20个字符", field)
+	}
+	// 复杂度要求：必须包含字母和数字
+	hasLetter := false
+	hasDigit := false
+	for _, c := range password {
+		if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' {
+			hasLetter = true
+		}
+		if c >= '0' && c <= '9' {
+			hasDigit = true
+		}
+	}
+	if !hasLetter || !hasDigit {
+		return fmt.Errorf("%s必须同时包含字母和数字", field)
 	}
 	return nil
 }

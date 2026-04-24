@@ -185,9 +185,9 @@ type TaskItem struct {
 type TaskListReq struct {
 	Page       int64  `form:"page,default=1"`
 	PageSize   int64  `form:"pageSize,default=10"`
-	Status     int64  `form:"status,optional,options=0|2"`
-	CategoryId int64  `form:"categoryId,optional"`
-	Priority   int64  `form:"priority,optional,options=1|2|3"`
+	Status     int64  `form:"status,default=-1,options=-1|0|2"`
+	CategoryId int64  `form:"categoryId,default=-1"`
+	Priority   int64  `form:"priority,default=-1,options=-1|1|2|3"`
 	Keyword    string `form:"keyword,optional"`
 }
 

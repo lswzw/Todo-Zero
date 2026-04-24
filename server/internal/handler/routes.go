@@ -17,6 +17,9 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
+	// Security headers middleware for all API routes
+	securityMw := serverCtx.SecurityHeadersMiddleware.Handle
+
 	// Admin routes: protected by JWT + AdminMiddleware + OperationLogMiddleware
 	adminRoutes := []rest.Route{
 		{
@@ -61,7 +64,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	}
 
-	// Apply admin middleware and operation log middleware to all admin routes
+	// Apply middlewares: security → operation log → admin
+	adminRoutes = rest.WithMiddleware(securityMw, adminRoutes...)
 	adminRoutes = rest.WithMiddleware(serverCtx.OperationLogMiddleware.Handle, adminRoutes...)
 	adminRoutes = rest.WithMiddleware(serverCtx.AdminMiddleware.Handle, adminRoutes...)
 
@@ -72,110 +76,120 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	)
 
 	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodGet,
-				Path:    "/category",
-				Handler: category.CategoryListHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/category",
-				Handler: category.CreateCategoryHandler(serverCtx),
-			},
-		},
+		rest.WithMiddleware(securityMw,
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/category",
+					Handler: category.CategoryListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/category",
+					Handler: category.CreateCategoryHandler(serverCtx),
+				},
+			}...,
+		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1"),
 	)
 
 	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodGet,
-				Path:    "/stat",
-				Handler: stat.StatHandler(serverCtx),
-			},
-		},
+		rest.WithMiddleware(securityMw,
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/stat",
+					Handler: stat.StatHandler(serverCtx),
+				},
+			}...,
+		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1"),
 	)
 
 	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodPost,
-				Path:    "/task",
-				Handler: task.CreateTaskHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/task",
-				Handler: task.TaskListHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPut,
-				Path:    "/task/:id",
-				Handler: task.UpdateTaskHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodDelete,
-				Path:    "/task/:id",
-				Handler: task.DeleteTaskHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/task/:id",
-				Handler: task.TaskDetailHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPatch,
-				Path:    "/task/:id/toggle",
-				Handler: task.ToggleTaskHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/task/batch",
-				Handler: task.BatchTaskHandler(serverCtx),
-			},
-		},
+		rest.WithMiddleware(securityMw,
+			[]rest.Route{
+				{
+					Method:  http.MethodPost,
+					Path:    "/task",
+					Handler: task.CreateTaskHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/task",
+					Handler: task.TaskListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPut,
+					Path:    "/task/:id",
+					Handler: task.UpdateTaskHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodDelete,
+					Path:    "/task/:id",
+					Handler: task.DeleteTaskHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/task/:id",
+					Handler: task.TaskDetailHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPatch,
+					Path:    "/task/:id/toggle",
+					Handler: task.ToggleTaskHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/task/batch",
+					Handler: task.BatchTaskHandler(serverCtx),
+				},
+			}...,
+		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1"),
 	)
 
 	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodGet,
-				Path:    "/user/check-register",
-				Handler: user.CheckRegisterHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/user/login",
-				Handler: user.LoginHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/user/register",
-				Handler: user.RegisterHandler(serverCtx),
-			},
-		},
+		rest.WithMiddleware(securityMw,
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/user/check-register",
+					Handler: user.CheckRegisterHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/user/login",
+					Handler: user.LoginHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/user/register",
+					Handler: user.RegisterHandler(serverCtx),
+				},
+			}...,
+		),
 		rest.WithPrefix("/api/v1"),
 	)
 
 	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodGet,
-				Path:    "/user/info",
-				Handler: user.UserInfoHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPut,
-				Path:    "/user/password",
-				Handler: user.ChangePasswordHandler(serverCtx),
-			},
-		},
+		rest.WithMiddleware(securityMw,
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/user/info",
+					Handler: user.UserInfoHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPut,
+					Path:    "/user/password",
+					Handler: user.ChangePasswordHandler(serverCtx),
+				},
+			}...,
+		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1"),
 	)

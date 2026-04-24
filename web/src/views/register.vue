@@ -12,7 +12,7 @@
             <el-input v-model="form.username" placeholder="请输入用户名(3-20位)" size="large" :prefix-icon="User" />
           </el-form-item>
           <el-form-item prop="password">
-            <el-input v-model="form.password" type="password" placeholder="请输入密码(6-20位)" size="large" :prefix-icon="Lock" show-password />
+            <el-input v-model="form.password" type="password" placeholder="请输入密码(6-20位，需含字母和数字)" size="large" :prefix-icon="Lock" show-password />
           </el-form-item>
           <el-form-item prop="confirmPassword">
             <el-input v-model="form.confirmPassword" type="password" placeholder="请确认密码" size="large" :prefix-icon="Lock" show-password />
@@ -70,6 +70,7 @@ const rules = {
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 20, message: '密码长度6-20位', trigger: 'blur' },
+    { pattern: /^(?=.*[a-zA-Z])(?=.*\d)/, message: '密码必须包含字母和数字', trigger: 'blur' },
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },

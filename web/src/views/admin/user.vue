@@ -49,7 +49,7 @@
           <el-input :model-value="resetForm.username" disabled />
         </el-form-item>
         <el-form-item label="新密码" prop="newPassword">
-          <el-input v-model="resetForm.newPassword" type="password" show-password placeholder="请输入新密码(6-20位)" />
+          <el-input v-model="resetForm.newPassword" type="password" show-password placeholder="请输入新密码(6-20位，需含字母和数字)" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -81,6 +81,7 @@ const resetRules = {
   newPassword: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
     { min: 6, max: 20, message: '密码长度6-20位', trigger: 'blur' },
+    { pattern: /^(?=.*[a-zA-Z])(?=.*\d)/, message: '密码必须包含字母和数字', trigger: 'blur' },
   ],
 }
 

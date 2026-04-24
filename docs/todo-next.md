@@ -10,20 +10,8 @@
 
 ---
 
-## 输入验证 & 注入安全审计 — MEDIUM（v1.3.0 审查）
-
-- [ ] **#43 多个查询/过滤参数缺少长度验证** — `TaskListReq.Keyword`、`UserListReq.Keyword`、`LoginLogReq.Username`、`OperationLogReq.Action`/`Username` 均无 `max` 限制，可传入超长字符串。
-- [ ] **#44 `UpdateConfigReq.Value` 无长度/格式限制** — 仅有 `required`，管理员可写入任意长度/任意内容到系统配置表，潜在 DoS 或数据污染。
-- [ ] **#45 `CreateTaskReq.CategoryId` 无验证** — 可传入负数或不存在的 ID，虽然 SQL 执行不会出错，但数据一致性无保障（外键虽有但用户可能绕过）。
-- [ ] **#46 `LoginReq.Username` max=100 过大** — 用户名注册时限制 3-20 字符，但登录入口允许 100 字符，易被用于超长输入攻击。
-- [ ] **#47 密码无复杂度要求** — `min=6,max=20` 仅限制长度，无大小写/数字/特殊字符要求，弱密码如 `123456` 可通过。
-- [ ] **#48 后端缺少输出编码** — 无 `html.EscapeString()` 等输出编码，用户内容（title/content/username）原样存入 DB 原样返回。当前 JSON API 场景安全，但若未来增加 SSR 或 HTML 导出则有 XSS 风险。
-
----
-
 ## 输入验证 & 注入安全审计 — LOW（v1.3.0 审查）
 
-- [ ] **#49 API 响应路径缺少安全头** — `todo.go:131-134` 仅对静态文件设置安全头，API 路由未设置 `X-Content-Type-Options` 等。
 - [ ] **#50 SQL 表名拼接编码习惯** — model 层约 48 处 `+ m.tableName() +` 拼接，当前 `tableName()` 返回硬编码值安全，但此写法本身不安全，若未来表名来源变更可引入注入。
 
 ---
@@ -86,6 +74,7 @@
 || SQL 注入 | ✅ 安全（全参数化查询） | 无 |
 || validate 标签 | ✅ 已修复（Validate() 接口） | 无 |
 || options 标签 | ✅ 已修复（原生 options=xxx） | 无 |
-|| 缺失验证字段 | ⚠️ 查询参数无限制 | 低-中 |
+|| 缺失验证字段 | ✅ 已修复（长度+范围+分页限制） | 无 |
 || 前端 XSS | ✅ 安全（全用 `{{ }}` 插值） | 无 |
-|| 后端输出编码 | ⚠️ 缺失但当前无影响 | 低 |
+|| 后端输出编码 | ✅ 安全（Go json 自动转义 `<>&`） | 无 |
+|| API 安全头 | ✅ 已修复（SecurityHeadersMiddleware） | 无 |

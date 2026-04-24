@@ -110,3 +110,24 @@
 - [x] **#37** Model 层冗余别名方法 — 删除 CategoryModel.FindById、UserModel.FindById、SystemConfigModel.FindOneByKey 及实现
 - [x] **#38** TaskModel.CountStats 未被使用 — StatLogic 改用 CountStats SQL 聚合，不再 FindList 全量加载
 - [x] **#39** TaskModel 多个方法未被使用 — 删除 FindByUserId、FindByCategoryId、CountByStatus、BatchDelete 方法及实现
+
+---
+
+## v1.6.0 — 输入验证 MEDIUM + LOW 修复 + 状态筛选 bug 修复
+
+### MEDIUM — 输入验证 & 注入安全审计
+
+- [x] **#43 多个查询/过滤参数缺少长度验证** — TaskListReq/UserListReq Keyword max=50，LoginLogReq/OperationLogReq Username max=20，OperationLogReq Action max=20，分页参数 1-100 限制，新增 TaskListReq/LoginLogReq/OperationLogReq/UserListReq 的 Validate() 方法
+- [x] **#44 `UpdateConfigReq.Value` 无长度/格式限制** — Key max=50 长度校验，Value max=500（原有）
+- [x] **#45 `CreateTaskReq.CategoryId` 无验证** — Validate() 校验 CategoryId >= 0，负数拒绝；UpdateTaskReq 同步校验
+- [x] **#46 `LoginReq.Username` max=100 过大** — LoginReq 用户名 max 降为 50（注册限制 3-20，登录放宽至 50 即可）
+- [x] **#47 密码无复杂度要求** — 后端 validatePassword 增加字母+数字校验，前端注册/改密/重置密码均添加 pattern 正则提示
+- [x] **#48 后端缺少输出编码** — 已验证：Go `encoding/json` 默认对 `<>&` 做 Unicode 转义（`\u003c`），JSON API 天然防 XSS，无需额外编码
+
+### LOW — 输入验证 & 注入安全审计
+
+- [x] **#49 API 响应路径缺少安全头** — 新增 SecurityHeadersMiddleware，所有 API 路由添加 X-Content-Type-Options/X-Frame-Options/X-XSS-Protection/Referrer-Policy
+
+### Bug 修复
+
+- [x] **状态筛选"待办"无效** — 根因：go-zero `form:"status,optional"` 对 int64 零值无法区分"未传"和"传了0"，Status/Priority/CategoryId 改为 `default=-1`，tasklistlogic 正确识别 `status==0` 为"待办"筛选
