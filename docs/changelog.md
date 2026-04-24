@@ -82,3 +82,31 @@
 - [x] **#18 空 catch 块吞掉所有错误** — 关键数据加载（统计、分类、任务列表、用户列表、配置等）添加 `ElMessage.error` 提示；操作类 catch 保留注释说明错误已由拦截器处理。
 - [x] **#19 命令行 flag 与配置文件优先级不清** — `todo.go` 重构配置加载逻辑：先加载配置文件（或嵌入式默认），再统一由 flag 覆盖非默认值，无论是否使用 `-f` 指定配置文件，flag 始终可以覆盖。
 - [x] **#20 API 响应拦截器未统一解包** — `request.ts` 响应拦截器改为：成功时（`code === 0`）直接返回 `data` 字段，调用方无需再 `.data`；业务错误在拦截器统一 `ElMessage.error` 并 reject，调用方不再需要手动处理。
+
+---
+
+## v1.5.0 — 输入验证修复 + LOW 审查项修复
+
+### HIGH — 输入验证 & 注入安全审计
+
+- [x] **#40 `validate` 标签未在运行时执行** — 删除无效 `validate` 标签，为每个结构体实现 `Validate()` 方法（go-zero `validation.Validator` 接口），`httpx.Parse` 自动调用。
+- [x] **#41 `options` 标签完全无效** — 将 `options:"xxx"` 独立标签改为 go-zero 原生的 `json/form:"xxx,options=xxx"` 内联语法，框架自动校验枚举值。
+- [x] **#42 `BatchTaskReq.Action` 无枚举校验** — `Validate()` 方法校验枚举 + logic 层双重校验，非法 Action 返回错误而非静默忽略。
+
+### LOW — 代码审查（v1.2.0 审查）
+
+- [x] **#21** Register TOCTOU 竞态 — 去掉 FindOneByUsername 预检查，直接 Insert 捕获 UNIQUE 约束错误映射为 UserAlreadyExist
+- [x] **#23** CategoryModel.FindById 不过滤 is_deleted — 已验证：categories 表无 is_deleted 字段，Delete 为硬删除，无需过滤
+- [x] **#24** UserModel.Update 不更新 password — 已验证：ToggleUserStatusLogic 已使用 UpdateStatus，Update 不含 password 是正确设计
+- [x] **#27** etc/todo-api.yaml 中 AccessSecret 明文 — 添加注释说明首次启动自动生成，yaml 仅为 fallback
+- [x] **#28** 静态文件路径遍历（低风险） — 已验证：Go embed.FS 天然防路径遍历，无需修改
+- [x] **#29** 登录/注册成功后硬编码延迟跳转 — 已验证：当前代码无 setTimeout，立即 router.push
+- [x] **#30** 管理员登录后强制跳转管理页面 — 管理员登录后也跳转首页，通过导航栏进入管理
+- [x] **#31** 筛选条件改变时未重置页码 — 筛选 @change 触发 onFilterChange 重置 page=1 再 loadTasks
+- [x] **#32** v-model:current-page 与 @current-change 冲突 — 移除 @current-change，改用 watch(page) 加载数据
+- [x] **#33** config.vue el-switch 状态管理 — 移除共享 switchValue，改为 `:model-value="item._value === 'true'"` 绑定
+- [x] **#34** 密码确认验证器类型不安全 — 已验证：当前签名 `(error?: Error) => void` 比 `any` 更安全，无需修改
+- [x] **#36** 默认管理员密码 admin123 — 移除 init.sql 中的明文密码注释
+- [x] **#37** Model 层冗余别名方法 — 删除 CategoryModel.FindById、UserModel.FindById、SystemConfigModel.FindOneByKey 及实现
+- [x] **#38** TaskModel.CountStats 未被使用 — StatLogic 改用 CountStats SQL 聚合，不再 FindList 全量加载
+- [x] **#39** TaskModel 多个方法未被使用 — 删除 FindByUserId、FindByCategoryId、CountByStatus、BatchDelete 方法及实现
