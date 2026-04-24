@@ -117,7 +117,7 @@ INSERT OR IGNORE INTO `system_configs` (`config_key`, `config_value`, `group_nam
 ('site_name', 'Todo 管理平台', 'basic', '站点名称'),
 ('allow_register', 'false', 'basic', '是否允许新用户注册'),
 ('task_default_priority', '0', 'task', '新建任务默认优先级'),
-('task_auto_delete_days', '30', 'task', '自动清理已完成任务天数（0=不清理）');
+('task_auto_delete_days', '0', 'task', '自动清理已完成任务天数（0=不清理）');
 
 -- ================================================
 -- Indexes for performance
