@@ -31,7 +31,9 @@ export const batchTask = (data: { ids: number[]; action: string }) => request.po
 
 // 分类
 export const getCategoryList = () => request.get<never, CategoryListResp>('/category')
-export const createCategory = (data: { name: string }) => request.post('/category', data)
+export const createCategory = (data: { name: string; color?: string }) => request.post('/category', data)
+export const updateCategory = (id: number, data: { name?: string; color?: string; icon?: string; sort?: number }) => request.put(`/category/${id}`, data)
+export const deleteCategory = (id: number) => request.delete(`/category/${id}`)
 
 // 统计
 export const getStat = () => request.get<never, StatResp>('/stat')

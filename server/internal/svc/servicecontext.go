@@ -17,10 +17,12 @@ type ServiceContext struct {
 	SystemConfigModel model.SystemConfigModel
 	OperationLogModel model.OperationLogModel
 	LoginLogModel     model.LoginLogModel
+	DB                *sql.DB
 
-	AdminMiddleware          *middleware.AdminMiddleware
-	OperationLogMiddleware   *middleware.OperationLogMiddleware
-	SecurityHeadersMiddleware *middleware.SecurityHeadersMiddleware
+	AdminMiddleware            *middleware.AdminMiddleware
+	OperationLogMiddleware     *middleware.OperationLogMiddleware
+	SecurityHeadersMiddleware  *middleware.SecurityHeadersMiddleware
+	LoginRateLimitMiddleware   *middleware.LoginRateLimitMiddleware
 }
 
 func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
@@ -28,15 +30,17 @@ func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
 	opLogModel := model.NewOperationLogModel(db)
 
 	return &ServiceContext{
-		Config:                 c,
-		UserModel:              userModel,
-		TaskModel:              model.NewTaskModel(db),
-		CategoryModel:          model.NewCategoryModel(db),
-		SystemConfigModel:      model.NewSystemConfigModel(db),
-		OperationLogModel:      opLogModel,
-		LoginLogModel:          model.NewLoginLogModel(db),
+		Config:                    c,
+		DB:                        db,
+		UserModel:                 userModel,
+		TaskModel:                 model.NewTaskModel(db),
+		CategoryModel:             model.NewCategoryModel(db),
+		SystemConfigModel:         model.NewSystemConfigModel(db),
+		OperationLogModel:         opLogModel,
+		LoginLogModel:             model.NewLoginLogModel(db),
 		AdminMiddleware:           middleware.NewAdminMiddleware(),
 		OperationLogMiddleware:    middleware.NewOperationLogMiddleware(userModel, opLogModel),
 		SecurityHeadersMiddleware: middleware.NewSecurityHeadersMiddleware(),
+		LoginRateLimitMiddleware:  middleware.NewLoginRateLimitMiddleware(),
 	}
 }

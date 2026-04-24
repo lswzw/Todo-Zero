@@ -30,6 +30,10 @@ export interface StatResp {
 export interface CategoryItem {
   id: number
   name: string
+  color: string
+  icon: string
+  sort: number
+  isSystem: number
 }
 
 export interface CategoryListResp {

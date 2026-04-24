@@ -46,6 +46,41 @@ func (r *CreateCategoryReq) Validate() error {
 	if utf8.RuneCountInString(r.Name) > 20 {
 		return fmt.Errorf("分类名称最多20个字符")
 	}
+	if utf8.RuneCountInString(r.Color) > 20 {
+		return fmt.Errorf("分类颜色最多20个字符")
+	}
+	return nil
+}
+
+// --- UpdateCategoryReq ---
+
+func (r *UpdateCategoryReq) Validate() error {
+	if r.Name != nil {
+		if *r.Name == "" {
+			return fmt.Errorf("分类名称不能为空")
+		}
+		if utf8.RuneCountInString(*r.Name) > 20 {
+			return fmt.Errorf("分类名称最多20个字符")
+		}
+	}
+	if r.Color != nil && utf8.RuneCountInString(*r.Color) > 20 {
+		return fmt.Errorf("分类颜色最多20个字符")
+	}
+	if r.Icon != nil && utf8.RuneCountInString(*r.Icon) > 50 {
+		return fmt.Errorf("分类图标最多50个字符")
+	}
+	if r.Sort != nil && *r.Sort < 0 {
+		return fmt.Errorf("排序值无效")
+	}
+	return nil
+}
+
+// --- DeleteCategoryReq ---
+
+func (r *DeleteCategoryReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("分类ID无效")
+	}
 	return nil
 }
 

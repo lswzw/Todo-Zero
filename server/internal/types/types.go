@@ -12,8 +12,12 @@ type BatchTaskResp struct {
 }
 
 type CategoryItem struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	Color    string `json:"color"`
+	Icon     string `json:"icon"`
+	Sort     int64  `json:"sort"`
+	IsSystem int64  `json:"isSystem"`
 }
 
 type CategoryListResp struct {
@@ -43,12 +47,29 @@ type ConfigListResp struct {
 }
 
 type CreateCategoryReq struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Color string `json:"color,optional"`
 }
 
 type CreateCategoryResp struct {
 	Id int64 `json:"id"`
 }
+
+type UpdateCategoryReq struct {
+	Id    int64   `path:"id"`
+	Name  *string `json:"name,optional"`
+	Color *string `json:"color,optional"`
+	Icon  *string `json:"icon,optional"`
+	Sort  *int64  `json:"sort,optional"`
+}
+
+type UpdateCategoryResp struct{}
+
+type DeleteCategoryReq struct {
+	Id int64 `path:"id"`
+}
+
+type DeleteCategoryResp struct{}
 
 type CreateTaskReq struct {
 	Title      string `json:"title"`

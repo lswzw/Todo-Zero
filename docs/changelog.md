@@ -137,3 +137,31 @@
 - [x] **首页导航栏添加"管理后台"入口** — 管理员登录后首页导航栏显示"管理后台"按钮（`v-if="userStore.isAdmin"`），普通用户不可见
 - [x] **#50 SQL 表名拼接编码习惯** — 已验证：`tableName()` 返回硬编码常量，当前安全；编码风格问题留待重构
 - [x] **staticcheck SA5008 配置** — 添加 `.staticcheck.conf` 排除 go-zero 扩展 json tag 选项误报
+
+---
+
+## v1.4.0 — 登录限流 + 分类 CRUD + 健康检查
+
+### 安全性
+
+- [x] **登录限流** — 新增 `LoginRateLimitMiddleware`，同 IP 15 分钟内最多 5 次登录尝试，超出后锁定 15 分钟；返回 HTTP 429 + `Retry-After` 头；后台 goroutine 定期清理过期记录防止内存泄漏
+- [x] **登录限流错误响应** — `xerr.ErrorResponse` 增加 429 状态码处理，限流错误返回 `42901` code
+
+### 功能补全
+
+- [x] **补全分类 CRUD** — 新增 `PUT /api/v1/category/:id`（更新分类）和 `DELETE /api/v1/category/:id`（删除分类）API 端点
+  - 更新分类：支持修改 name/color/icon/sort 字段，系统分类不可修改
+  - 删除分类：仅可删除自己的非系统分类，系统分类拒绝删除
+  - 权限校验：只能操作自己的分类，系统分类（isSystem=1）受保护
+  - 输入验证：`UpdateCategoryReq`/`DeleteCategoryReq` 均实现 `Validate()` 方法
+- [x] **分类颜色支持** — `CreateCategoryReq` 新增 `color` 可选字段；`CategoryItem` 返回 color/icon/sort/isSystem 完整信息；`CreateCategoryLogic` 支持自定义颜色
+- [x] **分类管理 UI** — 首页任务栏添加"分类管理"按钮，弹窗支持：
+  - 添加分类（名称 + 颜色选择器）
+  - 编辑分类名称/颜色（内联编辑，失焦保存）
+  - 删除分类（确认提示，系统分类不可删除）
+  - 分类标签按颜色渲染（自动亮度检测决定文字颜色）
+
+### 基础设施
+
+- [x] **健康检查端点** — 新增 `GET /health`，无 JWT/中间件要求，ping DB 验证连通性，返回 `{"status":"ok"}`
+- [x] **ServiceContext 暴露 DB** — 新增 `DB *sql.DB` 字段，供健康检查等场景使用

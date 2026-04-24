@@ -8,6 +8,7 @@ import (
 
 	admin "server/internal/handler/admin"
 	category "server/internal/handler/category"
+	health "server/internal/handler/health"
 	stat "server/internal/handler/stat"
 	task "server/internal/handler/task"
 	user "server/internal/handler/user"
@@ -19,6 +20,16 @@ import (
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	// Security headers middleware for all API routes
 	securityMw := serverCtx.SecurityHeadersMiddleware.Handle
+	loginRateLimitMw := serverCtx.LoginRateLimitMiddleware.Handle
+
+	// Health check — no auth, no middleware
+	server.AddRoutes([]rest.Route{
+		{
+			Method:  http.MethodGet,
+			Path:    "/health",
+			Handler: health.HealthHandler(serverCtx),
+		},
+	})
 
 	// Admin routes: protected by JWT + AdminMiddleware + OperationLogMiddleware
 	adminRoutes := []rest.Route{
@@ -87,6 +98,16 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Method:  http.MethodPost,
 					Path:    "/category",
 					Handler: category.CreateCategoryHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPut,
+					Path:    "/category/:id",
+					Handler: category.UpdateCategoryHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodDelete,
+					Path:    "/category/:id",
+					Handler: category.DeleteCategoryHandler(serverCtx),
 				},
 			}...,
 		),
@@ -162,15 +183,26 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 				{
 					Method:  http.MethodPost,
-					Path:    "/user/login",
-					Handler: user.LoginHandler(serverCtx),
-				},
-				{
-					Method:  http.MethodPost,
 					Path:    "/user/register",
 					Handler: user.RegisterHandler(serverCtx),
 				},
 			}...,
+		),
+		rest.WithPrefix("/api/v1"),
+	)
+
+	// Login — with rate limiting
+	server.AddRoutes(
+		rest.WithMiddleware(loginRateLimitMw,
+			rest.WithMiddleware(securityMw,
+				[]rest.Route{
+					{
+						Method:  http.MethodPost,
+						Path:    "/user/login",
+						Handler: user.LoginHandler(serverCtx),
+					},
+				}...,
+			)...,
 		),
 		rest.WithPrefix("/api/v1"),
 	)

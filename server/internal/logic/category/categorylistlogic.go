@@ -34,8 +34,12 @@ func (l *CategoryListLogic) CategoryList() (resp *types.CategoryListResp, err er
 	var list []types.CategoryItem
 	for _, c := range categories {
 		list = append(list, types.CategoryItem{
-			Id:   c.Id,
-			Name: c.Name,
+			Id:       c.Id,
+			Name:     c.Name,
+			Color:    c.Color,
+			Icon:     c.Icon,
+			Sort:     c.Sort,
+			IsSystem: c.IsSystem,
 		})
 	}
 

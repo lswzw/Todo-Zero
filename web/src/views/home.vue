@@ -48,7 +48,9 @@
               <el-option label="已完成" :value="2" />
             </el-select>
             <el-select v-model="filters.categoryId" placeholder="分类" clearable style="width: 100px" @change="onFilterChange">
-              <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+              <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id">
+                <span :style="{ color: c.color || '#909399' }">●</span> {{ c.name }}
+              </el-option>
             </el-select>
             <el-select v-model="filters.priority" placeholder="优先级" clearable style="width: 100px" @change="onFilterChange">
               <el-option label="紧急" :value="2" />
@@ -64,6 +66,7 @@
             <el-button type="primary" @click="openTaskDialog()">
               <el-icon><Plus /></el-icon> 新增任务
             </el-button>
+            <el-button @click="showCategoryDialog = true">分类管理</el-button>
           </div>
         </div>
 
@@ -94,7 +97,7 @@
                 <el-tag v-if="task.priority === 2" size="small" type="danger">紧急</el-tag>
                 <el-tag v-else-if="task.priority === 1" size="small" type="warning">重要</el-tag>
                 <el-tag v-else size="small" type="success">普通</el-tag>
-                <el-tag v-if="task.categoryName" size="small" type="info">{{ task.categoryName }}</el-tag>
+                <el-tag v-if="task.categoryName" size="small" type="info" :color="getCategoryColor(task.categoryId)" style="border-color: transparent" :style="{ color: getCategoryTextColor(task.categoryId) }">{{ task.categoryName }}</el-tag>
                 <span class="task-time">{{ task.createTime }}</span>
               </div>
             </div>
@@ -143,7 +146,9 @@
         </el-form-item>
         <el-form-item label="分类">
           <el-select v-model="taskForm.categoryId" clearable style="width: 100%">
-            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id">
+              <span :style="{ color: c.color || '#909399' }">●</span> {{ c.name }}
+            </el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -171,6 +176,28 @@
         <el-button type="primary" :loading="pwdLoading" @click="handleChangePassword">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 分类管理弹窗 -->
+    <el-dialog v-model="showCategoryDialog" title="分类管理" width="480px" destroy-on-close>
+      <div class="category-manage">
+        <div class="category-add-row">
+          <el-input v-model="newCategoryName" placeholder="分类名称" maxlength="20" style="flex:1" @keyup.enter="handleAddCategory" />
+          <el-color-picker v-model="newCategoryColor" size="small" />
+          <el-button type="primary" @click="handleAddCategory">添加</el-button>
+        </div>
+        <div class="category-list">
+          <div v-for="c in categories" :key="c.id" class="category-item">
+            <el-color-picker v-model="c._color" size="small" @change="handleUpdateCategory(c)" />
+            <el-input v-model="c._name" size="small" maxlength="20" style="flex:1" @blur="handleUpdateCategory(c)" />
+            <el-tag v-if="c.isSystem" size="small" type="info">系统</el-tag>
+            <el-button v-else text size="small" type="danger" @click="handleDeleteCategory(c)">删除</el-button>
+          </div>
+          <div v-if="!categories.length" class="empty-state" style="padding:20px 0">
+            <p>暂无分类</p>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -184,7 +211,7 @@ import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
 import {
   getTaskList, createTask, updateTask, toggleTask, deleteTask, batchTask,
-  getCategoryList, getStat, changePassword,
+  getCategoryList, createCategory, updateCategory, deleteCategory, getStat, changePassword,
 } from '@/api'
 import type { TaskItem, StatResp, CategoryItem } from '@/types'
 
@@ -226,6 +253,11 @@ const taskRules = {
 // 密码弹窗
 const showPasswordDialog = ref(false)
 const pwdLoading = ref(false)
+
+// 分类管理弹窗
+const showCategoryDialog = ref(false)
+const newCategoryName = ref('')
+const newCategoryColor = ref('#409eff')
 const pwdFormRef = ref<FormInstance>()
 const pwdForm = ref({ oldPassword: '', newPassword: '', confirmPassword: '' })
 const validatePwdConfirm = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
@@ -269,7 +301,7 @@ async function loadStat() {
 async function loadCategories() {
   try {
     const res = await getCategoryList()
-    categories.value = res.list || []
+    categories.value = (res.list || []).map(c => ({ ...c, _name: c.name, _color: c.color || '#409eff' }))
   } catch {
     ElMessage.error('加载分类失败')
   }
@@ -380,6 +412,69 @@ async function handleChangePassword() {
     // 错误已由拦截器处理
   } finally {
     pwdLoading.value = false
+  }
+}
+
+// 分类颜色辅助函数
+function getCategoryColor(categoryId: number): string | undefined {
+  const cat = categories.value.find(c => c.id === categoryId)
+  return cat?.color || undefined
+}
+
+function getCategoryTextColor(categoryId: number): string {
+  const cat = categories.value.find(c => c.id === categoryId)
+  if (!cat?.color) return '#909399'
+  // 简单亮度检测：浅色背景用深色文字
+  const hex = cat.color.replace('#', '')
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return lum > 0.6 ? '#303133' : '#ffffff'
+}
+
+async function handleAddCategory() {
+  if (!newCategoryName.value.trim()) {
+    ElMessage.warning('请输入分类名称')
+    return
+  }
+  try {
+    await createCategory({ name: newCategoryName.value.trim(), color: newCategoryColor.value })
+    newCategoryName.value = ''
+    newCategoryColor.value = '#409eff'
+    await loadCategories()
+    ElMessage.success('分类已添加')
+  } catch {
+    // 错误已由拦截器处理
+  }
+}
+
+async function handleUpdateCategory(c: CategoryItem & { _name: string; _color: string }) {
+  if (!c._name.trim()) {
+    ElMessage.warning('分类名称不能为空')
+    c._name = c.name
+    return
+  }
+  // 检查是否有变化
+  if (c._name === c.name && c._color === c.color) return
+  try {
+    await updateCategory(c.id, { name: c._name.trim(), color: c._color })
+    await loadCategories()
+  } catch {
+    // 错误已由拦截器处理
+    await loadCategories()
+  }
+}
+
+async function handleDeleteCategory(c: CategoryItem) {
+  if (c.isSystem) return
+  try {
+    await ElMessageBox.confirm(`确定删除分类"${c.name}"？该分类下的任务不会被删除。`, '提示', { type: 'warning' })
+    await deleteCategory(c.id)
+    await loadCategories()
+    ElMessage.success('分类已删除')
+  } catch {
+    // 用户取消或错误已由拦截器处理
   }
 }
 
@@ -623,6 +718,31 @@ function handleLogout() {
   text-align: center;
   padding: 60px 0;
   color: #909399;
+}
+
+.category-manage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.category-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
 }
 
 .empty-icon {

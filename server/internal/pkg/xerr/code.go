@@ -13,8 +13,9 @@ const (
 	UserDisabled       = 20004
 	RegisterClosed     = 20005
 	OldPasswordError   = 20006
-	TaskNotFoundError  = 30001
-	NoPermission       = 40001
+	TaskNotFoundError     = 30001
+	CategoryNotFoundError = 30002
+	NoPermission         = 40001
 	AdminRequired      = 40002
 )
 
@@ -29,8 +30,9 @@ var codeMessages = map[int]string{
 	UserDisabled:      "用户已被禁用",
 	RegisterClosed:    "注册已关闭",
 	OldPasswordError:  "原密码错误",
-	TaskNotFoundError: "任务不存在",
-	NoPermission:      "无权限操作",
+	TaskNotFoundError:     "任务不存在",
+	CategoryNotFoundError: "分类不存在",
+	NoPermission:          "无权限操作",
 	AdminRequired:     "需要管理员权限",
 }
 
