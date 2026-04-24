@@ -131,3 +131,9 @@
 ### Bug 修复
 
 - [x] **状态筛选"待办"无效** — 根因：go-zero `form:"status,optional"` 对 int64 零值无法区分"未传"和"传了0"，Status/Priority/CategoryId 改为 `default=-1`，tasklistlogic 正确识别 `status==0` 为"待办"筛选
+
+### 其他
+
+- [x] **首页导航栏添加"管理后台"入口** — 管理员登录后首页导航栏显示"管理后台"按钮（`v-if="userStore.isAdmin"`），普通用户不可见
+- [x] **#50 SQL 表名拼接编码习惯** — 已验证：`tableName()` 返回硬编码常量，当前安全；编码风格问题留待重构
+- [x] **staticcheck SA5008 配置** — 添加 `.staticcheck.conf` 排除 go-zero 扩展 json tag 选项误报
