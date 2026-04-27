@@ -3,6 +3,8 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -14,6 +16,7 @@ type (
 		FindOne(ctx context.Context, id int64) (*LoginLog, error)
 		Update(ctx context.Context, data *LoginLog) error
 		Delete(ctx context.Context, id int64) error
+		DeleteBatch(ctx context.Context, ids []int64) error
 		FindList(ctx context.Context, username string, page, pageSize int64) ([]*LoginLog, int64, error)
 		DeleteOlderThan(ctx context.Context, beforeTime time.Time) (int64, error)
 	}
@@ -30,12 +33,12 @@ func NewLoginLogModel(db *sql.DB) LoginLogModel {
 func (m *defaultLoginLogModel) tableName() string { return "`login_log`" }
 
 func (m *defaultLoginLogModel) Insert(ctx context.Context, data *LoginLog) (sql.Result, error) {
-	query := `INSERT INTO ` + m.tableName() + ` (user_id, username, ip, user_agent, status, remark) VALUES (?, ?, ?, ?, ?, ?)`
+	query := fmt.Sprintf(`INSERT INTO %s (user_id, username, ip, user_agent, status, remark) VALUES (?, ?, ?, ?, ?, ?)`, m.tableName())
 	return m.db.ExecContext(ctx, query, data.UserId, data.Username, data.Ip, data.UserAgent, data.Status, data.Remark)
 }
 
 func (m *defaultLoginLogModel) FindOne(ctx context.Context, id int64) (*LoginLog, error) {
-	query := `SELECT id, user_id, username, ip, user_agent, status, remark, create_time FROM ` + m.tableName() + ` WHERE id = ? LIMIT 1`
+	query := fmt.Sprintf(`SELECT id, user_id, username, ip, user_agent, status, remark, create_time FROM %s WHERE id = ? LIMIT 1`, m.tableName())
 	var l LoginLog
 	err := m.db.QueryRowContext(ctx, query, id).Scan(&l.Id, &l.UserId, &l.Username, &l.Ip, &l.UserAgent, &l.Status, &l.Remark, &l.CreateTime)
 	if err == sql.ErrNoRows {
@@ -45,13 +48,13 @@ func (m *defaultLoginLogModel) FindOne(ctx context.Context, id int64) (*LoginLog
 }
 
 func (m *defaultLoginLogModel) Update(ctx context.Context, data *LoginLog) error {
-	query := `UPDATE ` + m.tableName() + ` SET user_id = ?, username = ?, ip = ?, user_agent = ?, status = ?, remark = ? WHERE id = ?`
+	query := fmt.Sprintf(`UPDATE %s SET user_id = ?, username = ?, ip = ?, user_agent = ?, status = ?, remark = ? WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, data.UserId, data.Username, data.Ip, data.UserAgent, data.Status, data.Remark, data.Id)
 	return err
 }
 
 func (m *defaultLoginLogModel) DeleteOlderThan(ctx context.Context, beforeTime time.Time) (int64, error) {
-	query := `DELETE FROM ` + m.tableName() + ` WHERE create_time < ?`
+	query := fmt.Sprintf(`DELETE FROM %s WHERE create_time < ?`, m.tableName())
 	result, err := m.db.ExecContext(ctx, query, beforeTime)
 	if err != nil {
 		return 0, err
@@ -60,8 +63,23 @@ func (m *defaultLoginLogModel) DeleteOlderThan(ctx context.Context, beforeTime t
 }
 
 func (m *defaultLoginLogModel) Delete(ctx context.Context, id int64) error {
-	query := `DELETE FROM ` + m.tableName() + ` WHERE id = ?`
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, id)
+	return err
+}
+
+func (m *defaultLoginLogModel) DeleteBatch(ctx context.Context, ids []int64) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	placeholders := make([]string, len(ids))
+	args := make([]interface{}, len(ids))
+	for i, id := range ids {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id IN (%s)`, m.tableName(), strings.Join(placeholders, ","))
+	_, err := m.db.ExecContext(ctx, query, args...)
 	return err
 }
 
@@ -76,14 +94,14 @@ func (m *defaultLoginLogModel) FindList(ctx context.Context, username string, pa
 	}
 
 	var total int64
-	countQuery := `SELECT COUNT(*) FROM ` + m.tableName() + where
+	countQuery := fmt.Sprintf(`SELECT COUNT(*) FROM %s`, m.tableName()) + where
 	err := m.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	offset := (page - 1) * pageSize
-	listQuery := `SELECT id, user_id, username, ip, user_agent, status, remark, create_time FROM ` + m.tableName() + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
+	listQuery := fmt.Sprintf(`SELECT id, user_id, username, ip, user_agent, status, remark, create_time FROM %s`, m.tableName()) + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
 	listArgs := append(args, pageSize, offset)
 	rows, err := m.db.QueryContext(ctx, listQuery, listArgs...)
 	if err != nil {

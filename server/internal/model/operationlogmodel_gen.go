@@ -32,7 +32,7 @@ func NewOperationLogModel(db *sql.DB) OperationLogModel {
 func (m *defaultOperationLogModel) tableName() string { return "`operation_logs`" }
 
 func (m *defaultOperationLogModel) Insert(ctx context.Context, data *OperationLog) (sql.Result, error) {
-	query := `INSERT INTO ` + m.tableName() + ` (user_id, username, module, action, method, ip, location, params, status, error_msg, duration, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	query := fmt.Sprintf(`INSERT INTO %s (user_id, username, module, action, method, ip, location, params, status, error_msg, duration, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, m.tableName())
 	data.CreatedAt = time.Now()
 	return m.db.ExecContext(ctx, query, data.UserId, data.Username, data.Module, data.Action, data.Method, data.Ip, data.Location, data.Params, data.Status, data.ErrorMsg, data.Duration, data.CreatedAt)
 }
@@ -50,13 +50,13 @@ func (m *defaultOperationLogModel) FindList(ctx context.Context, action, usernam
 	}
 
 	var total int64
-	countQuery := `SELECT COUNT(*) FROM ` + m.tableName() + where
+	countQuery := fmt.Sprintf(`SELECT COUNT(*) FROM %s`, m.tableName()) + where
 	if err := m.db.QueryRowContext(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
 	offset := (page - 1) * pageSize
-	query := `SELECT id, user_id, username, module, action, method, ip, location, params, status, error_msg, duration, created_at FROM ` + m.tableName() + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
+	query := fmt.Sprintf(`SELECT id, user_id, username, module, action, method, ip, location, params, status, error_msg, duration, created_at FROM %s`, m.tableName()) + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
 	args = append(args, pageSize, offset)
 	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -78,19 +78,19 @@ func (m *defaultOperationLogModel) FindList(ctx context.Context, action, usernam
 
 func (m *defaultOperationLogModel) Count(ctx context.Context) (int64, error) {
 	var count int64
-	query := `SELECT COUNT(*) FROM ` + m.tableName()
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s`, m.tableName())
 	err := m.db.QueryRowContext(ctx, query).Scan(&count)
 	return count, err
 }
 
 func (m *defaultOperationLogModel) DeleteById(ctx context.Context, id int64) error {
-	query := `DELETE FROM ` + m.tableName() + ` WHERE id = ?`
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, id)
 	return err
 }
 
 func (m *defaultOperationLogModel) DeleteOlderThan(ctx context.Context, beforeTime time.Time) (int64, error) {
-	query := `DELETE FROM ` + m.tableName() + ` WHERE created_at < ?`
+	query := fmt.Sprintf(`DELETE FROM %s WHERE created_at < ?`, m.tableName())
 	result, err := m.db.ExecContext(ctx, query, beforeTime)
 	if err != nil {
 		return 0, err

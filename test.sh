@@ -632,7 +632,7 @@ assert_err "$RESP" "删除管理员拒绝"
 
 # 10.6 系统配置
 RESP=$(get "/api/v1/admin/config" "$ADMIN_TOKEN")
-assert_eq "$RESP" "data.list | length" "5" "系统配置(5项)"
+assert_eq "$RESP" "data.list | length" "7" "系统配置(7项)"
 
 RESP=$(put "/api/v1/admin/config" "{\"key\":\"allow_register\",\"value\":\"false\"}" "$ADMIN_TOKEN")
 assert_ok "$RESP" "关闭注册"

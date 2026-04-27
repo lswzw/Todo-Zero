@@ -46,6 +46,7 @@ func (m *mockLoginLogModel) Insert(ctx context.Context, data *model.LoginLog) (s
 func (m *mockLoginLogModel) FindOne(ctx context.Context, id int64) (*model.LoginLog, error) { return nil, nil }
 func (m *mockLoginLogModel) Update(ctx context.Context, data *model.LoginLog) error          { return nil }
 func (m *mockLoginLogModel) Delete(ctx context.Context, id int64) error                      { return nil }
+func (m *mockLoginLogModel) DeleteBatch(ctx context.Context, ids []int64) error                { return nil }
 func (m *mockLoginLogModel) FindList(ctx context.Context, username string, page, pageSize int64) ([]*model.LoginLog, int64, error) {
 	return nil, 0, nil
 }

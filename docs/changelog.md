@@ -277,3 +277,36 @@
   - npm scripts: `lint` (eslint --fix) / `format` (prettier --write)
   - 全部源文件自动格式化，消除 87 个格式错误和 1 个 `any` 类型警告
   - `stores/user.ts` — `as any` 替换为 `as UserInfo` 类型断言
+
+---
+
+## v2.0.0 — 技术债清理
+
+### 高优先级
+
+- [x] **环境变量管理** — `request.ts` 的 `baseURL` 从硬编码 `/api/v1` 改为 `import.meta.env.VITE_API_BASE_URL`
+  - 新增 `.env.production`，`VITE_API_BASE_URL=/api/v1`
+  - `.env` 新增 `VITE_API_BASE_URL=/api/v1`
+  - `vite.config.ts` 代理目标也改为读取环境变量
+
+- [x] **BatchDelete SQL 拼接** — `LoginLogModel` 补齐 `DeleteBatch` 方法，与 `OperationLogModel` 实现一致
+  - 两个 model 均使用参数化占位符 `?`，无 SQL 注入风险
+  - 同步更新 `loginlogic_test.go` 和 `cleanup_test.go` 的 mock 对象
+
+### 中优先级
+
+- [x] **SQL 表名拼接** — 全部 6 个 model 文件（44+ 处）从 `` `...` + m.tableName() + `...` `` 统一改为 `fmt.Sprintf`
+  - `usermodel_gen.go`、`categorymodel_gen.go`、`systemconfigmodel_gen.go`、`taskmodel_gen.go`、`operationlogmodel_gen.go`、`loginlogmodel_gen.go`
+
+- [x] **配置热更新** — `SystemConfigModel` 增加带 TTL 的内存缓存
+  - 使用 `sync.Map` 存储，30 秒 TTL
+  - `FindByKey` 命中缓存直接返回，未命中查库后写入
+  - `Update`/`Insert` 时自动清除对应 key 的缓存
+
+### 低优先级
+
+- [x] **App.vue 全局错误处理** — 增加 `onErrorCaptured` 全局错误边界
+
+### 测试修复
+
+- `test.sh` 系统配置期望值从 5 更新为 7（匹配 init.sql 实际配置项数）

@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -32,7 +33,7 @@ func NewUserModel(db *sql.DB) UserModel {
 func (m *defaultUserModel) tableName() string { return "`users`" }
 
 func (m *defaultUserModel) FindOne(ctx context.Context, id int64) (*User, error) {
-	query := `SELECT id, username, password, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM ` + m.tableName() + ` WHERE id = ? AND is_deleted = 0 LIMIT 1`
+	query := fmt.Sprintf(`SELECT id, username, password, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM %s WHERE id = ? AND is_deleted = 0 LIMIT 1`, m.tableName())
 	var resp User
 	err := m.db.QueryRowContext(ctx, query, id).Scan(&resp.Id, &resp.Username, &resp.Password, &resp.Nickname, &resp.Email, &resp.Phone, &resp.Avatar, &resp.Role, &resp.Status, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
 	if err == sql.ErrNoRows {
@@ -42,7 +43,7 @@ func (m *defaultUserModel) FindOne(ctx context.Context, id int64) (*User, error)
 }
 
 func (m *defaultUserModel) FindOneByUsername(ctx context.Context, username string) (*User, error) {
-	query := `SELECT id, username, password, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM ` + m.tableName() + ` WHERE username = ? AND is_deleted = 0 LIMIT 1`
+	query := fmt.Sprintf(`SELECT id, username, password, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM %s WHERE username = ? AND is_deleted = 0 LIMIT 1`, m.tableName())
 	var resp User
 	err := m.db.QueryRowContext(ctx, query, username).Scan(&resp.Id, &resp.Username, &resp.Password, &resp.Nickname, &resp.Email, &resp.Phone, &resp.Avatar, &resp.Role, &resp.Status, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
 	if err == sql.ErrNoRows {
@@ -52,7 +53,7 @@ func (m *defaultUserModel) FindOneByUsername(ctx context.Context, username strin
 }
 
 func (m *defaultUserModel) Insert(ctx context.Context, data *User) (sql.Result, error) {
-	query := `INSERT INTO ` + m.tableName() + ` (username, password, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
+	query := fmt.Sprintf(`INSERT INTO %s (username, password, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`, m.tableName())
 	now := time.Now()
 	data.CreateTime = now
 	data.UpdateTime = now
@@ -60,14 +61,14 @@ func (m *defaultUserModel) Insert(ctx context.Context, data *User) (sql.Result, 
 }
 
 func (m *defaultUserModel) Update(ctx context.Context, data *User) error {
-	query := `UPDATE ` + m.tableName() + ` SET nickname = ?, email = ?, phone = ?, avatar = ?, role = ?, status = ?, update_time = ? WHERE id = ?`
+	query := fmt.Sprintf(`UPDATE %s SET nickname = ?, email = ?, phone = ?, avatar = ?, role = ?, status = ?, update_time = ? WHERE id = ?`, m.tableName())
 	data.UpdateTime = time.Now()
 	_, err := m.db.ExecContext(ctx, query, data.Nickname, data.Email, data.Phone, data.Avatar, data.Role, data.Status, data.UpdateTime, data.Id)
 	return err
 }
 
 func (m *defaultUserModel) Delete(ctx context.Context, id int64) error {
-	query := `UPDATE ` + m.tableName() + ` SET is_deleted = 1, update_time = ? WHERE id = ?`
+	query := fmt.Sprintf(`UPDATE %s SET is_deleted = 1, update_time = ? WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, time.Now(), id)
 	return err
 }
@@ -85,14 +86,14 @@ func (m *defaultUserModel) FindList(ctx context.Context, username string, status
 	}
 
 	var total int64
-	countQuery := `SELECT COUNT(*) FROM ` + m.tableName() + where
+	countQuery := fmt.Sprintf(`SELECT COUNT(*) FROM %s`, m.tableName()) + where
 	err := m.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	offset := (page - 1) * pageSize
-	listQuery := `SELECT id, username, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM ` + m.tableName() + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
+	listQuery := fmt.Sprintf(`SELECT id, username, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
 	listArgs := append(args, pageSize, offset)
 
 	rows, err := m.db.QueryContext(ctx, listQuery, listArgs...)
@@ -114,13 +115,13 @@ func (m *defaultUserModel) FindList(ctx context.Context, username string, status
 }
 
 func (m *defaultUserModel) UpdateStatus(ctx context.Context, id, status int64) error {
-	query := `UPDATE ` + m.tableName() + ` SET status = ?, update_time = ? WHERE id = ?`
+	query := fmt.Sprintf(`UPDATE %s SET status = ?, update_time = ? WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, status, time.Now(), id)
 	return err
 }
 
 func (m *defaultUserModel) UpdatePassword(ctx context.Context, id int64, password string) error {
-	query := `UPDATE ` + m.tableName() + ` SET password = ?, update_time = ? WHERE id = ?`
+	query := fmt.Sprintf(`UPDATE %s SET password = ?, update_time = ? WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, password, time.Now(), id)
 	return err
 }

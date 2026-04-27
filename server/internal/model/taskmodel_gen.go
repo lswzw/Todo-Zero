@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -33,7 +34,7 @@ func NewTaskModel(db *sql.DB) TaskModel {
 func (m *defaultTaskModel) tableName() string { return "`tasks`" }
 
 func (m *defaultTaskModel) Insert(ctx context.Context, data *Task) (sql.Result, error) {
-	query := `INSERT INTO ` + m.tableName() + ` (title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
+	query := fmt.Sprintf(`INSERT INTO %s (title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`, m.tableName())
 	now := time.Now()
 	data.CreateTime = now
 	data.UpdateTime = now
@@ -41,20 +42,20 @@ func (m *defaultTaskModel) Insert(ctx context.Context, data *Task) (sql.Result, 
 }
 
 func (m *defaultTaskModel) Update(ctx context.Context, data *Task) error {
-	query := `UPDATE ` + m.tableName() + ` SET title = ?, content = ?, priority = ?, status = ?, category_id = ?, start_time = ?, end_time = ?, reminder = ?, tags = ?, update_time = ? WHERE id = ?`
+	query := fmt.Sprintf(`UPDATE %s SET title = ?, content = ?, priority = ?, status = ?, category_id = ?, start_time = ?, end_time = ?, reminder = ?, tags = ?, update_time = ? WHERE id = ?`, m.tableName())
 	data.UpdateTime = time.Now()
 	_, err := m.db.ExecContext(ctx, query, data.Title, data.Content, data.Priority, data.Status, data.CategoryId, data.StartTime, data.EndTime, data.Reminder, data.Tags, data.UpdateTime, data.Id)
 	return err
 }
 
 func (m *defaultTaskModel) Delete(ctx context.Context, id int64) error {
-	query := `UPDATE ` + m.tableName() + ` SET is_deleted = 1, update_time = ? WHERE id = ?`
+	query := fmt.Sprintf(`UPDATE %s SET is_deleted = 1, update_time = ? WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, time.Now(), id)
 	return err
 }
 
 func (m *defaultTaskModel) FindOne(ctx context.Context, id int64) (*Task, error) {
-	query := `SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM ` + m.tableName() + ` WHERE id = ? AND is_deleted = 0 LIMIT 1`
+	query := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s WHERE id = ? AND is_deleted = 0 LIMIT 1`, m.tableName())
 	var resp Task
 	err := m.db.QueryRowContext(ctx, query, id).Scan(&resp.Id, &resp.Title, &resp.Content, &resp.Priority, &resp.Status, &resp.CategoryId, &resp.UserId, &resp.StartTime, &resp.EndTime, &resp.Reminder, &resp.Tags, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
 	if err == sql.ErrNoRows {
@@ -84,14 +85,14 @@ func (m *defaultTaskModel) FindList(ctx context.Context, userId int64, keyword s
 	}
 
 	var total int64
-	countQuery := `SELECT COUNT(*) FROM ` + m.tableName() + where
+	countQuery := fmt.Sprintf(`SELECT COUNT(*) FROM %s`, m.tableName()) + where
 	err := m.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	offset := (page - 1) * pageSize
-	listQuery := `SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM ` + m.tableName() + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
+	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
 	listArgs := append(args, pageSize, offset)
 	rows, err := m.db.QueryContext(ctx, listQuery, listArgs...)
 	if err != nil {
@@ -112,13 +113,13 @@ func (m *defaultTaskModel) FindList(ctx context.Context, userId int64, keyword s
 }
 
 func (m *defaultTaskModel) UpdateStatus(ctx context.Context, id, status int64) error {
-	query := `UPDATE ` + m.tableName() + ` SET status = ?, update_time = ? WHERE id = ?`
+	query := fmt.Sprintf(`UPDATE %s SET status = ?, update_time = ? WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, status, time.Now(), id)
 	return err
 }
 
 func (m *defaultTaskModel) HardDeleteCompletedBefore(ctx context.Context, beforeTime time.Time) (int64, error) {
-	query := `DELETE FROM ` + m.tableName() + ` WHERE status = 2 AND is_deleted = 0 AND update_time < ?`
+	query := fmt.Sprintf(`DELETE FROM %s WHERE status = 2 AND is_deleted = 0 AND update_time < ?`, m.tableName())
 	result, err := m.db.ExecContext(ctx, query, beforeTime)
 	if err != nil {
 		return 0, err
@@ -127,7 +128,7 @@ func (m *defaultTaskModel) HardDeleteCompletedBefore(ctx context.Context, before
 }
 
 func (m *defaultTaskModel) HardDeleteSoftDeletedBefore(ctx context.Context, beforeTime time.Time) (int64, error) {
-	query := `DELETE FROM ` + m.tableName() + ` WHERE is_deleted = 1 AND update_time < ?`
+	query := fmt.Sprintf(`DELETE FROM %s WHERE is_deleted = 1 AND update_time < ?`, m.tableName())
 	result, err := m.db.ExecContext(ctx, query, beforeTime)
 	if err != nil {
 		return 0, err
@@ -136,16 +137,16 @@ func (m *defaultTaskModel) HardDeleteSoftDeletedBefore(ctx context.Context, befo
 }
 
 func (m *defaultTaskModel) CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error) {
-	if err = m.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM `+m.tableName()+` WHERE user_id = ? AND is_deleted = 0`, userId).Scan(&total); err != nil {
+	if err = m.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE user_id = ? AND is_deleted = 0`, m.tableName()), userId).Scan(&total); err != nil {
 		return
 	}
-	if err = m.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM `+m.tableName()+` WHERE user_id = ? AND status != 2 AND is_deleted = 0`, userId).Scan(&todo); err != nil {
+	if err = m.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE user_id = ? AND status != 2 AND is_deleted = 0`, m.tableName()), userId).Scan(&todo); err != nil {
 		return
 	}
-	if err = m.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM `+m.tableName()+` WHERE user_id = ? AND status = 2 AND is_deleted = 0`, userId).Scan(&done); err != nil {
+	if err = m.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE user_id = ? AND status = 2 AND is_deleted = 0`, m.tableName()), userId).Scan(&done); err != nil {
 		return
 	}
-	if err = m.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM `+m.tableName()+` WHERE user_id = ? AND end_time < ? AND status != 2 AND is_deleted = 0`, userId, time.Now()).Scan(&overdue); err != nil {
+	if err = m.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE user_id = ? AND end_time < ? AND status != 2 AND is_deleted = 0`, m.tableName()), userId, time.Now()).Scan(&overdue); err != nil {
 		return
 	}
 	return
