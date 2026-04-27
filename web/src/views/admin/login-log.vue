@@ -30,6 +30,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { getLoginLogList } from '@/api'
 import type { LoginLogItem } from '@/types'
@@ -51,7 +52,7 @@ async function loadLogs() {
     logs.value = res.list || []
     total.value = res.total || 0
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('加载登录日志失败')
   }
 }
 </script>

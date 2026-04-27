@@ -90,7 +90,7 @@
                 <el-icon v-if="task.status === 2"><Check /></el-icon>
               </div>
             </div>
-            <div class="task-body">
+            <div class="task-body" @click="router.push(`/task/${task.id}`)">
               <div :class="['task-title', { 'line-through': task.status === 2 }]">{{ task.title }}</div>
               <div v-if="task.content" class="task-content">{{ task.content }}</div>
               <div class="task-meta">
@@ -354,7 +354,7 @@ async function handleToggle(task: TaskItem) {
     loadTasks()
     loadStat()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('切换状态失败')
   }
 }
 
@@ -365,7 +365,7 @@ async function handleDelete(id: number) {
     loadTasks()
     loadStat()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('删除任务失败')
   }
 }
 
@@ -377,7 +377,7 @@ async function handleBatch(action: string) {
     loadTasks()
     loadStat()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('批量操作失败')
   }
 }
 
@@ -420,7 +420,7 @@ async function handleSubmitTask() {
     loadTasks()
     loadStat()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error(editingTask.value ? '修改任务失败' : '创建任务失败')
   } finally {
     submitting.value = false
   }
@@ -437,7 +437,7 @@ async function handleChangePassword() {
     userStore.logout()
     router.push('/login')
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('修改密码失败')
   } finally {
     pwdLoading.value = false
   }
@@ -473,7 +473,7 @@ async function handleAddCategory() {
     await loadCategories()
     ElMessage.success('分类已添加')
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('添加分类失败')
   }
 }
 
@@ -489,7 +489,7 @@ async function handleUpdateCategory(c: CategoryItem & { _name: string; _color: s
     await updateCategory(c.id, { name: c._name.trim(), color: c._color })
     await loadCategories()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('更新分类失败')
     await loadCategories()
   }
 }
@@ -498,11 +498,15 @@ async function handleDeleteCategory(c: CategoryItem) {
   if (c.isSystem) return
   try {
     await ElMessageBox.confirm(`确定删除分类"${c.name}"？该分类下的任务不会被删除。`, '提示', { type: 'warning' })
+  } catch {
+    return // 用户取消
+  }
+  try {
     await deleteCategory(c.id)
     await loadCategories()
     ElMessage.success('分类已删除')
   } catch {
-    // 用户取消或错误已由拦截器处理
+    ElMessage.error('删除分类失败')
   }
 }
 
@@ -701,6 +705,7 @@ function handleLogout() {
 .task-body {
   flex: 1;
   min-width: 0;
+  cursor: pointer;
 }
 
 .task-title {

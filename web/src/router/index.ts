@@ -21,6 +21,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/task/:id',
+      name: 'TaskDetail',
+      component: () => import('@/views/task-detail.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/admin',
       name: 'Admin',
       component: () => import('@/views/admin/layout.vue'),

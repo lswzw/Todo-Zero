@@ -182,3 +182,38 @@
   - 前端 TS 类型：`TaskItem` 新增 4 字段，新增 `TaskFormData` 接口
   - 前端表单：新增 3 个 `el-date-picker`（开始时间/截止时间/提醒时间）+ 标签输入框
   - 前端列表：标签逗号拆分为独立 `el-tag` 展示；截止时间逾期红色高亮
+
+---
+
+## v1.8.0 — 任务详情页 + 单元测试 + 空 catch 修复
+
+### P1 — 功能补全
+
+- [x] **补全任务详情页** — 新增 `task-detail.vue` 详情页，路由 `/task/:id`，首页任务卡片点击跳转
+  - 顶部导航栏（返回列表 + 编辑/切换状态/删除操作）
+  - 加载中/错误/正常三种状态展示
+  - 标题区（带状态圆圈，可点击切换）
+  - 元信息行（优先级、分类、标签、状态标签）
+  - 信息卡片网格（创建/开始/截止/提醒/更新时间）
+  - 内容区（完整展示，支持换行）
+  - 编辑弹窗（复用表单逻辑）
+  - 截止时间过期高亮
+
+- [x] **添加 Go 单元测试** — model 层 25 个测试 + logic 层 5 个测试，覆盖 CRUD、软删除、权限校验、密码验证等
+  - `model/test_helper_test.go` — 测试辅助：SQLite 内存数据库初始化、测试数据插入
+  - `model/taskmodel_test.go` (7) — Insert/FindOne/SoftDelete/Update/UpdateStatus/FindList(过滤+分页)/CountStats
+  - `model/usermodel_test.go` (8) — Insert/FindOne/FindByUsername/SoftDelete/Update/UpdateStatus/UpdatePassword/FindList/UNIQUE 约束
+  - `model/categorymodel_test.go` (8) — Insert/FindOne/系统分类不可删/用户分类可删/FindAll/FindSystem/Update/CountByUser
+  - `logic/task/taskdetaillogic_test.go` (5) — 成功获取/无权限/任务不存在/缺少 userId/无分类
+  - `logic/user/loginlogic_test.go` (5) — 登录成功/用户不存在/用户禁用/密码错误/管理员登录
+
+### P2 — 空 catch 修复
+
+- [x] **空 catch 修复** — 所有空 catch 添加 `ElMessage.error` 错误提示，ElMessageBox 取消与 API 错误分离
+  - `views/home.vue` (9 处) — 切换状态/删除/批量/提交任务/改密码/添加分类/更新分类/删除分类
+  - `views/task-detail.vue` (3 处) — 切换状态/删除/编辑提交
+  - `views/admin/user.vue` (3 处) — 重置密码/切换状态/删除用户
+  - `views/admin/config.vue` (1 处) — 保存配置
+  - `views/admin/log.vue` (1 处) — 加载操作日志
+  - `views/admin/login-log.vue` (1 处) — 加载登录日志
+  - 保留静默的 4 处（合理设计）：checkRegister 非关键、登录错误由拦截器处理、token 失效执行 logout、loadCategories 降级

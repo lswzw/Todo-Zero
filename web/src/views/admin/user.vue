@@ -115,7 +115,7 @@ async function handleResetPassword() {
     resetDialogVisible.value = false
     loadUsers()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('重置密码失败')
   } finally {
     resetLoading.value = false
   }
@@ -127,7 +127,7 @@ async function handleToggleStatus(row: UserListItem) {
     ElMessage.success(row.status === 1 ? '已禁用' : '已启用')
     loadUsers()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('切换用户状态失败')
   }
 }
 
@@ -137,7 +137,7 @@ async function handleDelete(row: UserListItem) {
     ElMessage.success('已删除')
     loadUsers()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('删除用户失败')
   }
 }
 </script>

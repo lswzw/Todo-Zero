@@ -63,7 +63,7 @@ async function handleUpdate(key: string, value: string) {
     ElMessage.success(`配置已保存：${key}`)
     loadConfigs()
   } catch {
-    // 错误已由拦截器处理
+    ElMessage.error('保存配置失败')
   }
 }
 </script>
