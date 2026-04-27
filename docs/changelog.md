@@ -257,6 +257,11 @@
 
 - `admin/config.vue` — 新增 `task_auto_delete_days`、`task_trash_retention_days`、`log_auto_delete_days` 配置项中文标题和描述
 
+### 关闭的待办项
+
+- ~~**前端 TypeScript 类型化**~~ — 不适用：v1.4.0 已定义 15 个接口，v1.9.0 清除最后 1 个 `any`，当前 0 个 `any` 残留
+- ~~**提取公共组件**~~ — 不适用：项目仅 4 处分页各 1 行 `<el-pagination>`，抽象成本 > 收益
+
 ---
 
 ## v1.9.0 — ESLint + Prettier 代码规范
