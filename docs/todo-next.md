@@ -12,7 +12,7 @@
 
 ## P1 — 重要改进（安全性/功能补全）
 
-- [ ] **补全任务时间/标签字段** — 数据库已有 `start_time`、`end_time`、`reminder`、`tags` 字段，但 API 和前端均未暴露
+- [x] ~~**补全任务时间/标签字段**~~ — v1.7.0 已完成，数据库已有 `start_time`、`end_time`、`reminder`、`tags` 字段，API 和前端已暴露
 - [ ] **补全任务详情页** — 后端有 GET /task/:id，前端有 `getTaskDetail` 函数，但 UI 无入口
 - [ ] **添加 Go 单元测试** — 项目零 `_test.go` 文件，至少覆盖 model 层和核心 logic
 

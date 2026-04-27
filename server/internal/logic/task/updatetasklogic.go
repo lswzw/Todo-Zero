@@ -55,6 +55,18 @@ func (l *UpdateTaskLogic) UpdateTask(req *types.UpdateTaskReq) (resp *types.Upda
 	if req.CategoryId != nil {
 		task.CategoryId = sql.NullInt64{Int64: *req.CategoryId, Valid: *req.CategoryId != 0}
 	}
+	if req.StartTime != nil {
+		task.StartTime = parseNullTime(*req.StartTime)
+	}
+	if req.EndTime != nil {
+		task.EndTime = parseNullTime(*req.EndTime)
+	}
+	if req.Reminder != nil {
+		task.Reminder = parseNullTime(*req.Reminder)
+	}
+	if req.Tags != nil {
+		task.Tags = *req.Tags
+	}
 
 	if err := l.svcCtx.TaskModel.Update(l.ctx, task); err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)

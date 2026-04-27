@@ -63,6 +63,10 @@ type (
 		Content    string `json:"content,optional" validate:"max=1000"`
 		Priority   int64  `json:"priority,optional,default=2" options="1|2|3"`
 		CategoryId int64  `json:"categoryId,optional"`
+		StartTime  string `json:"startTime,optional"`
+		EndTime    string `json:"endTime,optional"`
+		Reminder   string `json:"reminder,optional"`
+		Tags       string `json:"tags,optional" validate:"max=200"`
 	}
 	CreateTaskResp {
 		Id int64 `json:"id"`
@@ -77,6 +81,10 @@ type (
 		Content    string `json:"content,optional" validate:"max=1000"`
 		Priority   int64  `json:"priority,optional" options="1|2|3"`
 		CategoryId int64  `json:"categoryId,optional"`
+		StartTime  string `json:"startTime,optional"`
+		EndTime    string `json:"endTime,optional"`
+		Reminder   string `json:"reminder,optional"`
+		Tags       string `json:"tags,optional" validate:"max=200"`
 	}
 	UpdateTaskResp  {}
 )
@@ -110,6 +118,10 @@ type (
 		Priority     int64  `json:"priority"`
 		CategoryId   int64  `json:"categoryId"`
 		CategoryName string `json:"categoryName"`
+		StartTime    string `json:"startTime"`
+		EndTime      string `json:"endTime"`
+		Reminder     string `json:"reminder"`
+		Tags         string `json:"tags"`
 		CreateTime   string `json:"createTime"`
 		UpdateTime   string `json:"updateTime"`
 	}
@@ -133,6 +145,10 @@ type (
 		Priority     int64  `json:"priority"`
 		CategoryId   int64  `json:"categoryId"`
 		CategoryName string `json:"categoryName"`
+		StartTime    string `json:"startTime"`
+		EndTime      string `json:"endTime"`
+		Reminder     string `json:"reminder"`
+		Tags         string `json:"tags"`
 		CreateTime   string `json:"createTime"`
 	}
 	TaskListResp {

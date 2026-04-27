@@ -8,11 +8,26 @@ export interface TaskItem {
   priority: number
   categoryId: number
   categoryName: string
+  startTime: string
+  endTime: string
+  reminder: string
+  tags: string
   createTime: string
 }
 
 export interface TaskDetail extends TaskItem {
   updateTime: string
+}
+
+export interface TaskFormData {
+  title: string
+  content: string
+  priority: number
+  categoryId: number | undefined
+  startTime: string
+  endTime: string
+  reminder: string
+  tags: string
 }
 
 export interface TaskListResp {

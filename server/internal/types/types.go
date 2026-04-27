@@ -76,6 +76,10 @@ type CreateTaskReq struct {
 	Content    string `json:"content,optional"`
 	Priority   int64  `json:"priority,optional,default=3,options=1|2|3"`
 	CategoryId int64  `json:"categoryId,optional"`
+	StartTime  string `json:"startTime,optional"`
+	EndTime    string `json:"endTime,optional"`
+	Reminder   string `json:"reminder,optional"`
+	Tags       string `json:"tags,optional"`
 }
 
 type CreateTaskResp struct {
@@ -188,6 +192,10 @@ type TaskDetailResp struct {
 	Priority     int64  `json:"priority"`
 	CategoryId   int64  `json:"categoryId"`
 	CategoryName string `json:"categoryName"`
+	StartTime    string `json:"startTime"`
+	EndTime      string `json:"endTime"`
+	Reminder     string `json:"reminder"`
+	Tags         string `json:"tags"`
 	CreateTime   string `json:"createTime"`
 	UpdateTime   string `json:"updateTime"`
 }
@@ -200,6 +208,10 @@ type TaskItem struct {
 	Priority     int64  `json:"priority"`
 	CategoryId   int64  `json:"categoryId"`
 	CategoryName string `json:"categoryName"`
+	StartTime    string `json:"startTime"`
+	EndTime      string `json:"endTime"`
+	Reminder     string `json:"reminder"`
+	Tags         string `json:"tags"`
 	CreateTime   string `json:"createTime"`
 }
 
@@ -245,6 +257,10 @@ type UpdateTaskReq struct {
 	Content    *string `json:"content,optional"`
 	Priority   *int64  `json:"priority,optional,options=1|2|3"`
 	CategoryId *int64  `json:"categoryId,optional"`
+	StartTime  *string `json:"startTime,optional"`
+	EndTime    *string `json:"endTime,optional"`
+	Reminder   *string `json:"reminder,optional"`
+	Tags       *string `json:"tags,optional"`
 }
 
 type UpdateTaskResp struct {

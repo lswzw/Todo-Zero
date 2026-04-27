@@ -90,6 +90,10 @@ func (l *TaskListLogic) TaskList(req *types.TaskListReq) (resp *types.TaskListRe
 			Priority:     t.Priority,
 			CategoryId:   categoryId,
 			CategoryName: categoryName,
+			StartTime:    formatNullTime(t.StartTime),
+			EndTime:      formatNullTime(t.EndTime),
+			Reminder:     formatNullTime(t.Reminder),
+			Tags:         t.Tags,
 			CreateTime:   t.CreateTime.Format("2006-01-02 15:04"),
 		})
 	}

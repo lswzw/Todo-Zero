@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"time"
 	"unicode/utf8"
 )
 
@@ -101,6 +102,24 @@ func (r *CreateTaskReq) Validate() error {
 	}
 	if r.CategoryId < 0 {
 		return fmt.Errorf("分类ID无效")
+	}
+	if utf8.RuneCountInString(r.Tags) > 200 {
+		return fmt.Errorf("标签最多200个字符")
+	}
+	if r.StartTime != "" {
+		if _, err := time.Parse("2006-01-02 15:04", r.StartTime); err != nil {
+			return fmt.Errorf("开始时间格式无效")
+		}
+	}
+	if r.EndTime != "" {
+		if _, err := time.Parse("2006-01-02 15:04", r.EndTime); err != nil {
+			return fmt.Errorf("截止时间格式无效")
+		}
+	}
+	if r.Reminder != "" {
+		if _, err := time.Parse("2006-01-02 15:04", r.Reminder); err != nil {
+			return fmt.Errorf("提醒时间格式无效")
+		}
 	}
 	return nil
 }
@@ -232,6 +251,24 @@ func (r *UpdateTaskReq) Validate() error {
 	}
 	if r.CategoryId != nil && *r.CategoryId < 0 {
 		return fmt.Errorf("分类ID无效")
+	}
+	if r.Tags != nil && utf8.RuneCountInString(*r.Tags) > 200 {
+		return fmt.Errorf("标签最多200个字符")
+	}
+	if r.StartTime != nil && *r.StartTime != "" {
+		if _, err := time.Parse("2006-01-02 15:04", *r.StartTime); err != nil {
+			return fmt.Errorf("开始时间格式无效")
+		}
+	}
+	if r.EndTime != nil && *r.EndTime != "" {
+		if _, err := time.Parse("2006-01-02 15:04", *r.EndTime); err != nil {
+			return fmt.Errorf("截止时间格式无效")
+		}
+	}
+	if r.Reminder != nil && *r.Reminder != "" {
+		if _, err := time.Parse("2006-01-02 15:04", *r.Reminder); err != nil {
+			return fmt.Errorf("提醒时间格式无效")
+		}
 	}
 	return nil
 }

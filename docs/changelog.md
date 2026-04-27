@@ -165,3 +165,20 @@
 
 - [x] **健康检查端点** — 新增 `GET /health`，无 JWT/中间件要求，ping DB 验证连通性，返回 `{"status":"ok"}`
 - [x] **ServiceContext 暴露 DB** — 新增 `DB *sql.DB` 字段，供健康检查等场景使用
+
+---
+
+## v1.7.0 — 补全任务时间/标签字段
+
+### 功能补全
+
+- [x] **补全任务时间/标签字段** — 数据库已有 `start_time`、`end_time`、`reminder`、`tags` 字段，从 API 到前端全链路暴露
+  - API 层：`CreateTaskReq`、`UpdateTaskReq`、`TaskDetailResp`、`TaskItem` 新增 4 个字段
+  - Go types：对应结构体同步新增，`UpdateTaskReq` 时间/标签字段使用 `*string` 指针类型（区分"未提供"和"清空"）
+  - 输入验证：时间字段校验 `2006-01-02 15:04` 格式，标签 max=200 字符
+  - Create Logic：`parseNullTime` 辅助函数将字符串转为 `sql.NullTime`，写入 DB
+  - Update Logic：`*string` 指针映射到 `sql.NullTime`/`string`，支持清空操作
+  - Detail/List Logic：`formatNullTime` 辅助函数将 `sql.NullTime` 转为字符串返回
+  - 前端 TS 类型：`TaskItem` 新增 4 字段，新增 `TaskFormData` 接口
+  - 前端表单：新增 3 个 `el-date-picker`（开始时间/截止时间/提醒时间）+ 标签输入框
+  - 前端列表：标签逗号拆分为独立 `el-tag` 展示；截止时间逾期红色高亮

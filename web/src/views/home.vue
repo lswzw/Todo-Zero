@@ -98,7 +98,9 @@
                 <el-tag v-else-if="task.priority === 1" size="small" type="warning">重要</el-tag>
                 <el-tag v-else size="small" type="success">普通</el-tag>
                 <el-tag v-if="task.categoryName" size="small" type="info" :color="getCategoryColor(task.categoryId)" style="border-color: transparent" :style="{ color: getCategoryTextColor(task.categoryId) }">{{ task.categoryName }}</el-tag>
-                <span class="task-time">{{ task.createTime }}</span>
+                <el-tag v-for="tag in parseTags(task.tags)" :key="tag" size="small" effect="plain" class="task-tag">{{ tag }}</el-tag>
+                <span v-if="task.endTime" class="task-time" :class="{ overdue: isOverdue(task.endTime, task.status) }">截止 {{ task.endTime }}</span>
+                <span v-else class="task-time">{{ task.createTime }}</span>
               </div>
             </div>
             <div class="task-actions">
@@ -150,6 +152,18 @@
               <span :style="{ color: c.color || '#909399' }">●</span> {{ c.name }}
             </el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="开始时间">
+          <el-date-picker v-model="taskForm.startTime" type="datetime" placeholder="选择开始时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+        </el-form-item>
+        <el-form-item label="截止时间">
+          <el-date-picker v-model="taskForm.endTime" type="datetime" placeholder="选择截止时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+        </el-form-item>
+        <el-form-item label="提醒时间">
+          <el-date-picker v-model="taskForm.reminder" type="datetime" placeholder="选择提醒时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+        </el-form-item>
+        <el-form-item label="标签">
+          <el-input v-model="taskForm.tags" maxlength="200" placeholder="多个标签用逗号分隔，如：工作,重要" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -213,7 +227,7 @@ import {
   getTaskList, createTask, updateTask, toggleTask, deleteTask, batchTask,
   getCategoryList, createCategory, updateCategory, deleteCategory, getStat, changePassword,
 } from '@/api'
-import type { TaskItem, StatResp, CategoryItem } from '@/types'
+import type { TaskItem, TaskFormData, StatResp, CategoryItem } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -242,7 +256,7 @@ const taskDialogVisible = ref(false)
 const editingTask = ref<TaskItem | null>(null)
 const submitting = ref(false)
 const taskFormRef = ref<FormInstance>()
-const taskForm = ref({ title: '', content: '', priority: 3, categoryId: undefined as number | undefined })
+const taskForm = ref<TaskFormData>({ title: '', content: '', priority: 3, categoryId: undefined, startTime: '', endTime: '', reminder: '', tags: '' })
 const taskRules = {
   title: [
     { required: true, message: '请输入任务标题', trigger: 'blur' },
@@ -370,11 +384,25 @@ async function handleBatch(action: string) {
 function openTaskDialog(task?: TaskItem) {
   editingTask.value = task || null
   if (task) {
-    taskForm.value = { title: task.title, content: task.content || '', priority: task.priority, categoryId: task.categoryId || undefined }
+    taskForm.value = {
+      title: task.title, content: task.content || '', priority: task.priority,
+      categoryId: task.categoryId || undefined, startTime: task.startTime || '',
+      endTime: task.endTime || '', reminder: task.reminder || '', tags: task.tags || '',
+    }
   } else {
-    taskForm.value = { title: '', content: '', priority: 3, categoryId: undefined }
+    taskForm.value = { title: '', content: '', priority: 3, categoryId: undefined, startTime: '', endTime: '', reminder: '', tags: '' }
   }
   taskDialogVisible.value = true
+}
+
+function parseTags(tags: string): string[] {
+  if (!tags) return []
+  return tags.split(',').map(t => t.trim()).filter(Boolean)
+}
+
+function isOverdue(endTime: string, status: number): boolean {
+  if (status === 2 || !endTime) return false
+  return new Date(endTime) < new Date()
 }
 
 async function handleSubmitTask() {
@@ -704,6 +732,16 @@ function handleLogout() {
 .task-time {
   font-size: 12px;
   color: #c0c4cc;
+}
+
+.task-time.overdue {
+  color: #f56c6c;
+  font-weight: 500;
+}
+
+.task-tag {
+  border-radius: 12px;
+  font-size: 11px;
 }
 
 .task-actions {
