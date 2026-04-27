@@ -9,8 +9,8 @@
           </el-button>
         </div>
         <div class="nav-right">
-          <el-button text @click="openEditDialog" :disabled="loading">编辑</el-button>
-          <el-button text @click="handleToggle" :disabled="loading">
+          <el-button text :disabled="loading" @click="openEditDialog">编辑</el-button>
+          <el-button text :disabled="loading" @click="handleToggle">
             {{ task?.status === 2 ? '标为待办' : '标为完成' }}
           </el-button>
           <el-popconfirm title="确定删除该任务？" @confirm="handleDelete">
@@ -51,11 +51,19 @@
         <el-tag v-else-if="task.priority === 1" type="warning" effect="dark">重要</el-tag>
         <el-tag v-else type="success" effect="dark">普通</el-tag>
 
-        <el-tag v-if="task.categoryName" type="info" :color="categoryColor" style="border-color: transparent" :style="{ color: categoryTextColor }">
+        <el-tag
+          v-if="task.categoryName"
+          type="info"
+          :color="categoryColor"
+          style="border-color: transparent"
+          :style="{ color: categoryTextColor }"
+        >
           {{ task.categoryName }}
         </el-tag>
 
-        <el-tag v-for="tag in parseTags(task.tags)" :key="tag" effect="plain" size="small" class="task-tag">{{ tag }}</el-tag>
+        <el-tag v-for="tag in parseTags(task.tags)" :key="tag" effect="plain" size="small" class="task-tag">{{
+          tag
+        }}</el-tag>
 
         <el-tag :type="task.status === 2 ? 'success' : 'warning'" size="small">
           {{ task.status === 2 ? '已完成' : '待办' }}
@@ -105,7 +113,13 @@
         <el-input v-model="editForm.title" maxlength="100" placeholder="请输入任务标题" />
       </el-form-item>
       <el-form-item label="内容" prop="content">
-        <el-input v-model="editForm.content" type="textarea" :rows="4" maxlength="1000" placeholder="任务详细内容（选填）" />
+        <el-input
+          v-model="editForm.content"
+          type="textarea"
+          :rows="4"
+          maxlength="1000"
+          placeholder="任务详细内容（选填）"
+        />
       </el-form-item>
       <el-form-item label="优先级">
         <el-select v-model="editForm.priority" style="width: 100%">
@@ -122,13 +136,37 @@
         </el-select>
       </el-form-item>
       <el-form-item label="开始时间">
-        <el-date-picker v-model="editForm.startTime" type="datetime" placeholder="选择开始时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+        <el-date-picker
+          v-model="editForm.startTime"
+          type="datetime"
+          placeholder="选择开始时间"
+          format="YYYY-MM-DD HH:mm"
+          value-format="YYYY-MM-DD HH:mm"
+          style="width: 100%"
+          clearable
+        />
       </el-form-item>
       <el-form-item label="截止时间">
-        <el-date-picker v-model="editForm.endTime" type="datetime" placeholder="选择截止时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+        <el-date-picker
+          v-model="editForm.endTime"
+          type="datetime"
+          placeholder="选择截止时间"
+          format="YYYY-MM-DD HH:mm"
+          value-format="YYYY-MM-DD HH:mm"
+          style="width: 100%"
+          clearable
+        />
       </el-form-item>
       <el-form-item label="提醒时间">
-        <el-date-picker v-model="editForm.reminder" type="datetime" placeholder="选择提醒时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+        <el-date-picker
+          v-model="editForm.reminder"
+          type="datetime"
+          placeholder="选择提醒时间"
+          format="YYYY-MM-DD HH:mm"
+          value-format="YYYY-MM-DD HH:mm"
+          style="width: 100%"
+          clearable
+        />
       </el-form-item>
       <el-form-item label="标签">
         <el-input v-model="editForm.tags" maxlength="200" placeholder="多个标签用逗号分隔，如：工作,重要" />
@@ -163,8 +201,14 @@ const editDialogVisible = ref(false)
 const editSubmitting = ref(false)
 const editFormRef = ref<FormInstance>()
 const editForm = ref<TaskFormData>({
-  title: '', content: '', priority: 3, categoryId: undefined,
-  startTime: '', endTime: '', reminder: '', tags: '',
+  title: '',
+  content: '',
+  priority: 3,
+  categoryId: undefined,
+  startTime: '',
+  endTime: '',
+  reminder: '',
+  tags: '',
 })
 const editRules = {
   title: [
@@ -180,13 +224,13 @@ const isOverdue = computed(() => {
 
 const categoryColor = computed(() => {
   if (!task.value?.categoryId) return undefined
-  const cat = categories.value.find(c => c.id === task.value!.categoryId)
+  const cat = categories.value.find((c) => c.id === task.value!.categoryId)
   return cat?.color || undefined
 })
 
 const categoryTextColor = computed(() => {
   if (!task.value?.categoryId) return '#909399'
-  const cat = categories.value.find(c => c.id === task.value!.categoryId)
+  const cat = categories.value.find((c) => c.id === task.value!.categoryId)
   if (!cat?.color) return '#909399'
   const hex = cat.color.replace('#', '')
   const r = parseInt(hex.substring(0, 2), 16)
@@ -198,7 +242,10 @@ const categoryTextColor = computed(() => {
 
 function parseTags(tags: string): string[] {
   if (!tags) return []
-  return tags.split(',').map(t => t.trim()).filter(Boolean)
+  return tags
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean)
 }
 
 onMounted(() => {
@@ -312,7 +359,8 @@ async function handleEditSubmit() {
   padding: 0 20px;
 }
 
-.nav-left, .nav-right {
+.nav-left,
+.nav-right {
   display: flex;
   align-items: center;
   gap: 4px;

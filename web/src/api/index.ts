@@ -15,10 +15,12 @@ import type {
 
 // 用户
 export const checkRegister = () => request.get<never, CheckRegisterResp>('/user/check-register')
-export const login = (data: { username: string; password: string }) => request.post<never, LoginResp>('/user/login', data)
+export const login = (data: { username: string; password: string }) =>
+  request.post<never, LoginResp>('/user/login', data)
 export const register = (data: { username: string; password: string }) => request.post('/user/register', data)
 export const getUserInfo = () => request.get<never, UserInfo>('/user/info')
-export const changePassword = (data: { oldPassword: string; newPassword: string }) => request.put('/user/password', data)
+export const changePassword = (data: { oldPassword: string; newPassword: string }) =>
+  request.put('/user/password', data)
 
 // 任务
 export const getTaskList = (params: Record<string, unknown>) => request.get<never, TaskListResp>('/task', { params })
@@ -32,15 +34,18 @@ export const batchTask = (data: { ids: number[]; action: string }) => request.po
 // 分类
 export const getCategoryList = () => request.get<never, CategoryListResp>('/category')
 export const createCategory = (data: { name: string; color?: string }) => request.post('/category', data)
-export const updateCategory = (id: number, data: { name?: string; color?: string; icon?: string; sort?: number }) => request.put(`/category/${id}`, data)
+export const updateCategory = (id: number, data: { name?: string; color?: string; icon?: string; sort?: number }) =>
+  request.put(`/category/${id}`, data)
 export const deleteCategory = (id: number) => request.delete(`/category/${id}`)
 
 // 统计
 export const getStat = () => request.get<never, StatResp>('/stat')
 
 // 管理员 - 用户管理
-export const getUserList = (params: Record<string, unknown>) => request.get<never, UserListResp>('/admin/user', { params })
-export const resetPassword = (id: number, data: { newPassword: string }) => request.put(`/admin/user/${id}/password`, data)
+export const getUserList = (params: Record<string, unknown>) =>
+  request.get<never, UserListResp>('/admin/user', { params })
+export const resetPassword = (id: number, data: { newPassword: string }) =>
+  request.put(`/admin/user/${id}/password`, data)
 export const toggleUserStatus = (id: number) => request.patch(`/admin/user/${id}/toggle`)
 export const deleteUser = (id: number) => request.delete(`/admin/user/${id}`)
 
@@ -49,5 +54,7 @@ export const getConfigList = () => request.get<never, ConfigListResp>('/admin/co
 export const updateConfig = (data: { key: string; value: string }) => request.put('/admin/config', data)
 
 // 管理员 - 日志
-export const getOperationLogList = (params: Record<string, unknown>) => request.get<never, OperationLogResp>('/admin/log/operation', { params })
-export const getLoginLogList = (params: Record<string, unknown>) => request.get<never, LoginLogResp>('/admin/log/login', { params })
+export const getOperationLogList = (params: Record<string, unknown>) =>
+  request.get<never, OperationLogResp>('/admin/log/operation', { params })
+export const getLoginLogList = (params: Record<string, unknown>) =>
+  request.get<never, LoginLogResp>('/admin/log/login', { params })

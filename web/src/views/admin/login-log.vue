@@ -2,8 +2,17 @@
   <div class="admin-card">
     <div class="card-header">
       <h2>登录日志</h2>
-      <el-input v-model="keyword" placeholder="搜索用户名" clearable style="width: 240px" @clear="loadLogs" @keyup.enter="loadLogs">
-        <template #prefix><el-icon><Search /></el-icon></template>
+      <el-input
+        v-model="keyword"
+        placeholder="搜索用户名"
+        clearable
+        style="width: 240px"
+        @clear="loadLogs"
+        @keyup.enter="loadLogs"
+      >
+        <template #prefix
+          ><el-icon><Search /></el-icon
+        ></template>
       </el-input>
     </div>
 

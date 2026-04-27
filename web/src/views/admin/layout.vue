@@ -22,9 +22,7 @@
         <router-link to="/admin/config" class="sidebar-item" active-class="active">
           <span>⚙️</span> 系统设置
         </router-link>
-        <router-link to="/admin/log" class="sidebar-item" active-class="active">
-          <span>📋</span> 操作日志
-        </router-link>
+        <router-link to="/admin/log" class="sidebar-item" active-class="active"> <span>📋</span> 操作日志 </router-link>
         <router-link to="/admin/login-log" class="sidebar-item" active-class="active">
           <span>🔑</span> 登录日志
         </router-link>
@@ -48,12 +46,14 @@ const router = useRouter()
 const userStore = useUserStore()
 
 function handleLogout() {
-  ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' }).then(() => {
-    resetAuthVerified()
-    userStore.logout()
-    router.push('/login')
-    ElMessage.success('已退出登录')
-  }).catch(() => {})
+  ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' })
+    .then(() => {
+      resetAuthVerified()
+      userStore.logout()
+      router.push('/login')
+      ElMessage.success('已退出登录')
+    })
+    .catch(() => {})
 }
 </script>
 
@@ -82,8 +82,14 @@ function handleLogout() {
   gap: 8px;
 }
 
-.logo-icon { font-size: 24px; }
-.logo-text { font-size: 18px; font-weight: 600; color: #303133; }
+.logo-icon {
+  font-size: 24px;
+}
+.logo-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
 
 .nav-right {
   display: flex;

@@ -256,3 +256,17 @@
 ### 前端
 
 - `admin/config.vue` — 新增 `task_auto_delete_days`、`task_trash_retention_days`、`log_auto_delete_days` 配置项中文标题和描述
+
+---
+
+## v1.9.0 — ESLint + Prettier 代码规范
+
+### P2 — 前端代码规范
+
+- [x] **ESLint + Prettier** — 完整的代码规范和格式化配置
+  - ESLint 9 flat config + `@eslint/js` + `typescript-eslint` + `eslint-plugin-vue` + `eslint-config-prettier` + `eslint-plugin-prettier`
+  - `.prettierrc` — 无分号、单引号、120 字符行宽、尾逗号
+  - `eslint.config.js` — TypeScript warn-any、Vue 宽松规则、Prettier 集成
+  - npm scripts: `lint` (eslint --fix) / `format` (prettier --write)
+  - 全部源文件自动格式化，消除 87 个格式错误和 1 个 `any` 类型警告
+  - `stores/user.ts` — `as any` 替换为 `as UserInfo` 类型断言

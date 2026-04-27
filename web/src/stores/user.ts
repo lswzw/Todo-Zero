@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getUserInfo } from '@/api'
+import type { UserInfo } from '@/types'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
@@ -19,7 +20,7 @@ export const useUserStore = defineStore('user', () => {
   // 从服务端获取真实用户信息，覆盖本地缓存
   async function fetchUserInfo() {
     try {
-      const res = await getUserInfo() as any
+      const res = (await getUserInfo()) as UserInfo
       userId.value = res.id
       username.value = res.username
       isAdmin.value = res.isAdmin === 1

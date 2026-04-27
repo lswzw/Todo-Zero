@@ -12,10 +12,24 @@
             <el-input v-model="form.username" placeholder="请输入用户名(3-20位)" size="large" :prefix-icon="User" />
           </el-form-item>
           <el-form-item prop="password">
-            <el-input v-model="form.password" type="password" placeholder="请输入密码(6-20位，需含字母和数字)" size="large" :prefix-icon="Lock" show-password />
+            <el-input
+              v-model="form.password"
+              type="password"
+              placeholder="请输入密码(6-20位，需含字母和数字)"
+              size="large"
+              :prefix-icon="Lock"
+              show-password
+            />
           </el-form-item>
           <el-form-item prop="confirmPassword">
-            <el-input v-model="form.confirmPassword" type="password" placeholder="请确认密码" size="large" :prefix-icon="Lock" show-password />
+            <el-input
+              v-model="form.confirmPassword"
+              type="password"
+              placeholder="请确认密码"
+              size="large"
+              :prefix-icon="Lock"
+              show-password
+            />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" size="large" :loading="loading" native-type="submit" class="register-btn">
@@ -23,9 +37,7 @@
             </el-button>
           </el-form-item>
         </el-form>
-        <div class="login-link">
-          已有账号？<router-link to="/login">去登录 →</router-link>
-        </div>
+        <div class="login-link">已有账号？<router-link to="/login">去登录 →</router-link></div>
       </template>
       <template v-else>
         <div class="closed-area">

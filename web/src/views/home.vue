@@ -43,16 +43,34 @@
         <div class="section-header">
           <h2>任务列表</h2>
           <div class="section-actions">
-            <el-select v-model="filters.status" placeholder="状态" clearable style="width: 100px" @change="onFilterChange">
+            <el-select
+              v-model="filters.status"
+              placeholder="状态"
+              clearable
+              style="width: 100px"
+              @change="onFilterChange"
+            >
               <el-option label="待办" :value="0" />
               <el-option label="已完成" :value="2" />
             </el-select>
-            <el-select v-model="filters.categoryId" placeholder="分类" clearable style="width: 100px" @change="onFilterChange">
+            <el-select
+              v-model="filters.categoryId"
+              placeholder="分类"
+              clearable
+              style="width: 100px"
+              @change="onFilterChange"
+            >
               <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id">
                 <span :style="{ color: c.color || '#909399' }">●</span> {{ c.name }}
               </el-option>
             </el-select>
-            <el-select v-model="filters.priority" placeholder="优先级" clearable style="width: 100px" @change="onFilterChange">
+            <el-select
+              v-model="filters.priority"
+              placeholder="优先级"
+              clearable
+              style="width: 100px"
+              @change="onFilterChange"
+            >
               <el-option label="紧急" :value="2" />
               <el-option label="重要" :value="1" />
               <el-option label="普通" :value="3" />
@@ -60,8 +78,17 @@
             <el-button :type="selectMode ? 'primary' : ''" @click="toggleSelectMode">
               {{ selectMode ? '退出多选' : '多选' }}
             </el-button>
-            <el-input v-model="filters.keyword" placeholder="搜索" clearable style="width: 180px" @clear="onFilterChange" @keyup.enter="onFilterChange">
-              <template #prefix><el-icon><Search /></el-icon></template>
+            <el-input
+              v-model="filters.keyword"
+              placeholder="搜索"
+              clearable
+              style="width: 180px"
+              @clear="onFilterChange"
+              @keyup.enter="onFilterChange"
+            >
+              <template #prefix
+                ><el-icon><Search /></el-icon
+              ></template>
             </el-input>
             <el-button type="primary" @click="openTaskDialog()">
               <el-icon><Plus /></el-icon> 新增任务
@@ -97,9 +124,21 @@
                 <el-tag v-if="task.priority === 2" size="small" type="danger">紧急</el-tag>
                 <el-tag v-else-if="task.priority === 1" size="small" type="warning">重要</el-tag>
                 <el-tag v-else size="small" type="success">普通</el-tag>
-                <el-tag v-if="task.categoryName" size="small" type="info" :color="getCategoryColor(task.categoryId)" style="border-color: transparent" :style="{ color: getCategoryTextColor(task.categoryId) }">{{ task.categoryName }}</el-tag>
-                <el-tag v-for="tag in parseTags(task.tags)" :key="tag" size="small" effect="plain" class="task-tag">{{ tag }}</el-tag>
-                <span v-if="task.endTime" class="task-time" :class="{ overdue: isOverdue(task.endTime, task.status) }">截止 {{ task.endTime }}</span>
+                <el-tag
+                  v-if="task.categoryName"
+                  size="small"
+                  type="info"
+                  :color="getCategoryColor(task.categoryId)"
+                  style="border-color: transparent"
+                  :style="{ color: getCategoryTextColor(task.categoryId) }"
+                  >{{ task.categoryName }}</el-tag
+                >
+                <el-tag v-for="tag in parseTags(task.tags)" :key="tag" size="small" effect="plain" class="task-tag">{{
+                  tag
+                }}</el-tag>
+                <span v-if="task.endTime" class="task-time" :class="{ overdue: isOverdue(task.endTime, task.status) }"
+                  >截止 {{ task.endTime }}</span
+                >
                 <span v-else class="task-time">{{ task.createTime }}</span>
               </div>
             </div>
@@ -120,24 +159,30 @@
 
         <!-- 分页 -->
         <div v-if="total > 0" class="pagination">
-          <el-pagination
-            v-model:current-page="page"
-            :page-size="pageSize"
-            :total="total"
-            layout="prev, pager, next"
-          />
+          <el-pagination v-model:current-page="page" :page-size="pageSize" :total="total" layout="prev, pager, next" />
         </div>
       </div>
     </main>
 
     <!-- 新增/编辑任务弹窗 -->
-    <el-dialog v-model="taskDialogVisible" :title="editingTask ? '编辑任务' : '新增任务'" width="480px" destroy-on-close>
+    <el-dialog
+      v-model="taskDialogVisible"
+      :title="editingTask ? '编辑任务' : '新增任务'"
+      width="480px"
+      destroy-on-close
+    >
       <el-form ref="taskFormRef" :model="taskForm" :rules="taskRules" label-width="80px">
         <el-form-item label="标题" prop="title">
           <el-input v-model="taskForm.title" maxlength="100" placeholder="请输入任务标题" />
         </el-form-item>
         <el-form-item label="内容" prop="content">
-          <el-input v-model="taskForm.content" type="textarea" :rows="4" maxlength="1000" placeholder="任务详细内容（选填）" />
+          <el-input
+            v-model="taskForm.content"
+            type="textarea"
+            :rows="4"
+            maxlength="1000"
+            placeholder="任务详细内容（选填）"
+          />
         </el-form-item>
         <el-form-item label="优先级">
           <el-select v-model="taskForm.priority" style="width: 100%">
@@ -154,13 +199,37 @@
           </el-select>
         </el-form-item>
         <el-form-item label="开始时间">
-          <el-date-picker v-model="taskForm.startTime" type="datetime" placeholder="选择开始时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+          <el-date-picker
+            v-model="taskForm.startTime"
+            type="datetime"
+            placeholder="选择开始时间"
+            format="YYYY-MM-DD HH:mm"
+            value-format="YYYY-MM-DD HH:mm"
+            style="width: 100%"
+            clearable
+          />
         </el-form-item>
         <el-form-item label="截止时间">
-          <el-date-picker v-model="taskForm.endTime" type="datetime" placeholder="选择截止时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+          <el-date-picker
+            v-model="taskForm.endTime"
+            type="datetime"
+            placeholder="选择截止时间"
+            format="YYYY-MM-DD HH:mm"
+            value-format="YYYY-MM-DD HH:mm"
+            style="width: 100%"
+            clearable
+          />
         </el-form-item>
         <el-form-item label="提醒时间">
-          <el-date-picker v-model="taskForm.reminder" type="datetime" placeholder="选择提醒时间" format="YYYY-MM-DD HH:mm" value-format="YYYY-MM-DD HH:mm" style="width: 100%" clearable />
+          <el-date-picker
+            v-model="taskForm.reminder"
+            type="datetime"
+            placeholder="选择提醒时间"
+            format="YYYY-MM-DD HH:mm"
+            value-format="YYYY-MM-DD HH:mm"
+            style="width: 100%"
+            clearable
+          />
         </el-form-item>
         <el-form-item label="标签">
           <el-input v-model="taskForm.tags" maxlength="200" placeholder="多个标签用逗号分隔，如：工作,重要" />
@@ -195,18 +264,24 @@
     <el-dialog v-model="showCategoryDialog" title="分类管理" width="480px" destroy-on-close>
       <div class="category-manage">
         <div class="category-add-row">
-          <el-input v-model="newCategoryName" placeholder="分类名称" maxlength="20" style="flex:1" @keyup.enter="handleAddCategory" />
+          <el-input
+            v-model="newCategoryName"
+            placeholder="分类名称"
+            maxlength="20"
+            style="flex: 1"
+            @keyup.enter="handleAddCategory"
+          />
           <el-color-picker v-model="newCategoryColor" size="small" />
           <el-button type="primary" @click="handleAddCategory">添加</el-button>
         </div>
         <div class="category-list">
           <div v-for="c in categories" :key="c.id" class="category-item">
             <el-color-picker v-model="c._color" size="small" @change="handleUpdateCategory(c)" />
-            <el-input v-model="c._name" size="small" maxlength="20" style="flex:1" @blur="handleUpdateCategory(c)" />
+            <el-input v-model="c._name" size="small" maxlength="20" style="flex: 1" @blur="handleUpdateCategory(c)" />
             <el-tag v-if="c.isSystem" size="small" type="info">系统</el-tag>
             <el-button v-else text size="small" type="danger" @click="handleDeleteCategory(c)">删除</el-button>
           </div>
-          <div v-if="!categories.length" class="empty-state" style="padding:20px 0">
+          <div v-if="!categories.length" class="empty-state" style="padding: 20px 0">
             <p>暂无分类</p>
           </div>
         </div>
@@ -224,8 +299,18 @@ import { Search, Plus, Check } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
 import {
-  getTaskList, createTask, updateTask, toggleTask, deleteTask, batchTask,
-  getCategoryList, createCategory, updateCategory, deleteCategory, getStat, changePassword,
+  getTaskList,
+  createTask,
+  updateTask,
+  toggleTask,
+  deleteTask,
+  batchTask,
+  getCategoryList,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getStat,
+  changePassword,
 } from '@/api'
 import type { TaskItem, TaskFormData, StatResp, CategoryItem } from '@/types'
 
@@ -244,7 +329,10 @@ const total = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
 const filters = ref<Record<string, number | string | undefined>>({
-  status: undefined, categoryId: undefined, priority: undefined, keyword: '',
+  status: undefined,
+  categoryId: undefined,
+  priority: undefined,
+  keyword: '',
 })
 
 // 多选
@@ -256,7 +344,16 @@ const taskDialogVisible = ref(false)
 const editingTask = ref<TaskItem | null>(null)
 const submitting = ref(false)
 const taskFormRef = ref<FormInstance>()
-const taskForm = ref<TaskFormData>({ title: '', content: '', priority: 3, categoryId: undefined, startTime: '', endTime: '', reminder: '', tags: '' })
+const taskForm = ref<TaskFormData>({
+  title: '',
+  content: '',
+  priority: 3,
+  categoryId: undefined,
+  startTime: '',
+  endTime: '',
+  reminder: '',
+  tags: '',
+})
 const taskRules = {
   title: [
     { required: true, message: '请输入任务标题', trigger: 'blur' },
@@ -315,7 +412,7 @@ async function loadStat() {
 async function loadCategories() {
   try {
     const res = await getCategoryList()
-    categories.value = (res.list || []).map(c => ({ ...c, _name: c.name, _color: c.color || '#409eff' }))
+    categories.value = (res.list || []).map((c) => ({ ...c, _name: c.name, _color: c.color || '#409eff' }))
   } catch {
     ElMessage.error('加载分类失败')
   }
@@ -385,19 +482,36 @@ function openTaskDialog(task?: TaskItem) {
   editingTask.value = task || null
   if (task) {
     taskForm.value = {
-      title: task.title, content: task.content || '', priority: task.priority,
-      categoryId: task.categoryId || undefined, startTime: task.startTime || '',
-      endTime: task.endTime || '', reminder: task.reminder || '', tags: task.tags || '',
+      title: task.title,
+      content: task.content || '',
+      priority: task.priority,
+      categoryId: task.categoryId || undefined,
+      startTime: task.startTime || '',
+      endTime: task.endTime || '',
+      reminder: task.reminder || '',
+      tags: task.tags || '',
     }
   } else {
-    taskForm.value = { title: '', content: '', priority: 3, categoryId: undefined, startTime: '', endTime: '', reminder: '', tags: '' }
+    taskForm.value = {
+      title: '',
+      content: '',
+      priority: 3,
+      categoryId: undefined,
+      startTime: '',
+      endTime: '',
+      reminder: '',
+      tags: '',
+    }
   }
   taskDialogVisible.value = true
 }
 
 function parseTags(tags: string): string[] {
   if (!tags) return []
-  return tags.split(',').map(t => t.trim()).filter(Boolean)
+  return tags
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean)
 }
 
 function isOverdue(endTime: string, status: number): boolean {
@@ -445,12 +559,12 @@ async function handleChangePassword() {
 
 // 分类颜色辅助函数
 function getCategoryColor(categoryId: number): string | undefined {
-  const cat = categories.value.find(c => c.id === categoryId)
+  const cat = categories.value.find((c) => c.id === categoryId)
   return cat?.color || undefined
 }
 
 function getCategoryTextColor(categoryId: number): string {
-  const cat = categories.value.find(c => c.id === categoryId)
+  const cat = categories.value.find((c) => c.id === categoryId)
   if (!cat?.color) return '#909399'
   // 简单亮度检测：浅色背景用深色文字
   const hex = cat.color.replace('#', '')
@@ -511,11 +625,13 @@ async function handleDeleteCategory(c: CategoryItem) {
 }
 
 function handleLogout() {
-  ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' }).then(() => {
-    resetAuthVerified()
-    userStore.logout()
-    router.push('/login')
-  }).catch(() => {})
+  ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' })
+    .then(() => {
+      resetAuthVerified()
+      userStore.logout()
+      router.push('/login')
+    })
+    .catch(() => {})
 }
 </script>
 
@@ -550,8 +666,14 @@ function handleLogout() {
   gap: 8px;
 }
 
-.logo-icon { font-size: 24px; }
-.logo-text { font-size: 20px; font-weight: 600; color: #303133; }
+.logo-icon {
+  font-size: 24px;
+}
+.logo-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #303133;
+}
 
 .nav-right {
   display: flex;
@@ -598,10 +720,18 @@ function handleLogout() {
   margin-top: 4px;
 }
 
-.stat-card.total .stat-value { color: #303133; }
-.stat-card.todo .stat-value { color: #e6a23c; }
-.stat-card.done .stat-value { color: #67c23a; }
-.stat-card.rate .stat-value { color: #667eea; }
+.stat-card.total .stat-value {
+  color: #303133;
+}
+.stat-card.todo .stat-value {
+  color: #e6a23c;
+}
+.stat-card.done .stat-value {
+  color: #67c23a;
+}
+.stat-card.rate .stat-value {
+  color: #667eea;
+}
 
 .task-section {
   background: #fff;
@@ -799,7 +929,12 @@ function handleLogout() {
 }
 
 @media (max-width: 768px) {
-  .stat-row { grid-template-columns: repeat(2, 1fr); }
-  .section-actions { flex-direction: column; align-items: stretch; }
+  .stat-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .section-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 </style>

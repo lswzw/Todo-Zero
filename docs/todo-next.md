@@ -24,7 +24,7 @@
 - [x] ~~**日志自动清理**~~ — v1.9.0 已完成，操作日志和登录日志定时清理，共享 `log_auto_delete_days` 配置
 - [ ] **数据库迁移机制** — 当前只有首次初始化，无版本化 schema 迁移，后续改表困难
 - [ ] **健康检查端点** ~~添加 `/health` 接口用于部署探针~~ — v1.4.0 已添加基础 /health
-- [ ] **ESLint + Prettier** — 前端无代码规范和格式化配置
+- [x] ~~**ESLint + Prettier**~~ — v1.9.0 已完成，ESLint 9 flat config + Vue/TS/Prettier 插件，全部文件格式化，零 lint 错误
 
 ---
 

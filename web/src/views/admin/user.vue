@@ -2,8 +2,17 @@
   <div class="admin-card">
     <div class="card-header">
       <h2>用户管理</h2>
-      <el-input v-model="keyword" placeholder="搜索用户名" clearable style="width: 240px" @clear="loadUsers" @keyup.enter="loadUsers">
-        <template #prefix><el-icon><Search /></el-icon></template>
+      <el-input
+        v-model="keyword"
+        placeholder="搜索用户名"
+        clearable
+        style="width: 240px"
+        @clear="loadUsers"
+        @keyup.enter="loadUsers"
+      >
+        <template #prefix
+          ><el-icon><Search /></el-icon
+        ></template>
       </el-input>
     </div>
 
@@ -26,7 +35,12 @@
       <el-table-column label="操作" width="260">
         <template #default="{ row }">
           <el-button size="small" @click="openResetDialog(row)">重置密码</el-button>
-          <el-button size="small" :type="row.status === 1 ? 'warning' : 'success'" :disabled="row.isAdmin === 1" @click="handleToggleStatus(row)">
+          <el-button
+            size="small"
+            :type="row.status === 1 ? 'warning' : 'success'"
+            :disabled="row.isAdmin === 1"
+            @click="handleToggleStatus(row)"
+          >
             {{ row.status === 1 ? '禁用' : '启用' }}
           </el-button>
           <el-popconfirm title="确定删除该用户？" @confirm="handleDelete(row)">
@@ -49,7 +63,12 @@
           <el-input :model-value="resetForm.username" disabled />
         </el-form-item>
         <el-form-item label="新密码" prop="newPassword">
-          <el-input v-model="resetForm.newPassword" type="password" show-password placeholder="请输入新密码(6-20位，需含字母和数字)" />
+          <el-input
+            v-model="resetForm.newPassword"
+            type="password"
+            show-password
+            placeholder="请输入新密码(6-20位，需含字母和数字)"
+          />
         </el-form-item>
       </el-form>
       <template #footer>

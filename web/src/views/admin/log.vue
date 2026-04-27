@@ -3,8 +3,17 @@
     <div class="card-header">
       <h2>操作日志</h2>
       <div class="header-actions">
-        <el-input v-model="keyword" placeholder="搜索用户名" clearable style="width: 180px" @clear="loadLogs" @keyup.enter="loadLogs">
-          <template #prefix><el-icon><Search /></el-icon></template>
+        <el-input
+          v-model="keyword"
+          placeholder="搜索用户名"
+          clearable
+          style="width: 180px"
+          @clear="loadLogs"
+          @keyup.enter="loadLogs"
+        >
+          <template #prefix
+            ><el-icon><Search /></el-icon
+          ></template>
         </el-input>
         <el-select v-model="action" placeholder="操作类型" clearable style="width: 140px" @change="loadLogs">
           <el-option label="创建" value="create" />
