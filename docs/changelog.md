@@ -217,3 +217,42 @@
   - `views/admin/log.vue` (1 处) — 加载操作日志
   - `views/admin/login-log.vue` (1 处) — 加载登录日志
   - 保留静默的 4 处（合理设计）：checkRegister 非关键、登录错误由拦截器处理、token 失效执行 logout、loadCategories 降级
+
+---
+
+## v1.9.0 — 定时清理任务 + 日志自动清理
+
+### P2 — 后台定时清理
+
+- [x] **实现定时清理任务** — 后台 goroutine 每小时检查，根据系统配置自动清理
+  - `task_auto_delete_days > 0` 时，永久删除已完成任务（status=2, is_deleted=0）且 `update_time` 超过 N 天的记录
+  - `task_trash_retention_days > 0` 时（默认 30 天），永久删除软删除任务（is_deleted=1）且 `update_time` 超过 N 天的记录
+  - 新增 `task_trash_retention_days` 系统配置项（默认 30 天）
+  - 配置项每次运行时从数据库热加载，修改后无需重启服务
+
+- [x] **日志自动清理** — 操作日志和登录日志共享 `log_auto_delete_days` 配置
+  - `log_auto_delete_days > 0` 时，删除 `created_at` / `create_time` 超过 N 天的日志
+  - 新增 `log_auto_delete_days` 系统配置项（默认 0 = 不清理）
+
+### Model 层新增方法
+
+- `TaskModel.HardDeleteCompletedBefore(ctx, beforeTime)` — 永久删除指定时间前的已完成任务
+- `TaskModel.HardDeleteSoftDeletedBefore(ctx, beforeTime)` — 永久删除指定时间前的软删除任务
+- `OperationLogModel.DeleteOlderThan(ctx, beforeTime)` — 删除指定时间前的操作日志
+- `LoginLogModel.DeleteOlderThan(ctx, beforeTime)` — 删除指定时间前的登录日志
+
+### 数据库索引
+
+- `idx_tasks_completed_cleanup` ON tasks (status, is_deleted, update_time)
+- `idx_tasks_soft_deleted` ON tasks (is_deleted, update_time)
+- `idx_operation_logs_created_at` ON operation_logs (created_at)
+- `idx_login_log_create_time` ON login_log (create_time)
+
+### 新增文件
+
+- `scheduler/cleanup.go` — 定时清理调度器
+- `scheduler/cleanup_test.go` — 5 个测试覆盖配置读取和各种清理场景
+
+### 前端
+
+- `admin/config.vue` — 新增 `task_auto_delete_days`、`task_trash_retention_days`、`log_auto_delete_days` 配置项中文标题和描述

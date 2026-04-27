@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 var _ LoginLogModel = (*defaultLoginLogModel)(nil)
@@ -14,6 +15,7 @@ type (
 		Update(ctx context.Context, data *LoginLog) error
 		Delete(ctx context.Context, id int64) error
 		FindList(ctx context.Context, username string, page, pageSize int64) ([]*LoginLog, int64, error)
+		DeleteOlderThan(ctx context.Context, beforeTime time.Time) (int64, error)
 	}
 
 	defaultLoginLogModel struct {
@@ -46,6 +48,15 @@ func (m *defaultLoginLogModel) Update(ctx context.Context, data *LoginLog) error
 	query := `UPDATE ` + m.tableName() + ` SET user_id = ?, username = ?, ip = ?, user_agent = ?, status = ?, remark = ? WHERE id = ?`
 	_, err := m.db.ExecContext(ctx, query, data.UserId, data.Username, data.Ip, data.UserAgent, data.Status, data.Remark, data.Id)
 	return err
+}
+
+func (m *defaultLoginLogModel) DeleteOlderThan(ctx context.Context, beforeTime time.Time) (int64, error) {
+	query := `DELETE FROM ` + m.tableName() + ` WHERE create_time < ?`
+	result, err := m.db.ExecContext(ctx, query, beforeTime)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 func (m *defaultLoginLogModel) Delete(ctx context.Context, id int64) error {

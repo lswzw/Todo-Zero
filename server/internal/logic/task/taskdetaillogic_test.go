@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+	"time"
 
 	"server/internal/model"
 	"server/internal/pkg/xerr"
@@ -29,6 +30,12 @@ func (m *mockTaskModel) FindList(ctx context.Context, userId int64, keyword stri
 func (m *mockTaskModel) UpdateStatus(ctx context.Context, id, status int64) error { return nil }
 func (m *mockTaskModel) CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error) {
 	return 0, 0, 0, 0, nil
+}
+func (m *mockTaskModel) HardDeleteCompletedBefore(ctx context.Context, beforeTime time.Time) (int64, error) {
+	return 0, nil
+}
+func (m *mockTaskModel) HardDeleteSoftDeletedBefore(ctx context.Context, beforeTime time.Time) (int64, error) {
+	return 0, nil
 }
 func (m *mockTaskModel) FindOne(ctx context.Context, id int64) (*model.Task, error) {
 	if m.err != nil {

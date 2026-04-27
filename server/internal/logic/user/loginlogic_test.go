@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+	"time"
 
 	"server/internal/config"
 	"server/internal/model"
@@ -47,6 +48,9 @@ func (m *mockLoginLogModel) Update(ctx context.Context, data *model.LoginLog) er
 func (m *mockLoginLogModel) Delete(ctx context.Context, id int64) error                      { return nil }
 func (m *mockLoginLogModel) FindList(ctx context.Context, username string, page, pageSize int64) ([]*model.LoginLog, int64, error) {
 	return nil, 0, nil
+}
+func (m *mockLoginLogModel) DeleteOlderThan(ctx context.Context, beforeTime time.Time) (int64, error) {
+	return 0, nil
 }
 
 func hashPassword(password string) string {

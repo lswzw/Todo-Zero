@@ -17,6 +17,8 @@ type (
 		FindList(ctx context.Context, userId int64, keyword string, status, priority, categoryId, page, pageSize int64) ([]*Task, int64, error)
 		UpdateStatus(ctx context.Context, id, status int64) error
 		CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error)
+		HardDeleteCompletedBefore(ctx context.Context, beforeTime time.Time) (int64, error)
+		HardDeleteSoftDeletedBefore(ctx context.Context, beforeTime time.Time) (int64, error)
 	}
 
 	defaultTaskModel struct {
@@ -113,6 +115,24 @@ func (m *defaultTaskModel) UpdateStatus(ctx context.Context, id, status int64) e
 	query := `UPDATE ` + m.tableName() + ` SET status = ?, update_time = ? WHERE id = ?`
 	_, err := m.db.ExecContext(ctx, query, status, time.Now(), id)
 	return err
+}
+
+func (m *defaultTaskModel) HardDeleteCompletedBefore(ctx context.Context, beforeTime time.Time) (int64, error) {
+	query := `DELETE FROM ` + m.tableName() + ` WHERE status = 2 AND is_deleted = 0 AND update_time < ?`
+	result, err := m.db.ExecContext(ctx, query, beforeTime)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+func (m *defaultTaskModel) HardDeleteSoftDeletedBefore(ctx context.Context, beforeTime time.Time) (int64, error) {
+	query := `DELETE FROM ` + m.tableName() + ` WHERE is_deleted = 1 AND update_time < ?`
+	result, err := m.db.ExecContext(ctx, query, beforeTime)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 func (m *defaultTaskModel) CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error) {

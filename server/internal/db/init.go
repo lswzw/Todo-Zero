@@ -65,6 +65,10 @@ var indexStatements = []string{
 	`CREATE INDEX IF NOT EXISTS idx_tasks_category_id ON tasks (category_id)`,
 	`CREATE INDEX IF NOT EXISTS idx_users_username ON users (username, is_deleted)`,
 	`CREATE INDEX IF NOT EXISTS idx_login_log_username ON login_log (username)`,
+	`CREATE INDEX IF NOT EXISTS idx_tasks_completed_cleanup ON tasks (status, is_deleted, update_time)`,
+	`CREATE INDEX IF NOT EXISTS idx_tasks_soft_deleted ON tasks (is_deleted, update_time)`,
+	`CREATE INDEX IF NOT EXISTS idx_operation_logs_created_at ON operation_logs (created_at)`,
+	`CREATE INDEX IF NOT EXISTS idx_login_log_create_time ON login_log (create_time)`,
 }
 
 func ensureIndexes(db *sql.DB) error {

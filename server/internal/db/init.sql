@@ -117,7 +117,9 @@ INSERT OR IGNORE INTO `system_configs` (`config_key`, `config_value`, `group_nam
 ('site_name', 'Todo 管理平台', 'basic', '站点名称'),
 ('allow_register', 'false', 'basic', '是否允许新用户注册'),
 ('task_default_priority', '0', 'task', '新建任务默认优先级'),
-('task_auto_delete_days', '0', 'task', '自动清理已完成任务天数（0=不清理）');
+('task_auto_delete_days', '0', 'task', '自动清理已完成任务天数（0=不清理）'),
+('task_trash_retention_days', '30', 'task', '回收站保留天数，超过后永久删除（0=不清理）'),
+('log_auto_delete_days', '0', 'log', '自动清理操作日志和登录日志天数（0=不清理）');
 
 -- ================================================
 -- Indexes for performance
@@ -127,3 +129,7 @@ CREATE INDEX IF NOT EXISTS `idx_tasks_status` ON `tasks` (`user_id`, `status`, `
 CREATE INDEX IF NOT EXISTS `idx_tasks_category_id` ON `tasks` (`category_id`);
 CREATE INDEX IF NOT EXISTS `idx_users_username` ON `users` (`username`, `is_deleted`);
 CREATE INDEX IF NOT EXISTS `idx_login_log_username` ON `login_log` (`username`);
+CREATE INDEX IF NOT EXISTS `idx_tasks_completed_cleanup` ON `tasks` (`status`, `is_deleted`, `update_time`);
+CREATE INDEX IF NOT EXISTS `idx_tasks_soft_deleted` ON `tasks` (`is_deleted`, `update_time`);
+CREATE INDEX IF NOT EXISTS `idx_operation_logs_created_at` ON `operation_logs` (`created_at`);
+CREATE INDEX IF NOT EXISTS `idx_login_log_create_time` ON `login_log` (`create_time`);

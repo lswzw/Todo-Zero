@@ -17,6 +17,7 @@ type (
 		Count(ctx context.Context) (int64, error)
 		DeleteById(ctx context.Context, id int64) error
 		DeleteBatch(ctx context.Context, ids []int64) error
+		DeleteOlderThan(ctx context.Context, beforeTime time.Time) (int64, error)
 	}
 
 	defaultOperationLogModel struct {
@@ -86,6 +87,15 @@ func (m *defaultOperationLogModel) DeleteById(ctx context.Context, id int64) err
 	query := `DELETE FROM ` + m.tableName() + ` WHERE id = ?`
 	_, err := m.db.ExecContext(ctx, query, id)
 	return err
+}
+
+func (m *defaultOperationLogModel) DeleteOlderThan(ctx context.Context, beforeTime time.Time) (int64, error) {
+	query := `DELETE FROM ` + m.tableName() + ` WHERE created_at < ?`
+	result, err := m.db.ExecContext(ctx, query, beforeTime)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 func (m *defaultOperationLogModel) DeleteBatch(ctx context.Context, ids []int64) error {

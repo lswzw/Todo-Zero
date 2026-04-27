@@ -13,6 +13,7 @@ import (
 	"server/internal/db"
 	"server/internal/handler"
 	"server/internal/pkg/xerr"
+	"server/internal/scheduler"
 	"server/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
@@ -139,6 +140,8 @@ func main() {
 	fmt.Println("[Static] Frontend embedded and serving from /")
 
 	handler.RegisterHandlers(server, ctx)
+
+	scheduler.StartCleanupScheduler(ctx)
 
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)
 	server.Start()

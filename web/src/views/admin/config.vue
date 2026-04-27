@@ -44,6 +44,18 @@ const configMeta: Record<string, { title: string; desc: string }> = {
     title: '站点名称',
     desc: '显示在浏览器标题栏和登录页面',
   },
+  task_auto_delete_days: {
+    title: '自动清理已完成任务',
+    desc: '已完成任务超过指定天数后自动永久删除（0=不清理）',
+  },
+  task_trash_retention_days: {
+    title: '回收站保留天数',
+    desc: '手动删除的任务在回收站中保留的天数，超过后永久删除（0=不清理，默认30天）',
+  },
+  log_auto_delete_days: {
+    title: '自动清理日志',
+    desc: '操作日志和登录日志超过指定天数后自动删除（0=不清理）',
+  },
 }
 
 onMounted(() => loadConfigs())
