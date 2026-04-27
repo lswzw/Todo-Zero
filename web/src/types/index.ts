@@ -135,3 +135,22 @@ export interface LoginLogResp {
   list: LoginLogItem[]
   total: number
 }
+
+export interface BackupItem {
+  fileName: string
+  fileSize: number
+  createTime: string
+}
+
+export interface BackupListResp {
+  list: BackupItem[]
+}
+
+export interface TriggerBackupResp {
+  fileName: string
+  fileSize: number
+}
+
+export interface RestoreBackupResp {
+  preRestoreBackup: string
+}

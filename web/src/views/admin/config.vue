@@ -18,6 +18,14 @@
             @change="(val: boolean) => handleUpdate(item.key, String(val))"
           />
         </template>
+        <template v-else-if="item.key === 'db_backup_enabled'">
+          <el-switch
+            :model-value="item._value === '1'"
+            active-text="开启"
+            inactive-text="关闭"
+            @change="(val: boolean) => handleUpdate(item.key, val ? '1' : '0')"
+          />
+        </template>
         <template v-else>
           <el-input v-model="item._value" style="width: 200px" />
           <el-button type="primary" size="small" @click="handleUpdate(item.key, item._value)">保存</el-button>
@@ -55,6 +63,18 @@ const configMeta: Record<string, { title: string; desc: string }> = {
   log_auto_delete_days: {
     title: '自动清理日志',
     desc: '操作日志和登录日志超过指定天数后自动删除（0=不清理）',
+  },
+  db_backup_enabled: {
+    title: '数据库自动备份',
+    desc: '开启后系统将按设定间隔自动备份SQLite数据库文件（0=关闭 1=开启）',
+  },
+  db_backup_interval_hours: {
+    title: '备份间隔（小时）',
+    desc: '自动备份的时间间隔，单位为小时（默认24小时）',
+  },
+  db_backup_max_count: {
+    title: '最大备份数量',
+    desc: '保留的最大备份数量，超过后自动删除最旧的备份（默认7份）',
   },
 }
 

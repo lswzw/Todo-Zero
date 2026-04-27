@@ -43,6 +43,7 @@ const router = createRouter({
         { path: 'config', name: 'AdminConfig', component: () => import('@/views/admin/config.vue') },
         { path: 'log', name: 'AdminLog', component: () => import('@/views/admin/log.vue') },
         { path: 'login-log', name: 'AdminLoginLog', component: () => import('@/views/admin/login-log.vue') },
+        { path: 'backup', name: 'AdminBackup', component: () => import('@/views/admin/backup.vue') },
       ],
     },
   ],

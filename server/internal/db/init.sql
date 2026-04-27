@@ -119,7 +119,10 @@ INSERT OR IGNORE INTO `system_configs` (`config_key`, `config_value`, `group_nam
 ('task_default_priority', '0', 'task', '新建任务默认优先级'),
 ('task_auto_delete_days', '0', 'task', '自动清理已完成任务天数（0=不清理）'),
 ('task_trash_retention_days', '30', 'task', '回收站保留天数，超过后永久删除（0=不清理）'),
-('log_auto_delete_days', '0', 'log', '自动清理操作日志和登录日志天数（0=不清理）');
+('log_auto_delete_days', '0', 'log', '自动清理操作日志和登录日志天数（0=不清理）'),
+('db_backup_enabled', '0', 'backup', '是否启用数据库自动备份（0=关闭 1=开启）'),
+('db_backup_interval_hours', '24', 'backup', '自动备份间隔小时数'),
+('db_backup_max_count', '7', 'backup', '最大备份数量，超过后自动清理最旧的');
 
 -- ================================================
 -- Indexes for performance

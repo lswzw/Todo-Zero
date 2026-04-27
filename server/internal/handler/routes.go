@@ -73,6 +73,26 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			Path:    "/user/:id/toggle",
 			Handler: admin.ToggleUserStatusHandler(serverCtx),
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/backup",
+			Handler: admin.BackupListHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/backup",
+			Handler: admin.TriggerBackupHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/backup/download/:fileName",
+			Handler: admin.DownloadBackupHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/backup/restore/:fileName",
+			Handler: admin.RestoreBackupHandler(serverCtx),
+		},
 	}
 
 	// Apply middlewares: security → operation log → admin

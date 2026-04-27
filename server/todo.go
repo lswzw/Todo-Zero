@@ -142,6 +142,7 @@ func main() {
 	handler.RegisterHandlers(server, ctx)
 
 	scheduler.StartCleanupScheduler(ctx)
+	scheduler.StartBackupScheduler(ctx)
 
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)
 	server.Start()

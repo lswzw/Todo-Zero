@@ -331,3 +331,33 @@ type UserListResp struct {
 	Total int64          `json:"total"`
 	List  []UserListItem `json:"list"`
 }
+
+type BackupItem struct {
+	FileName  string `json:"fileName"`
+	FileSize  int64  `json:"fileSize"`
+	CreateTime string `json:"createTime"`
+}
+
+type BackupListResp struct {
+	List []BackupItem `json:"list"`
+}
+
+type TriggerBackupReq struct {
+}
+
+type TriggerBackupResp struct {
+	FileName string `json:"fileName"`
+	FileSize int64  `json:"fileSize"`
+}
+
+type DownloadBackupReq struct {
+	FileName string `path:"fileName"`
+}
+
+type RestoreBackupReq struct {
+	FileName string `path:"fileName"`
+}
+
+type RestoreBackupResp struct {
+	PreRestoreBackup string `json:"preRestoreBackup"`
+}

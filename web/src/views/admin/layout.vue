@@ -26,6 +26,9 @@
         <router-link to="/admin/login-log" class="sidebar-item" active-class="active">
           <span>🔑</span> 登录日志
         </router-link>
+        <router-link to="/admin/backup" class="sidebar-item" active-class="active">
+          <span>💾</span> 数据库备份
+        </router-link>
       </aside>
 
       <!-- 内容区 -->

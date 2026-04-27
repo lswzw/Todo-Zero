@@ -12,6 +12,9 @@ import type {
   ConfigListResp,
   OperationLogResp,
   LoginLogResp,
+  BackupListResp,
+  TriggerBackupResp,
+  RestoreBackupResp,
 } from '@/types'
 
 // 用户
@@ -62,3 +65,9 @@ export const getOperationLogList = (params: Record<string, unknown>) =>
   request.get<never, OperationLogResp>('/admin/log/operation', { params })
 export const getLoginLogList = (params: Record<string, unknown>) =>
   request.get<never, LoginLogResp>('/admin/log/login', { params })
+
+// 管理员 - 数据库备份
+export const getBackupList = () => request.get<never, BackupListResp>('/admin/backup')
+export const triggerBackup = () => request.post<never, TriggerBackupResp>('/admin/backup')
+export const downloadBackup = (fileName: string) => `/api/v1/admin/backup/download/${fileName}`
+export const restoreBackup = (fileName: string) => request.post<never, RestoreBackupResp>(`/admin/backup/restore/${fileName}`)

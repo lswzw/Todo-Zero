@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# Todo App 集成测试脚本 (v1.5.0)
+# Todo App 集成测试脚本 (v1.6.0)
 # 用法: bash test.sh
 # 依赖: curl, jq
 # 说明: 自动删除数据库、重启服务、执行测试、清理还原
@@ -779,7 +779,7 @@ assert_err "$RESP" "删除管理员拒绝"
 
 # 10.6 系统配置
 RESP=$(get "/api/v1/admin/config" "$ADMIN_TOKEN")
-assert_eq "$RESP" "data.list | length" "7" "系统配置(7项)"
+assert_eq "$RESP" "data.list | length" "10" "系统配置(10项)"
 
 RESP=$(put "/api/v1/admin/config" "{\"key\":\"allow_register\",\"value\":\"false\"}" "$ADMIN_TOKEN")
 assert_ok "$RESP" "关闭注册"
@@ -813,6 +813,151 @@ if [ -n "$TOTAL" ] && [ "$TOTAL" != "null" ] && [ "$TOTAL" -gt "0" ] 2>/dev/null
 else
     fail "登录日志: 异常"
 fi
+
+# ========== 11.5 数据库备份 ==========
+section "11.5 数据库备份"
+
+# 11.5.1 备份列表（初始应为空或无报错）
+RESP=$(get "/api/v1/admin/backup" "$ADMIN_TOKEN")
+BACKUP_CODE=$(jval "$RESP" ".code")
+if [ "$BACKUP_CODE" = "0" ]; then
+    pass "备份列表接口正常"
+else
+    fail "备份列表接口异常: $RESP"
+fi
+
+# 11.5.2 手动触发备份
+RESP=$(post "/api/v1/admin/backup" "{}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "手动触发备份"
+BACKUP_FILE=$(jval "$RESP" ".data.fileName")
+if [ -n "$BACKUP_FILE" ] && [ "$BACKUP_FILE" != "null" ]; then
+    pass "备份文件名: ${BACKUP_FILE}"
+else
+    fail "备份文件名为空"
+fi
+BACKUP_SIZE=$(jval "$RESP" ".data.fileSize")
+if [ -n "$BACKUP_SIZE" ] && [ "$BACKUP_SIZE" != "null" ] && [ "$BACKUP_SIZE" -gt "0" ] 2>/dev/null; then
+    pass "备份文件大小: ${BACKUP_SIZE} bytes"
+else
+    fail "备份文件大小异常: ${BACKUP_SIZE}"
+fi
+
+# 11.5.3 备份列表应包含新备份
+RESP=$(get "/api/v1/admin/backup" "$ADMIN_TOKEN")
+BACKUP_COUNT=$(jval "$RESP" ".data.list | length")
+if [ "$BACKUP_COUNT" -ge "1" ] 2>/dev/null; then
+    pass "备份列表数量: ${BACKUP_COUNT}"
+else
+    fail "备份列表数量: ${BACKUP_COUNT} (expected >=1)"
+fi
+
+# 11.5.4 下载备份文件
+FIRST_BACKUP=$(jval "$RESP" ".data.list[0].fileName")
+if [ -n "$FIRST_BACKUP" ] && [ "$FIRST_BACKUP" != "null" ]; then
+    HTTP_CODE=$(curl -s -o /tmp/backup_test.bak -w "%{http_code}" \
+        -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+        "${BASE_URL}/api/v1/admin/backup/download/${FIRST_BACKUP}")
+    if [ "$HTTP_CODE" = "200" ]; then
+        FILE_SIZE=$(stat -c%s /tmp/backup_test.bak 2>/dev/null || stat -f%z /tmp/backup_test.bak 2>/dev/null || echo "0")
+        if [ "$FILE_SIZE" -gt "0" ] 2>/dev/null; then
+            pass "下载备份: ${FIRST_BACKUP} (${FILE_SIZE} bytes)"
+        else
+            fail "下载备份: 文件为空"
+        fi
+    else
+        fail "下载备份: HTTP ${HTTP_CODE}"
+    fi
+    rm -f /tmp/backup_test.bak
+else
+    fail "下载备份: 无备份文件名"
+fi
+
+# 11.5.5 普通用户无权限访问备份
+RESP=$(get "/api/v1/admin/backup" "$USER_TOKEN")
+assert_err "$RESP" "普通用户访问备份拒绝"
+
+# 11.5.6 开启自动备份配置
+RESP=$(put "/api/v1/admin/config" "{\"key\":\"db_backup_enabled\",\"value\":\"1\"}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "开启自动备份"
+
+RESP=$(get "/api/v1/admin/config" "$ADMIN_TOKEN")
+DB_BACKUP_ENABLED=$(echo "$RESP" | jq -r '.data.list[] | select(.key=="db_backup_enabled") | .value' 2>/dev/null)
+if [ "$DB_BACKUP_ENABLED" = "1" ]; then
+    pass "自动备份配置已开启"
+else
+    fail "自动备份配置: ${DB_BACKUP_ENABLED}"
+fi
+
+# 还原自动备份配置
+RESP=$(put "/api/v1/admin/config" "{\"key\":\"db_backup_enabled\",\"value\":\"0\"}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "关闭自动备份"
+
+# 11.5.7 恢复备份
+# 先创建一条任务用于验证恢复
+RESP=$(post "/api/v1/task" "{\"title\":\"恢复测试任务\",\"content\":\"用于验证恢复\"}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "恢复前创建任务"
+
+# 备份
+RESP=$(post "/api/v1/admin/backup" "{}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "恢复前备份"
+RESTORE_BACKUP_FILE=$(jval "$RESP" ".data.fileName")
+
+# 删除刚创建的任务
+RESP=$(get "/api/v1/task?page=1&pageSize=50" "$ADMIN_TOKEN")
+BEFORE_COUNT=$(jval "$RESP" ".data.total")
+# 获取恢复测试任务的 id
+RESTORE_TEST_ID=$(echo "$RESP" | jq -r '.data.list[] | select(.title=="恢复测试任务") | .id' 2>/dev/null | head -1)
+if [ -n "$RESTORE_TEST_ID" ] && [ "$RESTORE_TEST_ID" != "null" ]; then
+    RESP=$(del "/api/v1/task/$RESTORE_TEST_ID" "$ADMIN_TOKEN")
+    assert_ok "$RESP" "删除恢复测试任务"
+fi
+
+# 执行恢复
+RESP=$(post "/api/v1/admin/backup/restore/$RESTORE_BACKUP_FILE" "{}" "$ADMIN_TOKEN")
+RESTORE_CODE=$(jval "$RESP" ".code")
+if [ "$RESTORE_CODE" = "0" ]; then
+    pass "恢复备份成功"
+    # 验证安全备份文件名返回
+    PRE_BACKUP=$(jval "$RESP" ".data.preRestoreBackup")
+    if [ -n "$PRE_BACKUP" ] && [ "$PRE_BACKUP" != "null" ]; then
+        pass "恢复返回安全备份文件名: $PRE_BACKUP"
+    else
+        fail "恢复未返回安全备份文件名"
+    fi
+else
+    fail "恢复备份: code=${RESTORE_CODE}"
+fi
+
+# 重新登录获取新 token（恢复后旧 token 可能失效，密码恢复为备份时的状态）
+# 备份是在密码已改为 ADMIN_NEW_PASS 后创建的，所以恢复后密码应该是 ADMIN_NEW_PASS
+RESP=$(post "/api/v1/user/login" "{\"username\":\"admin\",\"password\":\"${ADMIN_NEW_PASS}\"}")
+ADMIN_TOKEN=$(jval "$RESP" ".data.token")
+if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
+    # 如果当前密码不行，尝试初始密码
+    RESP=$(post "/api/v1/user/login" "{\"username\":\"admin\",\"password\":\"${ADMIN_PASS}\"}")
+    ADMIN_TOKEN=$(jval "$RESP" ".data.token")
+fi
+
+# 验证任务已恢复
+RESP=$(get "/api/v1/task?page=1&pageSize=50" "$ADMIN_TOKEN")
+RESTORED_ID=$(echo "$RESP" | jq -r '.data.list[] | select(.title=="恢复测试任务") | .id' 2>/dev/null | head -1)
+if [ -n "$RESTORED_ID" ] && [ "$RESTORED_ID" != "null" ]; then
+    pass "恢复后任务已还原"
+else
+    fail "恢复后任务未还原"
+fi
+
+# 11.5.8 恢复备份 - 无效文件名
+RESP=$(post "/api/v1/admin/backup/restore/notexist.bak" "{}" "$ADMIN_TOKEN")
+assert_err "$RESP" "恢复不存在的备份拒绝"
+
+# 11.5.9 恢复备份 - 非 .bak 文件
+RESP=$(post "/api/v1/admin/backup/restore/test.txt" "{}" "$ADMIN_TOKEN")
+assert_err "$RESP" "恢复非bak文件拒绝"
+
+# 11.5.10 普通用户无权限恢复备份
+RESP=$(post "/api/v1/admin/backup/restore/test.bak" "{}" "$USER_TOKEN")
+assert_err "$RESP" "普通用户恢复备份拒绝"
 
 # ========== 12. 登录限流 ==========
 section "12. 登录限流"

@@ -316,6 +316,32 @@ type (
 	UpdateConfigResp  {}
 )
 
+// 备份模块(管理员)
+type (
+	BackupItem {
+		FileName  string `json:"fileName"`
+		FileSize  int64  `json:"fileSize"`
+		CreateTime string `json:"createTime"`
+	}
+	BackupListResp {
+		List []BackupItem `json:"list"`
+	}
+	TriggerBackupReq  {}
+	TriggerBackupResp {
+		FileName string `json:"fileName"`
+		FileSize int64  `json:"fileSize"`
+	}
+	DownloadBackupReq {
+		FileName string `path:"fileName"`
+	}
+	RestoreBackupReq {
+		FileName string `path:"fileName"`
+	}
+	RestoreBackupResp {
+		PreRestoreBackup string `json:"preRestoreBackup"`
+	}
+)
+
 // 检查注册开关(公开接口)
 type (
 	CheckRegisterResp {
@@ -494,5 +520,17 @@ service todo-api {
 
 	@handler LoginLogList
 	get /log/login (LoginLogReq) returns (LoginLogResp)
+
+	@handler BackupList
+	get /backup returns (BackupListResp)
+
+	@handler TriggerBackup
+	post /backup (TriggerBackupReq) returns (TriggerBackupResp)
+
+	@handler DownloadBackup
+	get /backup/download/:fileName (DownloadBackupReq)
+
+	@handler RestoreBackup
+	post /backup/restore/:fileName (RestoreBackupReq) returns (RestoreBackupResp)
 }
 
