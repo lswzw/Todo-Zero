@@ -19,9 +19,9 @@ func (r *BatchTaskReq) Validate() error {
 		return fmt.Errorf("action不能为空")
 	}
 	switch r.Action {
-	case "complete", "undo", "delete":
+	case "complete", "undo", "delete", "restore":
 	default:
-		return fmt.Errorf("action必须是complete、undo或delete")
+		return fmt.Errorf("action必须是complete、undo、delete或restore")
 	}
 	return nil
 }

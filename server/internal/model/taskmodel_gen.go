@@ -15,8 +15,12 @@ type (
 		Update(ctx context.Context, data *Task) error
 		Delete(ctx context.Context, id int64) error
 		FindOne(ctx context.Context, id int64) (*Task, error)
+		FindOneIncludeDeleted(ctx context.Context, id int64) (*Task, error)
 		FindList(ctx context.Context, userId int64, keyword string, status, priority, categoryId, page, pageSize int64) ([]*Task, int64, error)
+		FindDeletedList(ctx context.Context, userId int64, page, pageSize int64) ([]*Task, int64, error)
 		UpdateStatus(ctx context.Context, id, status int64) error
+		Restore(ctx context.Context, id int64) error
+		PermanentDelete(ctx context.Context, id int64) error
 		CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error)
 		HardDeleteCompletedBefore(ctx context.Context, beforeTime time.Time) (int64, error)
 		HardDeleteSoftDeletedBefore(ctx context.Context, beforeTime time.Time) (int64, error)
@@ -115,6 +119,60 @@ func (m *defaultTaskModel) FindList(ctx context.Context, userId int64, keyword s
 func (m *defaultTaskModel) UpdateStatus(ctx context.Context, id, status int64) error {
 	query := fmt.Sprintf(`UPDATE %s SET status = ?, update_time = ? WHERE id = ?`, m.tableName())
 	_, err := m.db.ExecContext(ctx, query, status, time.Now(), id)
+	return err
+}
+
+func (m *defaultTaskModel) FindOneIncludeDeleted(ctx context.Context, id int64) (*Task, error) {
+	query := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s WHERE id = ? LIMIT 1`, m.tableName())
+	var resp Task
+	err := m.db.QueryRowContext(ctx, query, id).Scan(&resp.Id, &resp.Title, &resp.Content, &resp.Priority, &resp.Status, &resp.CategoryId, &resp.UserId, &resp.StartTime, &resp.EndTime, &resp.Reminder, &resp.Tags, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	}
+	return &resp, err
+}
+
+func (m *defaultTaskModel) FindDeletedList(ctx context.Context, userId int64, page, pageSize int64) ([]*Task, int64, error) {
+	where := " WHERE user_id = ? AND is_deleted = 1"
+	args := []interface{}{userId}
+
+	var total int64
+	countQuery := fmt.Sprintf(`SELECT COUNT(*) FROM %s`, m.tableName()) + where
+	err := m.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY update_time DESC LIMIT ? OFFSET ?`
+	listArgs := append(args, pageSize, offset)
+	rows, err := m.db.QueryContext(ctx, listQuery, listArgs...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var list []*Task
+	for rows.Next() {
+		var t Task
+		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
+		if err != nil {
+			return nil, 0, err
+		}
+		list = append(list, &t)
+	}
+	return list, total, rows.Err()
+}
+
+func (m *defaultTaskModel) Restore(ctx context.Context, id int64) error {
+	query := fmt.Sprintf(`UPDATE %s SET is_deleted = 0, update_time = ? WHERE id = ? AND is_deleted = 1`, m.tableName())
+	_, err := m.db.ExecContext(ctx, query, time.Now(), id)
+	return err
+}
+
+func (m *defaultTaskModel) PermanentDelete(ctx context.Context, id int64) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id = ? AND is_deleted = 1`, m.tableName())
+	_, err := m.db.ExecContext(ctx, query, id)
 	return err
 }
 

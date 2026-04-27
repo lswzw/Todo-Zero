@@ -10,6 +10,7 @@
         <div class="nav-right">
           <span class="username">{{ userStore.username }}</span>
           <el-button v-if="userStore.isAdmin" text type="warning" @click="$router.push('/admin')">管理后台</el-button>
+          <el-button text @click="$router.push('/trash')">回收站</el-button>
           <el-button text @click="showPasswordDialog = true">修改密码</el-button>
           <el-button text type="danger" @click="handleLogout">退出登录</el-button>
         </div>

@@ -167,6 +167,21 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Path:    "/task/batch",
 					Handler: task.BatchTaskHandler(serverCtx),
 				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/task/trash",
+					Handler: task.TrashListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPatch,
+					Path:    "/task/:id/restore",
+					Handler: task.RestoreTaskHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodDelete,
+					Path:    "/task/:id/permanent",
+					Handler: task.PermanentDeleteTaskHandler(serverCtx),
+				},
 			}...,
 		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),

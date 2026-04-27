@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 
+	"server/internal/model"
 	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
@@ -32,7 +33,7 @@ func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTa
 	}
 
 	switch req.Action {
-	case "complete", "undo", "delete":
+	case "complete", "undo", "delete", "restore":
 	default:
 		return nil, xerr.NewCodeError(xerr.RequestParamError)
 	}
@@ -43,7 +44,14 @@ func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTa
 
 	var failedIds []int64
 	for _, id := range req.Ids {
-		task, err := l.svcCtx.TaskModel.FindOne(l.ctx, id)
+		// restore 需要查找已删除的任务，其他操作只查找未删除的
+		var task *model.Task
+		var err error
+		if req.Action == "restore" {
+			task, err = l.svcCtx.TaskModel.FindOneIncludeDeleted(l.ctx, id)
+		} else {
+			task, err = l.svcCtx.TaskModel.FindOne(l.ctx, id)
+		}
 		if err != nil {
 			failedIds = append(failedIds, id)
 			continue
@@ -65,6 +73,10 @@ func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTa
 			}
 		case "delete":
 			if err := l.svcCtx.TaskModel.Delete(l.ctx, id); err != nil {
+				failedIds = append(failedIds, id)
+			}
+		case "restore":
+			if err := l.svcCtx.TaskModel.Restore(l.ctx, id); err != nil {
 				failedIds = append(failedIds, id)
 			}
 		}

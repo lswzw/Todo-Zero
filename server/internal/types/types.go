@@ -5,7 +5,7 @@ package types
 
 type BatchTaskReq struct {
 	Ids    []int64 `json:"ids"`
-	Action string  `json:"action,options=complete|undo|delete"`
+	Action string  `json:"action,options=complete|undo|delete|restore"`
 }
 
 type BatchTaskResp struct {
@@ -91,6 +91,46 @@ type DeleteTaskReq struct {
 }
 
 type DeleteTaskResp struct {
+}
+
+type TrashItem struct {
+	Id           int64  `json:"id"`
+	Title        string `json:"title"`
+	Content      string `json:"content"`
+	Status       int64  `json:"status"`
+	Priority     int64  `json:"priority"`
+	CategoryId   int64  `json:"categoryId"`
+	CategoryName string `json:"categoryName"`
+	StartTime    string `json:"startTime"`
+	EndTime      string `json:"endTime"`
+	Reminder     string `json:"reminder"`
+	Tags         string `json:"tags"`
+	CreateTime   string `json:"createTime"`
+	UpdateTime   string `json:"updateTime"`
+}
+
+type TrashListReq struct {
+	Page     int64 `form:"page,default=1"`
+	PageSize int64 `form:"pageSize,default=10"`
+}
+
+type TrashListResp struct {
+	Total int64       `json:"total"`
+	List  []TrashItem `json:"list"`
+}
+
+type RestoreTaskReq struct {
+	Id int64 `path:"id"`
+}
+
+type RestoreTaskResp struct {
+}
+
+type PermanentDeleteTaskReq struct {
+	Id int64 `path:"id"`
+}
+
+type PermanentDeleteTaskResp struct {
 }
 
 type DeleteUserReq struct {

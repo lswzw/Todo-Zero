@@ -161,9 +161,52 @@ type (
 type (
 	BatchTaskReq {
 		Ids    []int64 `json:"ids" validate:"required"`
-		Action string  `json:"action" validate:"required" options:"complete|undo|delete"`
+		Action string  `json:"action" validate:"required" options:"complete|undo|delete|restore"`
 	}
 	BatchTaskResp  {}
+)
+
+// 回收站列表
+type (
+	TrashListReq {
+		Page     int64  `form:"page,default=1"`
+		PageSize int64  `form:"pageSize,default=10"`
+	}
+	TrashItem {
+		Id           int64  `json:"id"`
+		Title        string `json:"title"`
+		Content      string `json:"content"`
+		Status       int64  `json:"status"`
+		Priority     int64  `json:"priority"`
+		CategoryId   int64  `json:"categoryId"`
+		CategoryName string `json:"categoryName"`
+		StartTime    string `json:"startTime"`
+		EndTime      string `json:"endTime"`
+		Reminder     string `json:"reminder"`
+		Tags         string `json:"tags"`
+		CreateTime   string `json:"createTime"`
+		UpdateTime   string `json:"updateTime"`
+	}
+	TrashListResp {
+		Total int64      `json:"total"`
+		List  []TrashItem `json:"list"`
+	}
+)
+
+// 恢复任务
+type (
+	RestoreTaskReq {
+		Id int64 `path:"id"`
+	}
+	RestoreTaskResp  {}
+)
+
+// 永久删除任务
+type (
+	PermanentDeleteTaskReq {
+		Id int64 `path:"id"`
+	}
+	PermanentDeleteTaskResp  {}
 )
 
 // =============================================
@@ -387,6 +430,15 @@ service todo-api {
 
 	@handler BatchTask
 	post /task/batch (BatchTaskReq) returns (BatchTaskResp)
+
+	@handler TrashList
+	get /task/trash (TrashListReq) returns (TrashListResp)
+
+	@handler RestoreTask
+	patch /task/:id/restore (RestoreTaskReq) returns (RestoreTaskResp)
+
+	@handler PermanentDeleteTask
+	delete /task/:id/permanent (PermanentDeleteTaskReq) returns (PermanentDeleteTaskResp)
 }
 
 @server (

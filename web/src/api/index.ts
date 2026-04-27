@@ -5,6 +5,7 @@ import type {
   UserInfo,
   TaskListResp,
   TaskDetail,
+  TrashListResp,
   CategoryListResp,
   StatResp,
   UserListResp,
@@ -30,6 +31,9 @@ export const updateTask = (id: number, data: Record<string, unknown>) => request
 export const toggleTask = (id: number) => request.patch(`/task/${id}/toggle`)
 export const deleteTask = (id: number) => request.delete(`/task/${id}`)
 export const batchTask = (data: { ids: number[]; action: string }) => request.post('/task/batch', data)
+export const getTrashList = (params: Record<string, unknown>) => request.get<never, TrashListResp>('/task/trash', { params })
+export const restoreTask = (id: number) => request.patch(`/task/${id}/restore`)
+export const permanentDeleteTask = (id: number) => request.delete(`/task/${id}/permanent`)
 
 // 分类
 export const getCategoryList = () => request.get<never, CategoryListResp>('/category')

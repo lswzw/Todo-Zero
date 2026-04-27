@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# Todo App 集成测试脚本 (v1.4.0)
+# Todo App 集成测试脚本 (v1.5.0)
 # 用法: bash test.sh
 # 依赖: curl, jq
 # 说明: 自动删除数据库、重启服务、执行测试、清理还原
@@ -552,6 +552,153 @@ assert_err "$RESP" "跨用户修改任务拒绝"
 # 8.4 不存在的任务
 RESP=$(get "/api/v1/task/99999" "$ADMIN_TOKEN")
 assert_err "$RESP" "查询不存在的任务"
+
+# ========== 8.5 回收站 ==========
+section "8.5 回收站"
+
+# 前置: TASK2 已在 section 8 中被软删除，回收站应有 1 条
+RESP=$(get "/api/v1/task/trash?page=1&pageSize=10" "$ADMIN_TOKEN")
+assert_eq "$RESP" "data.total" "1" "回收站列表(1条)"
+
+# 验证回收站条目字段
+TRASH_TITLE=$(jval "$RESP" ".data.list[0].title")
+if [ "$TRASH_TITLE" = "修复BUG" ]; then
+    pass "回收站条目标题: ${TRASH_TITLE}"
+else
+    fail "回收站条目标题: ${TRASH_TITLE} (expected 修复BUG)"
+fi
+TRASH_UPDATE_TIME=$(jval "$RESP" ".data.list[0].updateTime")
+if [ -n "$TRASH_UPDATE_TIME" ] && [ "$TRASH_UPDATE_TIME" != "null" ]; then
+    pass "回收站条目 updateTime: ${TRASH_UPDATE_TIME}"
+else
+    fail "回收站条目 updateTime 缺失"
+fi
+
+# 恢复任务2
+RESP=$(patch_req "/api/v1/task/${TASK2_ID}/restore" "$ADMIN_TOKEN")
+assert_ok "$RESP" "恢复任务2"
+
+# 恢复后回收站应为空
+RESP=$(get "/api/v1/task/trash?page=1&pageSize=10" "$ADMIN_TOKEN")
+assert_eq "$RESP" "data.total" "0" "恢复后回收站为空"
+
+# 恢复后任务列表应包含任务2
+RESP=$(get "/api/v1/task?page=1&pageSize=10" "$ADMIN_TOKEN")
+TASK_LIST_TOTAL=$(jval "$RESP" ".data.total")
+if [ "$TASK_LIST_TOTAL" -ge "2" ] 2>/dev/null; then
+    pass "恢复后任务列表: total=${TASK_LIST_TOTAL}"
+else
+    fail "恢复后任务列表: total=${TASK_LIST_TOTAL} (expected >=2)"
+fi
+
+# 恢复未删除的任务 — 应报错
+RESP=$(patch_req "/api/v1/task/${TASK1_ID}/restore" "$ADMIN_TOKEN")
+assert_err "$RESP" "恢复未删除任务拒绝"
+
+# 重新删除任务2，测试永久删除
+RESP=$(del "/api/v1/task/${TASK2_ID}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "重新删除任务2"
+
+RESP=$(get "/api/v1/task/trash?page=1&pageSize=10" "$ADMIN_TOKEN")
+assert_eq "$RESP" "data.total" "1" "回收站(重新删除后1条)"
+
+# 永久删除任务2
+RESP=$(del "/api/v1/task/${TASK2_ID}/permanent" "$ADMIN_TOKEN")
+assert_ok "$RESP" "永久删除任务2"
+
+# 永久删除后回收站应为空
+RESP=$(get "/api/v1/task/trash?page=1&pageSize=10" "$ADMIN_TOKEN")
+assert_eq "$RESP" "data.total" "0" "永久删除后回收站为空"
+
+# 永久删除后任务详情应404
+RESP=$(get "/api/v1/task/${TASK2_ID}" "$ADMIN_TOKEN")
+assert_err "$RESP" "永久删除后任务详情不存在"
+
+# 永久删除未软删除的任务 — 应报错
+RESP=$(del "/api/v1/task/${TASK1_ID}/permanent" "$ADMIN_TOKEN")
+assert_err "$RESP" "永久删除未软删除任务拒绝"
+
+# 恢复不存在的任务
+RESP=$(patch_req "/api/v1/task/99999/restore" "$ADMIN_TOKEN")
+assert_err "$RESP" "恢复不存在的任务拒绝"
+
+# 永久删除不存在的任务
+RESP=$(del "/api/v1/task/99999/permanent" "$ADMIN_TOKEN")
+assert_err "$RESP" "永久删除不存在的任务拒绝"
+
+# 8.5.1 批量恢复
+# 创建并删除多个任务用于批量恢复
+RESP=$(post "/api/v1/task" "{\"title\":\"批量恢复任务1\",\"priority\":3}" "$ADMIN_TOKEN")
+BATCH_RESTORE_1=$(jval "$RESP" ".data.id")
+RESP=$(post "/api/v1/task" "{\"title\":\"批量恢复任务2\",\"priority\":3}" "$ADMIN_TOKEN")
+BATCH_RESTORE_2=$(jval "$RESP" ".data.id")
+
+# 软删除这两个任务
+RESP=$(del "/api/v1/task/${BATCH_RESTORE_1}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "删除批量恢复任务1"
+RESP=$(del "/api/v1/task/${BATCH_RESTORE_2}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "删除批量恢复任务2"
+
+# 回收站应有 2 条
+RESP=$(get "/api/v1/task/trash?page=1&pageSize=10" "$ADMIN_TOKEN")
+assert_eq "$RESP" "data.total" "2" "批量恢复前回收站(2条)"
+
+# 批量恢复
+RESP=$(post "/api/v1/task/batch" "{\"ids\":[${BATCH_RESTORE_1},${BATCH_RESTORE_2}],\"action\":\"restore\"}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "批量恢复"
+
+# 批量恢复后回收站应为空
+RESP=$(get "/api/v1/task/trash?page=1&pageSize=10" "$ADMIN_TOKEN")
+assert_eq "$RESP" "data.total" "0" "批量恢复后回收站为空"
+
+# 8.5.2 跨用户回收站操作
+# 创建普通用户任务并删除
+RESP=$(post "/api/v1/task" "{\"title\":\"用户任务\",\"priority\":3}" "$USER_TOKEN")
+USER_TASK_ID=$(jval "$RESP" ".data.id")
+RESP=$(del "/api/v1/task/${USER_TASK_ID}" "$USER_TOKEN")
+assert_ok "$RESP" "普通用户删除自己的任务"
+
+# 管理员不能恢复普通用户的任务
+RESP=$(patch_req "/api/v1/task/${USER_TASK_ID}/restore" "$ADMIN_TOKEN")
+assert_err "$RESP" "跨用户恢复任务拒绝"
+
+# 管理员不能永久删除普通用户的任务
+RESP=$(del "/api/v1/task/${USER_TASK_ID}/permanent" "$ADMIN_TOKEN")
+assert_err "$RESP" "跨用户永久删除任务拒绝"
+
+# 普通用户自己恢复
+RESP=$(patch_req "/api/v1/task/${USER_TASK_ID}/restore" "$USER_TOKEN")
+assert_ok "$RESP" "普通用户恢复自己的任务"
+
+# 普通用户的回收站列表
+RESP=$(get "/api/v1/task/trash?page=1&pageSize=10" "$USER_TOKEN")
+assert_eq "$RESP" "data.total" "0" "普通用户回收站为空(已恢复)"
+
+# 8.5.3 回收站分页
+# 创建5个任务并删除
+for i in $(seq 1 5); do
+    RESP=$(post "/api/v1/task" "{\"title\":\"分页任务${i}\",\"priority\":3}" "$ADMIN_TOKEN")
+    PID=$(jval "$RESP" ".data.id")
+    del "/api/v1/task/${PID}" "$ADMIN_TOKEN" >/dev/null
+done
+
+RESP=$(get "/api/v1/task/trash?page=1&pageSize=3" "$ADMIN_TOKEN")
+TRASH_TOTAL=$(jval "$RESP" ".data.total")
+TRASH_PAGE_COUNT=$(jval "$RESP" ".data.list | length")
+if [ "$TRASH_TOTAL" -ge "5" ] && [ "$TRASH_PAGE_COUNT" = "3" ]; then
+    pass "回收站分页: total=${TRASH_TOTAL}, pageSize=3 返回 ${TRASH_PAGE_COUNT} 条"
+else
+    fail "回收站分页: total=${TRASH_TOTAL}, list=${TRASH_PAGE_COUNT}"
+fi
+
+# 第二页
+RESP=$(get "/api/v1/task/trash?page=2&pageSize=3" "$ADMIN_TOKEN")
+PAGE2_COUNT=$(jval "$RESP" ".data.list | length")
+if [ "$PAGE2_COUNT" -ge "2" ] 2>/dev/null; then
+    pass "回收站分页第2页: ${PAGE2_COUNT} 条"
+else
+    fail "回收站分页第2页: ${PAGE2_COUNT} 条"
+fi
 
 # ========== 9. 统计 ==========
 section "9. 统计"

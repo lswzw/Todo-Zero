@@ -35,6 +35,15 @@ export interface TaskListResp {
   total: number
 }
 
+export interface TrashItem extends TaskItem {
+  updateTime: string
+}
+
+export interface TrashListResp {
+  list: TrashItem[]
+  total: number
+}
+
 export interface StatResp {
   total: number
   done: number

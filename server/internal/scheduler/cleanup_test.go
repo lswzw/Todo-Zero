@@ -23,10 +23,16 @@ func (m *mockTaskModel) Insert(ctx context.Context, data *model.Task) (sql.Resul
 func (m *mockTaskModel) Update(ctx context.Context, data *model.Task) error                { return nil }
 func (m *mockTaskModel) Delete(ctx context.Context, id int64) error                        { return nil }
 func (m *mockTaskModel) FindOne(ctx context.Context, id int64) (*model.Task, error)        { return nil, model.ErrNotFound }
+func (m *mockTaskModel) FindOneIncludeDeleted(ctx context.Context, id int64) (*model.Task, error) { return nil, model.ErrNotFound }
 func (m *mockTaskModel) FindList(ctx context.Context, userId int64, keyword string, status, priority, categoryId, page, pageSize int64) ([]*model.Task, int64, error) {
 	return nil, 0, nil
 }
+func (m *mockTaskModel) FindDeletedList(ctx context.Context, userId int64, page, pageSize int64) ([]*model.Task, int64, error) {
+	return nil, 0, nil
+}
 func (m *mockTaskModel) UpdateStatus(ctx context.Context, id, status int64) error { return nil }
+func (m *mockTaskModel) Restore(ctx context.Context, id int64) error              { return nil }
+func (m *mockTaskModel) PermanentDelete(ctx context.Context, id int64) error      { return nil }
 func (m *mockTaskModel) CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error) {
 	return 0, 0, 0, 0, nil
 }
