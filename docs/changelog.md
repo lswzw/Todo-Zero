@@ -405,3 +405,27 @@
 - `config.vue` 的 `configMeta` 使用 `computed` + `tm`/`rt` API 实现响应式翻译
 - `backup.vue` 的确认输入框使用 `t('backup.confirmRestore')` 作为验证值，中英文切换时匹配对应文本
 - `request.ts` 使用 `i18n.global.t()` 全局方式调用（非组件内）
+
+---
+
+## v2.3.0 — P4-B 性能优化
+
+### P1 — 中优先级
+
+- [x] **并发请求优化** — `home.vue` 操作后同时刷新任务列表和统计，改为 `Promise.all([loadTasks(), loadStat()])` 并发执行
+  - `handleToggle`、`handleDelete`、`handleBatch`、`handleSubmitTask` 均适用
+  - `onMounted` 中 `loadStat()` + `loadTasks()` 同理
+
+- [x] **Vite 构建分包** — `vite.config.ts` 添加 `rollupOptions.output.manualChunks`
+  - `vendor` — vue/vue-router/pinia/axios
+  - `element-plus` — Element Plus 组件库
+  - `icons` — Element Plus Icons
+  - 分离后利于浏览器缓存，首屏仅加载必要 chunk
+
+### P2 — 低优先级
+
+- [x] **批量删除并行化** — `trash.vue` 中 `handleBatchPermanentDelete` 使用 `for...of` 逐个 `await`，改为 `Promise.allSettled` 并行删除
+
+- [x] **搜索防抖预留** — 搜索框添加注释：若将来改为 `@input` 实时搜索，需引入 debounce（`lodash-es/debounce` 或手写）
+
+- [x] **虚拟滚动预留** — 分页区域添加注释：若未来增大分页或取消分页，需引入 `vue-virtual-scroller` 或 `@tanstack/vue-virtual`
