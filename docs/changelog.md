@@ -310,3 +310,28 @@
 ### 测试修复
 
 - `test.sh` 系统配置期望值从 5 更新为 7（匹配 init.sql 实际配置项数）
+
+---
+
+## v2.0.0 — P3-A 数据安全与部署
+
+### Docker 镜像
+
+- [x] **Docker 镜像** — 三阶段构建（Node 编译前端 → Go 编译后端 → Alpine 运行），镜像仅 31MB
+  - `Dockerfile` — 多阶段构建，前端产物输出到 `server/dist`，Go 静态编译，最终 Alpine 运行
+  - `.dockerignore` — 排除无关文件加速构建
+  - 运行：`docker run -d -p 8888:8888 -v todo-data:/app/data todo-zero`
+  - 自定义：`docker run -d -p 9090:9090 -v todo-data:/app/data todo-zero -port 9090 -jwt-secret your-secret`
+
+### API 文档
+
+- [x] **API 文档** — 基于框架能力生成 OpenAPI 规范 + 交互式文档 UI
+  - `goctl api doc` 从 `.api` 文件自动生成 Markdown 文档（`docs/api/doc/todo.md`）
+  - `goctl-swagger` 插件生成 Swagger 2.0 JSON（`docs/api/openapi.json`）
+  - `.api` 文件添加 `@doc` 注解，接口标题完整显示
+  - 修正 `options` 标签格式（`options=` → `options:`），解决插件兼容问题
+  - `server/docs/openapi.json` 通过 `//go:embed` 嵌入二进制
+  - `GET /api-docs` — Scalar 交互式 API 文档页面
+  - `GET /openapi.json` — Swagger 2.0 规范 JSON
+  - **仅 `-debug` 模式开启**，生产环境不暴露
+  - Config 新增 `Debug bool` 字段，命令行 `-debug` 参数
