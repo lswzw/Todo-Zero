@@ -40,5 +40,6 @@ dist
 server/dist/
 
 # Data
+data/
 server/data/
 builddata/

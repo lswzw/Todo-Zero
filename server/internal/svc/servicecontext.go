@@ -23,6 +23,7 @@ type ServiceContext struct {
 	OperationLogMiddleware    *middleware.OperationLogMiddleware
 	SecurityHeadersMiddleware *middleware.SecurityHeadersMiddleware
 	LoginRateLimitMiddleware  *middleware.LoginRateLimitMiddleware
+	APIRateLimitMiddleware    *middleware.APIRateLimitMiddleware
 	LocaleMiddleware          *middleware.LocaleMiddleware
 }
 
@@ -43,6 +44,7 @@ func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
 		OperationLogMiddleware:    middleware.NewOperationLogMiddleware(userModel, opLogModel),
 		SecurityHeadersMiddleware: middleware.NewSecurityHeadersMiddleware(),
 		LoginRateLimitMiddleware:  middleware.NewLoginRateLimitMiddleware(),
+		APIRateLimitMiddleware:    middleware.NewAPIRateLimitMiddleware(),
 		LocaleMiddleware:          middleware.NewLocaleMiddleware(),
 	}
 }

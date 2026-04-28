@@ -21,6 +21,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	// Security headers middleware for all API routes
 	securityMw := serverCtx.SecurityHeadersMiddleware.Handle
 	loginRateLimitMw := serverCtx.LoginRateLimitMiddleware.Handle
+	apiRateLimitMw := serverCtx.APIRateLimitMiddleware.Handle
 	localeMw := serverCtx.LocaleMiddleware.Handle
 
 	// Health check — no auth, no middleware
@@ -110,29 +111,31 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 
 	server.AddRoutes(
 		rest.WithMiddleware(localeMw,
-			rest.WithMiddleware(securityMw,
-				[]rest.Route{
-					{
-						Method:  http.MethodGet,
-						Path:    "/category",
-						Handler: category.CategoryListHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodPost,
-						Path:    "/category",
-						Handler: category.CreateCategoryHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodPut,
-						Path:    "/category/:id",
-						Handler: category.UpdateCategoryHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodDelete,
-						Path:    "/category/:id",
-						Handler: category.DeleteCategoryHandler(serverCtx),
-					},
-				}...,
+			rest.WithMiddleware(apiRateLimitMw,
+				rest.WithMiddleware(securityMw,
+					[]rest.Route{
+						{
+							Method:  http.MethodGet,
+							Path:    "/category",
+							Handler: category.CategoryListHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPost,
+							Path:    "/category",
+							Handler: category.CreateCategoryHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPut,
+							Path:    "/category/:id",
+							Handler: category.UpdateCategoryHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodDelete,
+							Path:    "/category/:id",
+							Handler: category.DeleteCategoryHandler(serverCtx),
+						},
+					}...,
+				)...,
 			)...,
 		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
@@ -141,14 +144,16 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 
 	server.AddRoutes(
 		rest.WithMiddleware(localeMw,
-			rest.WithMiddleware(securityMw,
-				[]rest.Route{
-					{
-						Method:  http.MethodGet,
-						Path:    "/stat",
-						Handler: stat.StatHandler(serverCtx),
-					},
-				}...,
+			rest.WithMiddleware(apiRateLimitMw,
+				rest.WithMiddleware(securityMw,
+					[]rest.Route{
+						{
+							Method:  http.MethodGet,
+							Path:    "/stat",
+							Handler: stat.StatHandler(serverCtx),
+						},
+					}...,
+				)...,
 			)...,
 		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
@@ -157,69 +162,71 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 
 	server.AddRoutes(
 		rest.WithMiddleware(localeMw,
-			rest.WithMiddleware(securityMw,
-				[]rest.Route{
-					{
-						Method:  http.MethodPost,
-						Path:    "/task",
-						Handler: task.CreateTaskHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodGet,
-						Path:    "/task",
-						Handler: task.TaskListHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodGet,
-						Path:    "/task/export",
-						Handler: task.ExportTaskHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodPut,
-						Path:    "/task/:id",
-						Handler: task.UpdateTaskHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodDelete,
-						Path:    "/task/:id",
-						Handler: task.DeleteTaskHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodGet,
-						Path:    "/task/:id",
-						Handler: task.TaskDetailHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodPatch,
-						Path:    "/task/:id/toggle",
-						Handler: task.ToggleTaskHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodPost,
-						Path:    "/task/batch",
-						Handler: task.BatchTaskHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodPut,
-						Path:    "/task/sort",
-						Handler: task.SortTaskHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodGet,
-						Path:    "/task/trash",
-						Handler: task.TrashListHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodPatch,
-						Path:    "/task/:id/restore",
-						Handler: task.RestoreTaskHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodDelete,
-						Path:    "/task/:id/permanent",
-						Handler: task.PermanentDeleteTaskHandler(serverCtx),
-					},
-				}...,
+			rest.WithMiddleware(apiRateLimitMw,
+				rest.WithMiddleware(securityMw,
+					[]rest.Route{
+						{
+							Method:  http.MethodPost,
+							Path:    "/task",
+							Handler: task.CreateTaskHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodGet,
+							Path:    "/task",
+							Handler: task.TaskListHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodGet,
+							Path:    "/task/export",
+							Handler: task.ExportTaskHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPut,
+							Path:    "/task/:id",
+							Handler: task.UpdateTaskHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodDelete,
+							Path:    "/task/:id",
+							Handler: task.DeleteTaskHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodGet,
+							Path:    "/task/:id",
+							Handler: task.TaskDetailHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPatch,
+							Path:    "/task/:id/toggle",
+							Handler: task.ToggleTaskHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPost,
+							Path:    "/task/batch",
+							Handler: task.BatchTaskHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPut,
+							Path:    "/task/sort",
+							Handler: task.SortTaskHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodGet,
+							Path:    "/task/trash",
+							Handler: task.TrashListHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPatch,
+							Path:    "/task/:id/restore",
+							Handler: task.RestoreTaskHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodDelete,
+							Path:    "/task/:id/permanent",
+							Handler: task.PermanentDeleteTaskHandler(serverCtx),
+						},
+					}...,
+				)...,
 			)...,
 		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
