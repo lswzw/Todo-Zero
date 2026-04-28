@@ -61,6 +61,7 @@ func testDB(t *testing.T) *sql.DB {
 			end_time datetime DEFAULT NULL,
 			reminder datetime DEFAULT NULL,
 			tags varchar(500) DEFAULT '',
+sort_order integer NOT NULL DEFAULT 0,
 			is_deleted tinyint NOT NULL DEFAULT 0,
 			create_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			update_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
