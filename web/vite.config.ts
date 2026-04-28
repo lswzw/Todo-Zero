@@ -8,6 +8,15 @@ export default defineConfig({
   build: {
     outDir: '../server/dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router', 'pinia', 'axios'],
+          'element-plus': ['element-plus'],
+          icons: ['@element-plus/icons-vue'],
+        },
+      },
+    },
   },
   resolve: {
     alias: {

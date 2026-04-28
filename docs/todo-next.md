@@ -51,7 +51,7 @@
   - `handleToggle`、`handleDelete`、`handleBatch`、`handleSubmitTask` 均适用
   - `onMounted` 中 `loadStat()` + `loadCategories()` + `loadTasks()` 同理
 
-- [ ] **Vite 构建分包** — `vite.config.ts` 添加 `rollupOptions.output.manualChunks`
+- [x] **Vite 构建分包** — `vite.config.ts` 添加 `rollupOptions.output.manualChunks`
   - `vendor` — vue/vue-router/pinia/axios
   - `element-plus` — Element Plus 组件库
   - `icons` — Element Plus Icons
