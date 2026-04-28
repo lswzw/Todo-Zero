@@ -2,30 +2,31 @@
 
 零依赖全栈待办引擎 — Go 后端 + Vue3 前端编译为**单一二进制**，一行命令即可部署。无需 MySQL、Redis、Nginx，开箱即用。
 
-## 特性
+## ✨ 特性
 
 - **单体部署** — 一个二进制文件包含后端 API + 前端页面，零外部依赖
 - **SQLite 存储** — 使用纯 Go 实现的 SQLite 驱动，无需 CGO，数据存为本地文件
 - **自动初始化** — 首次启动自动建库建表，创建默认管理员账号
 - **JWT 认证** — 安全的无状态认证机制
 - **SPA 前端** — Vue3 + Element Plus + TypeScript，嵌入二进制提供服务
+- **定时任务** — 自动清理已删除的任务、定期备份数据库
 
-## 快速开始
+## 🚀 快速开始
 
-### 编译
+### 编译构建
 
 ```bash
-# 1. 构建前端
+# 1. 构建前端（输出到 server/dist/）
 cd web
 npm install
-npm run build        # 输出到 ../server/dist/
+npm run build
 
 # 2. 编译后端（前端已嵌入）
 cd ../server
 go build -o todo-api .
 ```
 
-### 运行
+### 运行方式
 
 ```bash
 # 直接运行（零配置）
@@ -51,7 +52,7 @@ go build -o todo-api .
 
 访问 http://localhost:8888 即可使用。
 
-## 项目结构
+## 📁 项目结构
 
 ```
 .
@@ -64,66 +65,79 @@ go build -o todo-api .
 │   │   ├── handler/         # HTTP处理器（goctl生成）
 │   │   ├── logic/           # 业务逻辑
 │   │   ├── model/           # 数据访问层（*sql.DB）
+│   │   ├── middleware/      # 中间件（认证、限流、日志）
 │   │   ├── pkg/xerr/        # 统一错误处理
+│   │   ├── scheduler/       # 定时任务（备份、清理）
 │   │   └── svc/             # 服务上下文（依赖注入）
 │   └── dist/                # 前端构建产物（go:embed嵌入）
 ├── web/                     # Vue3 前端
 │   ├── src/
-│   │   ├── api/             # Axios请求封装 + 23个API函数
+│   │   ├── api/             # Axios请求封装 + API函数
 │   │   ├── router/          # Vue Router路由配置
 │   │   ├── stores/          # Pinia状态管理
+│   │   ├── locales/         # 国际化（中英文）
 │   │   └── views/           # 页面组件
 │   └── vite.config.ts       # Vite配置（输出到server/dist）
 ├── docs/                    # 文档
-│   ├── development-roadmap.md
-│   ├── frontend-guide.md
 │   ├── api/                 # API定义文件
-│   ├── sql/                 # SQLite建表SQL
-│   └── prototype/           # 页面原型
+│   ├── prototype/           # 页面原型
+│   └── development-roadmap.md
 └── data/                    # 运行时数据（SQLite数据库，.gitignore）
 ```
 
-## 功能模块
+## 🎯 功能模块
 
-### 用户
+### 用户管理
 
 - 注册 / 登录（JWT）
 - 修改密码
 - 注册开关（管理员控制）
 
-### 任务
+### 任务管理
 
 - 创建 / 编辑 / 删除任务
 - 状态切换（待办 / 已完成）
 - 按分类、优先级、关键词筛选
 - 批量操作（完成 / 取消 / 删除）
+- 回收站（软删除、恢复、永久删除）
 
-### 管理员
+### 分类管理
+
+- 创建 / 编辑 / 删除分类
+- 任务按分类组织
+
+### 管理员功能
 
 - 用户管理（列表 / 重置密码 / 禁用 / 删除）
 - 系统配置（注册开关、站点名称等）
 - 操作日志查看
 - 登录日志查看
+- 数据库备份 / 恢复
 
-### 统计
+### 统计概览
 
 - 任务总数、完成数、待办数、完成率
 
-## 页面路由
+## 📄 页面路由
 
 | 路径 | 页面 | 认证 |
 |------|------|------|
 | `/login` | 登录 | - |
 | `/register` | 注册 | - |
 | `/` | 任务主页 | 需要 |
+| `/task/:id` | 任务详情 | 需要 |
+| `/trash` | 回收站 | 需要 |
 | `/admin/user` | 用户管理 | 管理员 |
 | `/admin/config` | 系统配置 | 管理员 |
 | `/admin/log` | 操作日志 | 管理员 |
 | `/admin/login-log` | 登录日志 | 管理员 |
+| `/admin/backup` | 数据备份 | 管理员 |
 
-## API 接口
+## 🔌 API 接口
 
 所有接口前缀 `/api/v1`，需要认证的接口需携带 `Authorization: Bearer <token>` 头。
+
+### 用户接口
 
 | 方法 | 路径 | 说明 | 认证 |
 |------|------|------|------|
@@ -132,6 +146,11 @@ go build -o todo-api .
 | POST | /user/register | 注册 | - |
 | GET | /user/info | 当前用户信息 | 需要 |
 | PUT | /user/password | 修改密码 | 需要 |
+
+### 任务接口
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
 | GET | /task | 任务列表 | 需要 |
 | POST | /task | 创建任务 | 需要 |
 | GET | /task/:id | 任务详情 | 需要 |
@@ -139,9 +158,30 @@ go build -o todo-api .
 | DELETE | /task/:id | 删除任务 | 需要 |
 | PATCH | /task/:id/toggle | 切换状态 | 需要 |
 | POST | /task/batch | 批量操作 | 需要 |
+| GET | /task/trash | 回收站列表 | 需要 |
+| POST | /task/:id/restore | 恢复任务 | 需要 |
+| DELETE | /task/:id/permanent | 永久删除 | 需要 |
+| POST | /task/sort | 排序 | 需要 |
+
+### 分类接口
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
 | GET | /category | 分类列表 | 需要 |
 | POST | /category | 创建分类 | 需要 |
+| PUT | /category/:id | 更新分类 | 需要 |
+| DELETE | /category/:id | 删除分类 | 需要 |
+
+### 统计接口
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
 | GET | /stat | 统计概览 | 需要 |
+
+### 管理员接口
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
 | GET | /admin/user | 用户列表 | 管理员 |
 | DELETE | /admin/user/:id | 删除用户 | 管理员 |
 | PUT | /admin/user/:id/password | 重置密码 | 管理员 |
@@ -150,8 +190,12 @@ go build -o todo-api .
 | PUT | /admin/config | 更新配置 | 管理员 |
 | GET | /admin/log/operation | 操作日志 | 管理员 |
 | GET | /admin/log/login | 登录日志 | 管理员 |
+| POST | /admin/backup | 触发备份 | 管理员 |
+| GET | /admin/backup/list | 备份列表 | 管理员 |
+| POST | /admin/backup/restore | 恢复备份 | 管理员 |
+| GET | /admin/backup/download | 下载备份 | 管理员 |
 
-## 配置说明
+## ⚙️ 配置说明
 
 支持命令行参数和配置文件两种方式，命令行参数优先级更高。
 
@@ -183,19 +227,21 @@ Database:
   DBFile: "todo.db"                   # SQLite文件名
 ```
 
-## 技术栈
+## 🛠️ 技术栈
 
-| 维度 | 选择 |
-|------|------|
-| 后端框架 | go-zero |
-| 前端框架 | Vue3 + TypeScript |
-| UI 组件库 | Element Plus |
-| 数据库 | SQLite（modernc.org/sqlite） |
-| 认证 | JWT（go-zero 内置） |
-| 静态资源 | Go embed |
-| 构建工具 | Vite |
+| 维度 | 选择 | 说明 |
+|------|------|------|
+| 后端框架 | go-zero | 高性能Go微服务框架 |
+| 前端框架 | Vue3 + TypeScript | 现代前端技术栈 |
+| UI 组件库 | Element Plus | 基于Vue3的UI库 |
+| 数据库 | SQLite | 嵌入式数据库，零依赖 |
+| 认证 | JWT | 无状态认证机制 |
+| 静态资源 | Go embed | 编译时嵌入静态文件 |
+| 构建工具 | Vite | 快速前端构建工具 |
+| 状态管理 | Pinia | Vue官方状态管理 |
+| 路由 | Vue Router | Vue官方路由 |
 
-## 开发
+## 👨‍💻 开发指南
 
 ### 前端开发
 
@@ -219,6 +265,17 @@ go run todo.go -port 9090  # 自定义端口
 cd web && npm run build && cd ../server && go build -o todo-api .
 ```
 
-## License
+### 运行测试
 
-MIT
+```bash
+cd server
+go test ./...           # 运行所有测试
+```
+
+## 📝 License
+
+MIT License
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
