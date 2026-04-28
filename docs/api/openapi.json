@@ -1,0 +1,2243 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Todo App API",
+    "description": "个人待办事项管理平台接口",
+    "version": "2.0.0"
+  },
+  "host": "localhost:8888",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/admin/backup": {
+      "get": {
+        "summary": "获取备份列表",
+        "operationId": "BackupList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/BackupListResp"
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "触发数据库备份",
+        "operationId": "TriggerBackup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/TriggerBackupResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TriggerBackupReq"
+            }
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/backup/download/{fileName}": {
+      "get": {
+        "summary": "下载备份文件",
+        "operationId": "DownloadBackup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {}
+          }
+        },
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/backup/restore/{fileName}": {
+      "post": {
+        "summary": "从备份恢复数据库",
+        "operationId": "RestoreBackup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/RestoreBackupResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RestoreBackupReq"
+            }
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/config": {
+      "get": {
+        "summary": "获取系统配置",
+        "operationId": "ConfigList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ConfigListResp"
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "更新系统配置",
+        "operationId": "UpdateConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UpdateConfigResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateConfigReq"
+            }
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/log/login": {
+      "get": {
+        "summary": "获取登录日志",
+        "operationId": "LoginLogList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/LoginLogResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "1"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "10"
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/log/operation": {
+      "get": {
+        "summary": "获取操作日志",
+        "operationId": "OperationLogList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/OperationLogResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "1"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "10"
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/user": {
+      "get": {
+        "summary": "获取用户列表",
+        "operationId": "UserList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UserListResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "1"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "10"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/user/{id}": {
+      "delete": {
+        "summary": "删除用户",
+        "operationId": "DeleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DeleteUserResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeleteUserReq"
+            }
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/user/{id}/password": {
+      "put": {
+        "summary": "重置用户密码",
+        "operationId": "ResetPassword",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ResetPasswordResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ResetPasswordReq"
+            }
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/user/{id}/toggle": {
+      "patch": {
+        "summary": "切换用户状态(禁用/启用)",
+        "operationId": "ToggleUserStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ToggleUserStatusResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ToggleUserStatusReq"
+            }
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/category": {
+      "get": {
+        "summary": "获取分类列表",
+        "operationId": "CategoryList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CategoryListResp"
+            }
+          }
+        },
+        "tags": [
+          "category"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "创建分类",
+        "operationId": "CreateCategory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CreateCategoryResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateCategoryReq"
+            }
+          }
+        ],
+        "tags": [
+          "category"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/category/{id}": {
+      "delete": {
+        "summary": "删除分类",
+        "operationId": "DeleteCategory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DeleteCategoryResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeleteCategoryReq"
+            }
+          }
+        ],
+        "tags": [
+          "category"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "更新分类",
+        "operationId": "UpdateCategory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UpdateCategoryResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateCategoryReq"
+            }
+          }
+        ],
+        "tags": [
+          "category"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/stat": {
+      "get": {
+        "summary": "获取任务统计概览",
+        "operationId": "Stat",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/StatResp"
+            }
+          }
+        },
+        "tags": [
+          "stat"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/task": {
+      "get": {
+        "summary": "获取任务列表",
+        "operationId": "TaskList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/TaskListResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "1"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "10"
+          },
+          {
+            "name": "0|1",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "1|2|3",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "创建任务",
+        "operationId": "CreateTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CreateTaskResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateTaskReq"
+            }
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/task/batch": {
+      "post": {
+        "summary": "批量操作任务",
+        "operationId": "BatchTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/BatchTaskResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BatchTaskReq"
+            }
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/task/trash": {
+      "get": {
+        "summary": "获取回收站列表",
+        "operationId": "TrashList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/TrashListResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "1"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "10"
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/task/{id}": {
+      "get": {
+        "summary": "获取任务详情",
+        "operationId": "TaskDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/TaskDetailResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "删除任务(移至回收站)",
+        "operationId": "DeleteTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DeleteTaskResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeleteTaskReq"
+            }
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "更新任务",
+        "operationId": "UpdateTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UpdateTaskResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateTaskReq"
+            }
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/task/{id}/permanent": {
+      "delete": {
+        "summary": "永久删除任务",
+        "operationId": "PermanentDeleteTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/PermanentDeleteTaskResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PermanentDeleteTaskReq"
+            }
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/task/{id}/restore": {
+      "patch": {
+        "summary": "恢复已删除的任务",
+        "operationId": "RestoreTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/RestoreTaskResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RestoreTaskReq"
+            }
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/task/{id}/toggle": {
+      "patch": {
+        "summary": "切换任务完成状态",
+        "operationId": "ToggleTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ToggleTaskResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ToggleTaskReq"
+            }
+          }
+        ],
+        "tags": [
+          "task"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/check-register": {
+      "get": {
+        "summary": "检查是否允许注册",
+        "operationId": "CheckRegister",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CheckRegisterResp"
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/v1/user/info": {
+      "get": {
+        "summary": "获取当前用户信息",
+        "operationId": "UserInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UserInfoResp"
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/login": {
+      "post": {
+        "summary": "用户登录",
+        "operationId": "Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/LoginResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginReq"
+            }
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/v1/user/password": {
+      "put": {
+        "summary": "修改密码",
+        "operationId": "ChangePassword",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordReq"
+            }
+          }
+        ],
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/register": {
+      "post": {
+        "summary": "用户注册",
+        "operationId": "Register",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/RegisterResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterReq"
+            }
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "BackupItem": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string"
+        },
+        "fileSize": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "createTime": {
+          "type": "string"
+        }
+      },
+      "title": "BackupItem",
+      "required": [
+        "fileName",
+        "fileSize",
+        "createTime"
+      ]
+    },
+    "BackupListResp": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BackupItem"
+          }
+        }
+      },
+      "title": "BackupListResp",
+      "required": [
+        "list"
+      ]
+    },
+    "BatchTaskReq": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "action": {
+          "type": "string"
+        }
+      },
+      "title": "BatchTaskReq",
+      "required": [
+        "ids",
+        "action",
+        "complete|undo|delete|restore"
+      ]
+    },
+    "BatchTaskResp": {
+      "type": "object",
+      "title": "BatchTaskResp"
+    },
+    "CategoryItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "sort": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "isSystem": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "CategoryItem",
+      "required": [
+        "id",
+        "name",
+        "color",
+        "icon",
+        "sort",
+        "isSystem"
+      ]
+    },
+    "CategoryListResp": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CategoryItem"
+          }
+        }
+      },
+      "title": "CategoryListResp",
+      "required": [
+        "list"
+      ]
+    },
+    "ChangePasswordReq": {
+      "type": "object",
+      "properties": {
+        "oldPassword": {
+          "type": "string"
+        },
+        "newPassword": {
+          "type": "string"
+        }
+      },
+      "title": "ChangePasswordReq",
+      "required": [
+        "oldPassword",
+        "newPassword"
+      ]
+    },
+    "ChangePasswordResp": {
+      "type": "object",
+      "title": "ChangePasswordResp"
+    },
+    "CheckRegisterResp": {
+      "type": "object",
+      "properties": {
+        "allowRegister": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      },
+      "title": "CheckRegisterResp",
+      "required": [
+        "allowRegister"
+      ]
+    },
+    "ConfigItem": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "remark": {
+          "type": "string"
+        }
+      },
+      "title": "ConfigItem",
+      "required": [
+        "key",
+        "value",
+        "remark"
+      ]
+    },
+    "ConfigListResp": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConfigItem"
+          }
+        }
+      },
+      "title": "ConfigListResp",
+      "required": [
+        "list"
+      ]
+    },
+    "CreateCategoryReq": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      },
+      "title": "CreateCategoryReq",
+      "required": [
+        "name"
+      ]
+    },
+    "CreateCategoryResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "CreateCategoryResp",
+      "required": [
+        "id"
+      ]
+    },
+    "CreateTaskReq": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64",
+          "default": "2"
+        },
+        "categoryId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "reminder": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string"
+        }
+      },
+      "title": "CreateTaskReq",
+      "required": [
+        "title",
+        "1|2|3"
+      ]
+    },
+    "CreateTaskResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "CreateTaskResp",
+      "required": [
+        "id"
+      ]
+    },
+    "DeleteCategoryReq": {
+      "type": "object",
+      "title": "DeleteCategoryReq"
+    },
+    "DeleteCategoryResp": {
+      "type": "object",
+      "title": "DeleteCategoryResp"
+    },
+    "DeleteTaskReq": {
+      "type": "object",
+      "title": "DeleteTaskReq"
+    },
+    "DeleteTaskResp": {
+      "type": "object",
+      "title": "DeleteTaskResp"
+    },
+    "DeleteUserReq": {
+      "type": "object",
+      "title": "DeleteUserReq"
+    },
+    "DeleteUserResp": {
+      "type": "object",
+      "title": "DeleteUserResp"
+    },
+    "DownloadBackupReq": {
+      "type": "object",
+      "title": "DownloadBackupReq"
+    },
+    "LoginLogItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "remark": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        }
+      },
+      "title": "LoginLogItem",
+      "required": [
+        "id",
+        "userId",
+        "username",
+        "ip",
+        "status",
+        "remark",
+        "createTime"
+      ]
+    },
+    "LoginLogReq": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int64",
+          "default": "1"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int64",
+          "default": "10"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "title": "LoginLogReq",
+      "required": [
+        "page",
+        "pageSize"
+      ]
+    },
+    "LoginLogResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LoginLogItem"
+          }
+        }
+      },
+      "title": "LoginLogResp",
+      "required": [
+        "total",
+        "list"
+      ]
+    },
+    "LoginReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "title": "LoginReq",
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "LoginResp": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "isAdmin": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "LoginResp",
+      "required": [
+        "token",
+        "isAdmin"
+      ]
+    },
+    "OperationLogItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "targetType": {
+          "type": "string"
+        },
+        "targetId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        }
+      },
+      "title": "OperationLogItem",
+      "required": [
+        "id",
+        "userId",
+        "username",
+        "action",
+        "targetType",
+        "targetId",
+        "detail",
+        "ip",
+        "createTime"
+      ]
+    },
+    "OperationLogReq": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int64",
+          "default": "1"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int64",
+          "default": "10"
+        },
+        "action": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "title": "OperationLogReq",
+      "required": [
+        "page",
+        "pageSize"
+      ]
+    },
+    "OperationLogResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OperationLogItem"
+          }
+        }
+      },
+      "title": "OperationLogResp",
+      "required": [
+        "total",
+        "list"
+      ]
+    },
+    "PermanentDeleteTaskReq": {
+      "type": "object",
+      "title": "PermanentDeleteTaskReq"
+    },
+    "PermanentDeleteTaskResp": {
+      "type": "object",
+      "title": "PermanentDeleteTaskResp"
+    },
+    "RegisterReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "title": "RegisterReq",
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "RegisterResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "title": "RegisterResp",
+      "required": [
+        "id",
+        "username"
+      ]
+    },
+    "ResetPasswordReq": {
+      "type": "object",
+      "properties": {
+        "newPassword": {
+          "type": "string"
+        }
+      },
+      "title": "ResetPasswordReq",
+      "required": [
+        "newPassword"
+      ]
+    },
+    "ResetPasswordResp": {
+      "type": "object",
+      "title": "ResetPasswordResp"
+    },
+    "RestoreBackupReq": {
+      "type": "object",
+      "title": "RestoreBackupReq"
+    },
+    "RestoreBackupResp": {
+      "type": "object",
+      "properties": {
+        "preRestoreBackup": {
+          "type": "string"
+        }
+      },
+      "title": "RestoreBackupResp",
+      "required": [
+        "preRestoreBackup"
+      ]
+    },
+    "RestoreTaskReq": {
+      "type": "object",
+      "title": "RestoreTaskReq"
+    },
+    "RestoreTaskResp": {
+      "type": "object",
+      "title": "RestoreTaskResp"
+    },
+    "StatResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "done": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "todo": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "doneRate": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "StatResp",
+      "required": [
+        "total",
+        "done",
+        "todo",
+        "doneRate"
+      ]
+    },
+    "TaskDetailReq": {
+      "type": "object",
+      "title": "TaskDetailReq"
+    },
+    "TaskDetailResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "categoryId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "categoryName": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "reminder": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        },
+        "updateTime": {
+          "type": "string"
+        }
+      },
+      "title": "TaskDetailResp",
+      "required": [
+        "id",
+        "title",
+        "content",
+        "status",
+        "priority",
+        "categoryId",
+        "categoryName",
+        "startTime",
+        "endTime",
+        "reminder",
+        "tags",
+        "createTime",
+        "updateTime"
+      ]
+    },
+    "TaskItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "categoryId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "categoryName": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "reminder": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        }
+      },
+      "title": "TaskItem",
+      "required": [
+        "id",
+        "title",
+        "content",
+        "status",
+        "priority",
+        "categoryId",
+        "categoryName",
+        "startTime",
+        "endTime",
+        "reminder",
+        "tags",
+        "createTime"
+      ]
+    },
+    "TaskListReq": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int64",
+          "default": "1"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int64",
+          "default": "10"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "categoryId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "keyword": {
+          "type": "string"
+        }
+      },
+      "title": "TaskListReq",
+      "required": [
+        "page",
+        "pageSize",
+        "0|1",
+        "1|2|3"
+      ]
+    },
+    "TaskListResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TaskItem"
+          }
+        }
+      },
+      "title": "TaskListResp",
+      "required": [
+        "total",
+        "list"
+      ]
+    },
+    "ToggleTaskReq": {
+      "type": "object",
+      "title": "ToggleTaskReq"
+    },
+    "ToggleTaskResp": {
+      "type": "object",
+      "title": "ToggleTaskResp"
+    },
+    "ToggleUserStatusReq": {
+      "type": "object",
+      "title": "ToggleUserStatusReq"
+    },
+    "ToggleUserStatusResp": {
+      "type": "object",
+      "title": "ToggleUserStatusResp"
+    },
+    "TrashItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "categoryId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "categoryName": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "reminder": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        },
+        "updateTime": {
+          "type": "string"
+        }
+      },
+      "title": "TrashItem",
+      "required": [
+        "id",
+        "title",
+        "content",
+        "status",
+        "priority",
+        "categoryId",
+        "categoryName",
+        "startTime",
+        "endTime",
+        "reminder",
+        "tags",
+        "createTime",
+        "updateTime"
+      ]
+    },
+    "TrashListReq": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int64",
+          "default": "1"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int64",
+          "default": "10"
+        }
+      },
+      "title": "TrashListReq",
+      "required": [
+        "page",
+        "pageSize"
+      ]
+    },
+    "TrashListResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TrashItem"
+          }
+        }
+      },
+      "title": "TrashListResp",
+      "required": [
+        "total",
+        "list"
+      ]
+    },
+    "TriggerBackupReq": {
+      "type": "object",
+      "title": "TriggerBackupReq"
+    },
+    "TriggerBackupResp": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string"
+        },
+        "fileSize": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "TriggerBackupResp",
+      "required": [
+        "fileName",
+        "fileSize"
+      ]
+    },
+    "UpdateCategoryReq": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "sort": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "UpdateCategoryReq"
+    },
+    "UpdateCategoryResp": {
+      "type": "object",
+      "title": "UpdateCategoryResp"
+    },
+    "UpdateConfigReq": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "title": "UpdateConfigReq",
+      "required": [
+        "key",
+        "value"
+      ]
+    },
+    "UpdateConfigResp": {
+      "type": "object",
+      "title": "UpdateConfigResp"
+    },
+    "UpdateTaskReq": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "categoryId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "reminder": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string"
+        }
+      },
+      "title": "UpdateTaskReq",
+      "required": [
+        "1|2|3"
+      ]
+    },
+    "UpdateTaskResp": {
+      "type": "object",
+      "title": "UpdateTaskResp"
+    },
+    "UserInfoResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "isAdmin": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "UserInfoResp",
+      "required": [
+        "id",
+        "username",
+        "isAdmin",
+        "status"
+      ]
+    },
+    "UserListItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "isAdmin": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "createTime": {
+          "type": "string"
+        }
+      },
+      "title": "UserListItem",
+      "required": [
+        "id",
+        "username",
+        "isAdmin",
+        "status",
+        "createTime"
+      ]
+    },
+    "UserListReq": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int64",
+          "default": "1"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int64",
+          "default": "10"
+        },
+        "keyword": {
+          "type": "string"
+        }
+      },
+      "title": "UserListReq",
+      "required": [
+        "page",
+        "pageSize"
+      ]
+    },
+    "UserListResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserListItem"
+          }
+        }
+      },
+      "title": "UserListResp",
+      "required": [
+        "total",
+        "list"
+      ]
+    }
+  },
+  "securityDefinitions": {
+    "apiKey": {
+      "type": "apiKey",
+      "description": "Enter JWT Bearer token **_only_**",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 Name: todo-api
 Host: 0.0.0.0
 Port: 8888
+Debug: false
 
 # JWT 配置（AccessSecret 首次启动时自动生成并持久化到数据库，此值为 fallback）
 Auth:

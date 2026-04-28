@@ -30,6 +30,9 @@ var staticFiles embed.FS
 //go:embed etc/todo-api.yaml
 var defaultConfig []byte
 
+//go:embed docs/openapi.json
+var openapiJSON []byte
+
 var (
 	host        = flag.String("host", "0.0.0.0", "listen host")
 	port        = flag.Int("port", 8888, "listen port")
@@ -37,6 +40,7 @@ var (
 	dbFile      = flag.String("db-file", "todo.db", "SQLite database filename")
 	jwtSecret   = flag.String("jwt-secret", "todo-app-jwt-secret-key-2024", "JWT signing secret")
 	jwtExpire   = flag.Int64("jwt-expire", 86400, "JWT token expiration in seconds")
+	debugMode   = flag.Bool("debug", false, "enable debug mode (API docs at /api-docs)")
 	configFile  = flag.String("f", "", "config file path (overrides command-line flags)")
 	showVersion = flag.Bool("version", false, "print version and exit")
 )
@@ -93,6 +97,9 @@ func main() {
 	if *jwtExpire != 86400 {
 		c.Auth.AccessExpire = *jwtExpire
 	}
+	if *debugMode {
+		c.Debug = true
+	}
 
 	// Initialize SQLite database
 	sqliteDB, err := db.InitDB(c.Database.DataDir, c.Database.DBFile)
@@ -140,6 +147,12 @@ func main() {
 	fmt.Println("[Static] Frontend embedded and serving from /")
 
 	handler.RegisterHandlers(server, ctx)
+
+	// API documentation routes — only in debug mode
+	if c.Debug {
+		registerAPIDocRoutes(server)
+		fmt.Println("[Debug] API documentation enabled: /api-docs, /openapi.json")
+	}
 
 	scheduler.StartCleanupScheduler(ctx)
 	scheduler.StartBackupScheduler(ctx)
@@ -228,4 +241,46 @@ func getContentType(filepath string) string {
 	default:
 		return "application/octet-stream"
 	}
+}
+
+// registerAPIDocRoutes adds OpenAPI documentation endpoints.
+func registerAPIDocRoutes(srv *rest.Server) {
+	// Serve OpenAPI JSON spec
+	srv.AddRoutes([]rest.Route{
+		{
+			Method:  http.MethodGet,
+			Path:    "/openapi.json",
+			Handler: openapiJSONHandler,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/api-docs",
+			Handler: scalarDocHandler,
+		},
+	})
+}
+
+func openapiJSONHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Write(openapiJSON)
+}
+
+const scalarHTML = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Todo-Zero API Docs</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <script id="api-reference" data-url="/openapi.json"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+</body>
+</html>`
+
+func scalarDocHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Write([]byte(scalarHTML))
 }

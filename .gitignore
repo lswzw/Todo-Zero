@@ -41,4 +41,4 @@ server/dist/
 
 # Data
 server/data/
-build
+builddata/

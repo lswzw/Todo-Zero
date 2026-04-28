@@ -4,7 +4,7 @@ info (
 	title:   "Todo App API"
 	desc:    "个人待办事项管理平台接口"
 	author:  "kub"
-	version: "1.3.0"
+	version: "2.0.0"
 )
 
 // =============================================
@@ -61,7 +61,7 @@ type (
 	CreateTaskReq {
 		Title      string `json:"title" validate:"required,max=100"`
 		Content    string `json:"content,optional" validate:"max=1000"`
-		Priority   int64  `json:"priority,optional,default=2" options="1|2|3"`
+		Priority   int64  `json:"priority,optional,default=2" options:"1|2|3"`
 		CategoryId int64  `json:"categoryId,optional"`
 		StartTime  string `json:"startTime,optional"`
 		EndTime    string `json:"endTime,optional"`
@@ -79,7 +79,7 @@ type (
 		Id         int64  `path:"id"`
 		Title      string `json:"title,optional" validate:"max=100"`
 		Content    string `json:"content,optional" validate:"max=1000"`
-		Priority   int64  `json:"priority,optional" options="1|2|3"`
+		Priority   int64  `json:"priority,optional" options:"1|2|3"`
 		CategoryId int64  `json:"categoryId,optional"`
 		StartTime  string `json:"startTime,optional"`
 		EndTime    string `json:"endTime,optional"`
@@ -132,9 +132,9 @@ type (
 	TaskListReq {
 		Page       int64  `form:"page,default=1"`
 		PageSize   int64  `form:"pageSize,default=10"`
-		Status     int64  `form:"status,optional" options="0|1"`
+		Status     int64  `form:"status,optional" options:"0|1"`
 		CategoryId int64  `form:"categoryId,optional"`
-		Priority   int64  `form:"priority,optional" options="1|2|3"`
+		Priority   int64  `form:"priority,optional" options:"1|2|3"`
 		Keyword    string `form:"keyword,optional"`
 	}
 	TaskItem {
@@ -214,8 +214,12 @@ type (
 // =============================================
 // 分类项
 type CategoryItem {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	Color    string `json:"color"`
+	Icon     string `json:"icon"`
+	Sort     int64  `json:"sort"`
+	IsSystem int64  `json:"isSystem"`
 }
 
 // 分类列表
@@ -228,11 +232,32 @@ type (
 // 新增分类
 type (
 	CreateCategoryReq {
-		Name string `json:"name" validate:"required,max=20"`
+		Name  string `json:"name" validate:"required,max=20"`
+		Color string `json:"color,optional"`
 	}
 	CreateCategoryResp {
 		Id int64 `json:"id"`
 	}
+)
+
+// 更新分类
+type (
+	UpdateCategoryReq {
+		Id    int64   `path:"id"`
+		Name  *string `json:"name,optional"`
+		Color *string `json:"color,optional"`
+		Icon  *string `json:"icon,optional"`
+		Sort  *int64  `json:"sort,optional"`
+	}
+	UpdateCategoryResp {}
+)
+
+// 删除分类
+type (
+	DeleteCategoryReq {
+		Id int64 `path:"id"`
+	}
+	DeleteCategoryResp {}
 )
 
 // =============================================
@@ -406,12 +431,15 @@ type (
 	group:  user
 )
 service todo-api {
+	@doc "用户注册"
 	@handler Register
 	post /user/register (RegisterReq) returns (RegisterResp)
 
+	@doc "用户登录"
 	@handler Login
 	post /user/login (LoginReq) returns (LoginResp)
 
+	@doc "检查是否允许注册"
 	@handler CheckRegister
 	get /user/check-register returns (CheckRegisterResp)
 }
@@ -423,9 +451,11 @@ service todo-api {
 	jwt:    Auth
 )
 service todo-api {
+	@doc "获取当前用户信息"
 	@handler UserInfo
 	get /user/info returns (UserInfoResp)
 
+	@doc "修改密码"
 	@handler ChangePassword
 	put /user/password (ChangePasswordReq) returns (ChangePasswordResp)
 }
@@ -436,33 +466,43 @@ service todo-api {
 	jwt:    Auth
 )
 service todo-api {
+	@doc "创建任务"
 	@handler CreateTask
 	post /task (CreateTaskReq) returns (CreateTaskResp)
 
+	@doc "更新任务"
 	@handler UpdateTask
 	put /task/:id (UpdateTaskReq) returns (UpdateTaskResp)
 
+	@doc "切换任务完成状态"
 	@handler ToggleTask
 	patch /task/:id/toggle (ToggleTaskReq) returns (ToggleTaskResp)
 
+	@doc "删除任务(移至回收站)"
 	@handler DeleteTask
 	delete /task/:id (DeleteTaskReq) returns (DeleteTaskResp)
 
+	@doc "获取任务详情"
 	@handler TaskDetail
 	get /task/:id (TaskDetailReq) returns (TaskDetailResp)
 
+	@doc "获取任务列表"
 	@handler TaskList
 	get /task (TaskListReq) returns (TaskListResp)
 
+	@doc "批量操作任务"
 	@handler BatchTask
 	post /task/batch (BatchTaskReq) returns (BatchTaskResp)
 
+	@doc "获取回收站列表"
 	@handler TrashList
 	get /task/trash (TrashListReq) returns (TrashListResp)
 
+	@doc "恢复已删除的任务"
 	@handler RestoreTask
 	patch /task/:id/restore (RestoreTaskReq) returns (RestoreTaskResp)
 
+	@doc "永久删除任务"
 	@handler PermanentDeleteTask
 	delete /task/:id/permanent (PermanentDeleteTaskReq) returns (PermanentDeleteTaskResp)
 }
@@ -473,11 +513,21 @@ service todo-api {
 	jwt:    Auth
 )
 service todo-api {
+	@doc "获取分类列表"
 	@handler CategoryList
 	get /category returns (CategoryListResp)
 
+	@doc "创建分类"
 	@handler CreateCategory
 	post /category (CreateCategoryReq) returns (CreateCategoryResp)
+
+	@doc "更新分类"
+	@handler UpdateCategory
+	put /category/:id (UpdateCategoryReq) returns (UpdateCategoryResp)
+
+	@doc "删除分类"
+	@handler DeleteCategory
+	delete /category/:id (DeleteCategoryReq) returns (DeleteCategoryResp)
 }
 
 @server (
@@ -486,6 +536,7 @@ service todo-api {
 	jwt:    Auth
 )
 service todo-api {
+	@doc "获取任务统计概览"
 	@handler Stat
 	get /stat returns (StatResp)
 }
@@ -497,40 +548,51 @@ service todo-api {
 	jwt:    Auth
 )
 service todo-api {
+	@doc "获取用户列表"
 	@handler UserList
 	get /user (UserListReq) returns (UserListResp)
 
+	@doc "重置用户密码"
 	@handler ResetPassword
 	put /user/:id/password (ResetPasswordReq) returns (ResetPasswordResp)
 
+	@doc "切换用户状态(禁用/启用)"
 	@handler ToggleUserStatus
 	patch /user/:id/toggle (ToggleUserStatusReq) returns (ToggleUserStatusResp)
 
+	@doc "删除用户"
 	@handler DeleteUser
 	delete /user/:id (DeleteUserReq) returns (DeleteUserResp)
 
+	@doc "获取系统配置"
 	@handler ConfigList
 	get /config returns (ConfigListResp)
 
+	@doc "更新系统配置"
 	@handler UpdateConfig
 	put /config (UpdateConfigReq) returns (UpdateConfigResp)
 
+	@doc "获取操作日志"
 	@handler OperationLogList
 	get /log/operation (OperationLogReq) returns (OperationLogResp)
 
+	@doc "获取登录日志"
 	@handler LoginLogList
 	get /log/login (LoginLogReq) returns (LoginLogResp)
 
+	@doc "获取备份列表"
 	@handler BackupList
 	get /backup returns (BackupListResp)
 
+	@doc "触发数据库备份"
 	@handler TriggerBackup
 	post /backup (TriggerBackupReq) returns (TriggerBackupResp)
 
+	@doc "下载备份文件"
 	@handler DownloadBackup
 	get /backup/download/:fileName (DownloadBackupReq)
 
+	@doc "从备份恢复数据库"
 	@handler RestoreBackup
 	post /backup/restore/:fileName (RestoreBackupReq) returns (RestoreBackupResp)
 }
-

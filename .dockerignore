@@ -1,0 +1,12 @@
+.git
+build/
+data/
+docs/
+server/data/
+server/dist/
+server/todo-api
+server/todo-zero
+node_modules/
+web/node_modules/
+*.md
+*.sh

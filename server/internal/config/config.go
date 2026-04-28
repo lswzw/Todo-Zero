@@ -14,4 +14,5 @@ type Config struct {
 		DataDir string // e.g. "data"
 		DBFile  string // e.g. "todo.db"
 	}
+	Debug bool // enable debug mode: API docs, verbose logging, etc.
 }
