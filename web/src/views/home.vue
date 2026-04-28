@@ -84,6 +84,7 @@
             <el-button :type="selectMode ? 'primary' : ''" @click="toggleSelectMode">
               {{ selectMode ? t('home.exitMultiSelect') : t('home.multiSelect') }}
             </el-button>
+            <!-- 防抖预留：若将来改为 @input 实时搜索，需引入 debounce（lodash-es 或手写），避免频繁请求 -->
             <el-input
               v-model="filters.keyword"
               :placeholder="t('common.search')"

@@ -61,6 +61,6 @@
 
 - [x] **批量删除并行化** — `trash.vue` 中 `handleBatchPermanentDelete` 使用 `for...of` 逐个 `await`，改为 `Promise.allSettled` 并行删除
 
-- [ ] **搜索防抖预留** — 当前搜索仅 `@keyup.enter` + `@clear` 触发，若将来改为实时搜索（`@input`），需引入防抖（`lodash-es/debounce` 或手写）
+- [x] **搜索防抖预留** — 当前搜索仅 `@keyup.enter` + `@clear` 触发，若将来改为实时搜索（`@input`），需引入防抖（`lodash-es/debounce` 或手写）
 
 - [ ] **虚拟滚动预留** — 当前 `pageSize=10` 性能无问题；若未来增大分页或取消分页，需引入 `vue-virtual-scroller` 或 `@tanstack/vue-virtual`
