@@ -167,15 +167,9 @@ async function handleBatchPermanentDelete() {
     return
   }
   try {
-    // 逐个永久删除
-    let failCount = 0
-    for (const id of selectedIds.value) {
-      try {
-        await permanentDeleteTask(id)
-      } catch {
-        failCount++
-      }
-    }
+    // 并行永久删除
+    const results = await Promise.allSettled(selectedIds.value.map((id) => permanentDeleteTask(id)))
+    const failCount = results.filter((r) => r.status === 'rejected').length
     if (failCount > 0) {
       ElMessage.warning(t('trash.someDeleteFailed', { count: failCount }))
     } else {
