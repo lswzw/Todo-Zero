@@ -15,6 +15,7 @@ import type {
   BackupListResp,
   TriggerBackupResp,
   RestoreBackupResp,
+  TagListResp,
 } from '@/types'
 
 // 用户
@@ -50,6 +51,12 @@ export const createCategory = (data: { name: string; color?: string }) => reques
 export const updateCategory = (id: number, data: { name?: string; color?: string; icon?: string; sort?: number }) =>
   request.put(`/category/${id}`, data)
 export const deleteCategory = (id: number) => request.delete(`/category/${id}`)
+
+// 标签
+export const getTagList = (params?: Record<string, unknown>) => request.get<never, TagListResp>('/tag', { params })
+export const createTag = (data: { name: string; color?: string }) => request.post('/tag', data)
+export const updateTag = (id: number, data: { name?: string; color?: string }) => request.put(`/tag/${id}`, data)
+export const deleteTag = (id: number) => request.delete(`/tag/${id}`)
 
 // 统计
 export const getStat = () => request.get<never, StatResp>('/stat')

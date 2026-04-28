@@ -95,6 +95,30 @@ CREATE TABLE IF NOT EXISTS `login_log` (
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tags table
+CREATE TABLE IF NOT EXISTS `tags` (
+    `id` integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `name` varchar(50) NOT NULL,
+    `color` varchar(20) NOT NULL DEFAULT '#1890ff',
+    `user_id` integer NOT NULL,
+    `is_system` tinyint NOT NULL DEFAULT 0,
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (`user_id`, `name`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+-- Task tags relation table
+CREATE TABLE IF NOT EXISTS `task_tags` (
+    `id` integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `task_id` integer NOT NULL,
+    `tag_id` integer NOT NULL,
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (`task_id`, `tag_id`),
+    FOREIGN KEY (`task_id`) REFERENCES `tasks`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`) ON DELETE CASCADE
+);
+
 -- ================================================
 -- Default admin account
 -- Default admin account (password is hashed, please change after first login)

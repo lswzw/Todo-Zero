@@ -123,6 +123,9 @@ export default {
     deleteCategoryConfirm: 'Delete category "{name}"? Tasks under this category will not be deleted.',
     categoryDeleted: 'Category deleted',
     deleteCategoryFailed: 'Failed to delete category',
+    notificationPermission: 'Notification Permission',
+    notificationPermissionDesc: 'Enable browser notifications to receive reminders when tasks are due',
+    notificationPermissionNote: 'You can change this permission in browser settings at any time',
   },
   taskDetail: {
     backToList: 'Back to List',

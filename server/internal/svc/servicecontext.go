@@ -14,6 +14,8 @@ type ServiceContext struct {
 	UserModel         model.UserModel
 	TaskModel         model.TaskModel
 	CategoryModel     model.CategoryModel
+	TagModel          model.TagModel
+	TaskTagModel      model.TaskTagModel
 	SystemConfigModel model.SystemConfigModel
 	OperationLogModel model.OperationLogModel
 	LoginLogModel     model.LoginLogModel
@@ -37,6 +39,8 @@ func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
 		UserModel:                 userModel,
 		TaskModel:                 model.NewTaskModel(db),
 		CategoryModel:             model.NewCategoryModel(db),
+		TagModel:                  model.NewTagModel(db),
+		TaskTagModel:              model.NewTaskTagModel(db),
 		SystemConfigModel:         model.NewSystemConfigModel(db),
 		OperationLogModel:         opLogModel,
 		LoginLogModel:             model.NewLoginLogModel(db),

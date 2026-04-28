@@ -123,6 +123,9 @@ export default {
     deleteCategoryConfirm: '确定删除分类"{name}"？该分类下的任务不会被删除。',
     categoryDeleted: '分类已删除',
     deleteCategoryFailed: '删除分类失败',
+    notificationPermission: '通知权限',
+    notificationPermissionDesc: '启用浏览器通知后，当任务到达提醒时间时会收到通知',
+    notificationPermissionNote: '您可以在浏览器设置中随时更改此权限',
   },
   taskDetail: {
     backToList: '返回列表',

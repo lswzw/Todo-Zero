@@ -365,6 +365,48 @@ type BackupListResp struct {
 	List []BackupItem `json:"list"`
 }
 
+type TagItem struct {
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	Color    string `json:"color"`
+	IsSystem int64  `json:"isSystem"`
+}
+
+type TagListReq struct {
+	Keyword string `form:"keyword,optional"`
+}
+
+type TagListResp struct {
+	List []TagItem `json:"list"`
+}
+
+type CreateTagReq struct {
+	Name  string `json:"name"`
+	Color string `json:"color,optional"`
+}
+
+type CreateTagResp struct {
+	Id int64 `json:"id"`
+}
+
+type UpdateTagReq struct {
+	Id    int64   `path:"id"`
+	Name  *string `json:"name,optional"`
+	Color *string `json:"color,optional"`
+}
+
+type UpdateTagResp struct {
+	Success bool `json:"success"`
+}
+
+type DeleteTagReq struct {
+	Id int64 `path:"id"`
+}
+
+type DeleteTagResp struct {
+	Success bool `json:"success"`
+}
+
 type TriggerBackupReq struct {
 }
 

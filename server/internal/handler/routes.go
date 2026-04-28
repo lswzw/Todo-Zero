@@ -10,6 +10,7 @@ import (
 	category "server/internal/handler/category"
 	health "server/internal/handler/health"
 	stat "server/internal/handler/stat"
+	tag "server/internal/handler/tag"
 	task "server/internal/handler/task"
 	user "server/internal/handler/user"
 	"server/internal/svc"
@@ -133,6 +134,39 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 							Method:  http.MethodDelete,
 							Path:    "/category/:id",
 							Handler: category.DeleteCategoryHandler(serverCtx),
+						},
+					}...,
+				)...,
+			)...,
+		),
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddleware(localeMw,
+			rest.WithMiddleware(apiRateLimitMw,
+				rest.WithMiddleware(securityMw,
+					[]rest.Route{
+						{
+							Method:  http.MethodGet,
+							Path:    "/tag",
+							Handler: tag.TagListHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPost,
+							Path:    "/tag",
+							Handler: tag.CreateTagHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPut,
+							Path:    "/tag/:id",
+							Handler: tag.UpdateTagHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodDelete,
+							Path:    "/tag/:id",
+							Handler: tag.DeleteTagHandler(serverCtx),
 						},
 					}...,
 				)...,
