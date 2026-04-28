@@ -7,11 +7,7 @@ export interface ReminderTask {
 }
 
 export function useNotification() {
-  const isSupported = ref(
-    'Notification' in window &&
-      'serviceWorker' in navigator &&
-      'PushManager' in window
-  )
+  const isSupported = ref('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window)
   const permission = ref<NotificationPermission>('default')
   const reminderTasks = ref<ReminderTask[]>([])
   let checkInterval: number | null = null

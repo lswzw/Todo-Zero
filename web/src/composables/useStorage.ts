@@ -1,13 +1,14 @@
 import { ref, watch } from 'vue'
 
-export function useStorage<T>(key: string, defaultValue: T): {
+export function useStorage<T>(
+  key: string,
+  defaultValue: T,
+): {
   value: ReturnType<typeof ref<T>>
   remove: () => void
 } {
   const storedValue = localStorage.getItem(key)
-  const value = ref<T>(
-    storedValue !== null ? (parseStorageValue(storedValue) as T) : defaultValue
-  )
+  const value = ref<T>(storedValue !== null ? (parseStorageValue(storedValue) as T) : defaultValue)
 
   watch(
     value,
@@ -18,7 +19,7 @@ export function useStorage<T>(key: string, defaultValue: T): {
         localStorage.setItem(key, stringifyStorageValue(newValue))
       }
     },
-    { deep: true }
+    { deep: true },
   )
 
   function remove() {

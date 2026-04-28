@@ -336,7 +336,12 @@
     </el-dialog>
 
     <!-- 通知权限请求弹窗 -->
-    <el-dialog v-model="showNotificationPermission" :title="t('home.notificationPermission')" width="400px" destroy-on-close>
+    <el-dialog
+      v-model="showNotificationPermission"
+      :title="t('home.notificationPermission')"
+      width="400px"
+      destroy-on-close
+    >
       <div style="text-align: center; padding: 20px 0">
         <div style="font-size: 48px; margin-bottom: 16px">🔔</div>
         <p style="margin-bottom: 8px">{{ t('home.notificationPermissionDesc') }}</p>

@@ -49,30 +49,25 @@ const router = createRouter({
   ],
 })
 
-// 是否已从服务端验证过身份
 let authVerified = false
 
 router.beforeEach(async (to) => {
   const userStore = useUserStore()
 
-  // 未登录直接跳转登录页
   if (to.meta.requiresAuth && !userStore.token) {
     return { name: 'Login' }
   }
 
-  // 已登录但未验证身份：从服务端获取真实 isAdmin，防止 localStorage 篡改
   if (userStore.token && !authVerified) {
     await userStore.fetchUserInfo()
     authVerified = true
   }
 
-  // 非管理员访问管理页 → 跳转首页
   if (to.meta.requiresAdmin && !userStore.isAdmin) {
     return { name: 'Home' }
   }
 })
 
-// 登出时重置验证状态
 export function resetAuthVerified() {
   authVerified = false
 }
