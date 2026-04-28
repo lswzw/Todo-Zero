@@ -334,6 +334,19 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 通知权限请求弹窗 -->
+    <el-dialog v-model="showNotificationPermission" :title="t('home.notificationPermission')" width="400px" destroy-on-close>
+      <div style="text-align: center; padding: 20px 0">
+        <div style="font-size: 48px; margin-bottom: 16px">🔔</div>
+        <p style="margin-bottom: 8px">{{ t('home.notificationPermissionDesc') }}</p>
+        <p style="color: #909399; font-size: 14px">{{ t('home.notificationPermissionNote') }}</p>
+      </div>
+      <template #footer>
+        <el-button @click="showNotificationPermission = false">{{ t('common.later') }}</el-button>
+        <el-button type="primary" @click="handleNotificationPermission">{{ t('common.allow') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -348,6 +361,7 @@ import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
 import { useLocale } from '@/composables/useLocale'
+import { useNotification } from '@/composables/useNotification'
 import {
   getTaskList,
   createTask,
@@ -372,6 +386,9 @@ const currentLang = ref(currentLocale.value)
 
 const router = useRouter()
 const userStore = useUserStore()
+
+const { permission, requestPermission, scheduleReminders } = useNotification()
+const showNotificationPermission = ref(false)
 
 // 统计
 const stat = ref<StatResp>({ total: 0, done: 0, todo: 0, doneRate: 0 })
@@ -458,6 +475,9 @@ watch(page, () => loadTasks())
 onMounted(() => {
   loadCategories()
   Promise.all([loadTasks(), loadStat()])
+  if (permission.value === 'default') {
+    showNotificationPermission.value = true
+  }
 })
 
 async function loadStat() {
@@ -487,6 +507,7 @@ async function loadTasks() {
     const res = await getTaskList(params)
     tasks.value = res.list || []
     total.value = res.total || 0
+    scheduleReminders(tasks.value.map((t) => ({ id: t.id, title: t.title, reminder: t.reminder })))
   } catch {
     ElMessage.error(t('home.loadTasksFailed'))
   }
@@ -710,6 +731,11 @@ function handleExport(format: string) {
     .catch(() => {
       ElMessage.error(t('common.exportFailed'))
     })
+}
+
+async function handleNotificationPermission() {
+  await requestPermission()
+  showNotificationPermission.value = false
 }
 
 function handleLogout() {

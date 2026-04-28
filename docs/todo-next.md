@@ -14,15 +14,12 @@
 - [x] **ESLint 配置完善** — 添加浏览器全局变量（window、document、localStorage、Blob、setTimeout），消除 9 个 no-undef 错误
 - [x] **前端 localStorage XSS 风险修复** — 创建 `useStorage` 组合式函数，替换 `stores/user.ts` 中直接的 localStorage 操作
 - [x] **API 速率限制中间件** — 新增 `APIRateLimitMiddleware`，限制每个 IP 每分钟最多 100 次 API 请求，添加到 category、stat、task、user 等路由组
+- [x] **任务提醒功能** — 使用浏览器 Notification API 实现任务提醒，支持权限请求、定时检查、点击跳转等功能
+- [x] **标签管理功能** — 实现完整的标签 CRUD 功能，包括数据库表、模型、Handler、Logic、API 和前端集成
 
 ---
 
 ## 待开发项
-
-### P2 — 功能增强
-
-- [ ] **任务提醒功能** — 实现前端定时提醒（浏览器 Notification API）
-- [ ] **标签管理** — 支持创建/编辑/删除自定义标签
 
 ### P3 — 性能优化
 
