@@ -454,9 +454,8 @@ function onFilterChange() {
 watch(page, () => loadTasks())
 
 onMounted(() => {
-  loadStat()
   loadCategories()
-  loadTasks()
+  Promise.all([loadTasks(), loadStat()])
 })
 
 async function loadStat() {
@@ -506,8 +505,7 @@ async function handleToggle(task: TaskItem) {
   try {
     await toggleTask(task.id)
     ElMessage.success(task.status === 0 ? t('home.markedDone') : t('home.markedTodo'))
-    loadTasks()
-    loadStat()
+    await Promise.all([loadTasks(), loadStat()])
   } catch {
     ElMessage.error(t('home.toggleFailed'))
   }
@@ -517,8 +515,7 @@ async function handleDelete(id: number) {
   try {
     await deleteTask(id)
     ElMessage.success(t('home.deleted'))
-    loadTasks()
-    loadStat()
+    await Promise.all([loadTasks(), loadStat()])
   } catch {
     ElMessage.error(t('home.deleteTaskFailed'))
   }
@@ -529,8 +526,7 @@ async function handleBatch(action: string) {
     await batchTask({ ids: selectedIds.value, action })
     ElMessage.success(t('home.batchSuccess'))
     selectedIds.value = []
-    loadTasks()
-    loadStat()
+    await Promise.all([loadTasks(), loadStat()])
   } catch {
     ElMessage.error(t('home.batchFailed'))
   }
@@ -589,8 +585,7 @@ async function handleSubmitTask() {
       ElMessage.success(t('home.createSuccess'))
     }
     taskDialogVisible.value = false
-    loadTasks()
-    loadStat()
+    await Promise.all([loadTasks(), loadStat()])
   } catch {
     ElMessage.error(editingTask.value ? t('home.updateFailed') : t('home.createFailed'))
   } finally {

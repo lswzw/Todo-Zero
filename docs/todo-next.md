@@ -47,7 +47,7 @@
 
 ### P1 — 中优先级
 
-- [ ] **并发请求优化** — `home.vue` 操作后同时刷新任务列表和统计，改为 `Promise.all([loadTasks(), loadStat()])` 并发执行
+- [x] **并发请求优化** — `home.vue` 操作后同时刷新任务列表和统计，改为 `Promise.all([loadTasks(), loadStat()])` 并发执行
   - `handleToggle`、`handleDelete`、`handleBatch`、`handleSubmitTask` 均适用
   - `onMounted` 中 `loadStat()` + `loadCategories()` + `loadTasks()` 同理
 
