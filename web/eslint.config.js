@@ -33,6 +33,16 @@ export default tseslint.config(
 
   // Custom overrides
   {
+    languageOptions: {
+      globals: {
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        localStorage: 'readonly',
+        Blob: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
     rules: {
       // TypeScript
       '@typescript-eslint/no-explicit-any': 'warn',
