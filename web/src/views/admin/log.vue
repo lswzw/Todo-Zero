@@ -1,11 +1,11 @@
 <template>
   <div class="admin-card">
     <div class="card-header">
-      <h2>操作日志</h2>
+      <h2>{{ t('log.operationLog') }}</h2>
       <div class="header-actions">
         <el-input
           v-model="keyword"
-          placeholder="搜索用户名"
+          :placeholder="t('log.searchUsername')"
           clearable
           style="width: 180px"
           @clear="loadLogs"
@@ -15,27 +15,33 @@
             ><el-icon><Search /></el-icon
           ></template>
         </el-input>
-        <el-select v-model="action" placeholder="操作类型" clearable style="width: 140px" @change="loadLogs">
-          <el-option label="创建" value="create" />
-          <el-option label="更新" value="update" />
-          <el-option label="删除" value="delete" />
-          <el-option label="配置变更" value="config" />
+        <el-select
+          v-model="action"
+          :placeholder="t('log.actionType')"
+          clearable
+          style="width: 140px"
+          @change="loadLogs"
+        >
+          <el-option :label="t('log.create')" value="create" />
+          <el-option :label="t('log.update')" value="update" />
+          <el-option :label="t('log.delete')" value="delete" />
+          <el-option :label="t('log.configChange')" value="config" />
         </el-select>
       </div>
     </div>
 
     <el-table :data="logs" stripe style="width: 100%">
-      <el-table-column prop="id" label="ID" width="70" />
-      <el-table-column prop="username" label="操作用户" width="120" />
-      <el-table-column label="操作类型" width="110">
+      <el-table-column prop="id" :label="t('admin.id')" width="70" />
+      <el-table-column prop="username" :label="t('log.opUser')" width="120" />
+      <el-table-column :label="t('log.actionType')" width="110">
         <template #default="{ row }">
           <el-tag :type="actionTagType(row.action)" size="small">{{ row.action }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="targetType" label="对象类型" width="100" />
-      <el-table-column prop="detail" label="操作详情" show-overflow-tooltip />
-      <el-table-column prop="ip" label="IP地址" width="140" />
-      <el-table-column prop="createTime" label="操作时间" width="180" />
+      <el-table-column prop="targetType" :label="t('log.targetType')" width="100" />
+      <el-table-column prop="detail" :label="t('log.detail')" show-overflow-tooltip />
+      <el-table-column prop="ip" :label="t('log.ipAddress')" width="140" />
+      <el-table-column prop="createTime" :label="t('log.opTime')" width="180" />
     </el-table>
 
     <div class="pagination">
@@ -48,8 +54,11 @@
 import { ref, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { getOperationLogList } from '@/api'
 import type { OperationLogItem } from '@/types'
+
+const { t } = useI18n()
 
 const logs = ref<OperationLogItem[]>([])
 const total = ref(0)
@@ -70,7 +79,7 @@ async function loadLogs() {
     logs.value = res.list || []
     total.value = res.total || 0
   } catch {
-    ElMessage.error('加载操作日志失败')
+    ElMessage.error(t('log.loadOperationLogFailed'))
   }
 }
 

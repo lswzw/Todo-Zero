@@ -5,9 +5,9 @@
       <div class="nav-inner">
         <div class="nav-left">
           <el-button text @click="router.push('/')">
-            <el-icon><ArrowLeft /></el-icon> 返回
+            <el-icon><ArrowLeft /></el-icon> {{ t('trash.back') }}
           </el-button>
-          <span class="page-title">回收站</span>
+          <span class="page-title">{{ t('trash.trash') }}</span>
         </div>
         <div class="nav-right">
           <el-button
@@ -16,7 +16,7 @@
             size="small"
             @click="handleBatchRestore"
           >
-            批量恢复 ({{ selectedIds.length }})
+            {{ t('trash.batchRestore', { count: selectedIds.length }) }}
           </el-button>
           <el-button
             v-if="selectMode && selectedIds.length > 0"
@@ -24,10 +24,10 @@
             size="small"
             @click="handleBatchPermanentDelete"
           >
-            批量永久删除 ({{ selectedIds.length }})
+            {{ t('trash.batchPermanentDelete', { count: selectedIds.length }) }}
           </el-button>
           <el-button :type="selectMode ? 'primary' : ''" size="small" @click="toggleSelectMode">
-            {{ selectMode ? '退出多选' : '多选' }}
+            {{ selectMode ? t('home.exitMultiSelect') : t('home.multiSelect') }}
           </el-button>
         </div>
       </div>
@@ -45,22 +45,25 @@
               <div class="task-title">{{ task.title }}</div>
               <div v-if="task.content" class="task-content">{{ task.content }}</div>
               <div class="task-meta">
-                <el-tag v-if="task.priority === 2" size="small" type="danger">紧急</el-tag>
-                <el-tag v-else-if="task.priority === 1" size="small" type="warning">重要</el-tag>
-                <el-tag v-else size="small" type="success">普通</el-tag>
+                <el-tag v-if="task.priority === 2" size="small" type="danger">{{ t('home.urgent') }}</el-tag>
+                <el-tag v-else-if="task.priority === 1" size="small" type="warning">{{ t('home.important') }}</el-tag>
+                <el-tag v-else size="small" type="success">{{ t('home.normal') }}</el-tag>
                 <el-tag
-                  v-if="task.categoryName && task.categoryName !== '未分类'"
+                  v-if="task.categoryName && task.categoryName !== t('trash.uncategorized')"
                   size="small"
                   type="info"
-                >{{ task.categoryName }}</el-tag>
-                <span class="task-time">删除于 {{ task.updateTime }}</span>
+                  >{{ task.categoryName }}</el-tag
+                >
+                <span class="task-time">{{ t('trash.deletedAt', { time: task.updateTime }) }}</span>
               </div>
             </div>
             <div class="task-actions">
-              <el-button text size="small" type="success" @click="handleRestore(task.id)">恢复</el-button>
-              <el-popconfirm title="永久删除后无法恢复，确定？" @confirm="handlePermanentDelete(task.id)">
+              <el-button text size="small" type="success" @click="handleRestore(task.id)">{{
+                t('trash.restore')
+              }}</el-button>
+              <el-popconfirm :title="t('trash.permanentDeleteConfirm')" @confirm="handlePermanentDelete(task.id)">
                 <template #reference>
-                  <el-button text size="small" type="danger">永久删除</el-button>
+                  <el-button text size="small" type="danger">{{ t('trash.permanentDelete') }}</el-button>
                 </template>
               </el-popconfirm>
             </div>
@@ -68,7 +71,7 @@
         </div>
         <div v-else class="empty-state">
           <span class="empty-icon">🗑️</span>
-          <p>回收站为空</p>
+          <p>{{ t('trash.empty') }}</p>
         </div>
 
         <!-- 分页 -->
@@ -85,8 +88,11 @@ import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { getTrashList, restoreTask, permanentDeleteTask, batchTask } from '@/api'
 import type { TrashItem } from '@/types'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const tasks = ref<TrashItem[]>([])
@@ -108,7 +114,7 @@ async function loadTasks() {
     tasks.value = res.list || []
     total.value = res.total || 0
   } catch {
-    ElMessage.error('加载回收站失败')
+    ElMessage.error(t('trash.loadFailed'))
   }
 }
 
@@ -126,37 +132,37 @@ function toggleSelect(id: number) {
 async function handleRestore(id: number) {
   try {
     await restoreTask(id)
-    ElMessage.success('已恢复')
+    ElMessage.success(t('trash.restored'))
     loadTasks()
   } catch {
-    ElMessage.error('恢复失败')
+    ElMessage.error(t('trash.restoreFailed'))
   }
 }
 
 async function handlePermanentDelete(id: number) {
   try {
     await permanentDeleteTask(id)
-    ElMessage.success('已永久删除')
+    ElMessage.success(t('trash.permanentDeleted'))
     loadTasks()
   } catch {
-    ElMessage.error('永久删除失败')
+    ElMessage.error(t('trash.permanentDeleteFailed'))
   }
 }
 
 async function handleBatchRestore() {
   try {
     await batchTask({ ids: selectedIds.value, action: 'restore' })
-    ElMessage.success('批量恢复成功')
+    ElMessage.success(t('trash.batchRestoreSuccess'))
     selectedIds.value = []
     loadTasks()
   } catch {
-    ElMessage.error('批量恢复失败')
+    ElMessage.error(t('trash.batchRestoreFailed'))
   }
 }
 
 async function handleBatchPermanentDelete() {
   try {
-    await ElMessageBox.confirm('永久删除后无法恢复，确定删除选中的任务？', '提示', { type: 'warning' })
+    await ElMessageBox.confirm(t('trash.batchPermanentDeleteConfirm'), t('common.tip'), { type: 'warning' })
   } catch {
     return
   }
@@ -171,14 +177,14 @@ async function handleBatchPermanentDelete() {
       }
     }
     if (failCount > 0) {
-      ElMessage.warning(`${failCount} 项删除失败`)
+      ElMessage.warning(t('trash.someDeleteFailed', { count: failCount }))
     } else {
-      ElMessage.success('已永久删除')
+      ElMessage.success(t('trash.permanentDeleted'))
     }
     selectedIds.value = []
     loadTasks()
   } catch {
-    ElMessage.error('批量永久删除失败')
+    ElMessage.error(t('trash.batchPermanentDeleteFailed'))
   }
 }
 </script>

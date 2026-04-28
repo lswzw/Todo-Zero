@@ -5,17 +5,17 @@
       <div class="nav-inner">
         <div class="nav-left">
           <el-button text @click="router.push('/')">
-            <el-icon><ArrowLeft /></el-icon> 返回列表
+            <el-icon><ArrowLeft /></el-icon> {{ t('taskDetail.backToList') }}
           </el-button>
         </div>
         <div class="nav-right">
-          <el-button text :disabled="loading" @click="openEditDialog">编辑</el-button>
+          <el-button text :disabled="loading" @click="openEditDialog">{{ t('common.edit') }}</el-button>
           <el-button text :disabled="loading" @click="handleToggle">
-            {{ task?.status === 2 ? '标为待办' : '标为完成' }}
+            {{ task?.status === 2 ? t('taskDetail.markAsTodo') : t('taskDetail.markAsDone') }}
           </el-button>
-          <el-popconfirm title="确定删除该任务？" @confirm="handleDelete">
+          <el-popconfirm :title="t('taskDetail.deleteConfirm')" @confirm="handleDelete">
             <template #reference>
-              <el-button text type="danger" :disabled="loading">删除</el-button>
+              <el-button text type="danger" :disabled="loading">{{ t('common.delete') }}</el-button>
             </template>
           </el-popconfirm>
         </div>
@@ -25,14 +25,14 @@
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-state">
       <el-icon class="is-loading" :size="32"><Loading /></el-icon>
-      <p>加载中...</p>
+      <p>{{ t('common.loading') }}</p>
     </div>
 
     <!-- 错误状态 -->
     <div v-else-if="loadError" class="error-state">
       <span class="error-icon">😕</span>
       <p>{{ loadError }}</p>
-      <el-button type="primary" @click="loadDetail">重试</el-button>
+      <el-button type="primary" @click="loadDetail">{{ t('common.retry') }}</el-button>
     </div>
 
     <!-- 任务详情 -->
@@ -47,9 +47,9 @@
 
       <!-- 元信息区 -->
       <div class="meta-row">
-        <el-tag v-if="task.priority === 2" type="danger" effect="dark">紧急</el-tag>
-        <el-tag v-else-if="task.priority === 1" type="warning" effect="dark">重要</el-tag>
-        <el-tag v-else type="success" effect="dark">普通</el-tag>
+        <el-tag v-if="task.priority === 2" type="danger" effect="dark">{{ t('home.urgent') }}</el-tag>
+        <el-tag v-else-if="task.priority === 1" type="warning" effect="dark">{{ t('home.important') }}</el-tag>
+        <el-tag v-else type="success" effect="dark">{{ t('home.normal') }}</el-tag>
 
         <el-tag
           v-if="task.categoryName"
@@ -66,115 +66,117 @@
         }}</el-tag>
 
         <el-tag :type="task.status === 2 ? 'success' : 'warning'" size="small">
-          {{ task.status === 2 ? '已完成' : '待办' }}
+          {{ task.status === 2 ? t('home.completed') : t('home.todo') }}
         </el-tag>
       </div>
 
       <!-- 信息卡片 -->
       <div class="info-cards">
         <div class="info-card">
-          <div class="info-label">创建时间</div>
+          <div class="info-label">{{ t('taskDetail.createTime') }}</div>
           <div class="info-value">{{ task.createTime || '—' }}</div>
         </div>
         <div class="info-card">
-          <div class="info-label">开始时间</div>
+          <div class="info-label">{{ t('taskDetail.startTime') }}</div>
           <div class="info-value">{{ task.startTime || '—' }}</div>
         </div>
         <div class="info-card">
-          <div class="info-label">截止时间</div>
+          <div class="info-label">{{ t('taskDetail.endTime') }}</div>
           <div class="info-value" :class="{ overdue: isOverdue }">{{ task.endTime || '—' }}</div>
         </div>
         <div class="info-card">
-          <div class="info-label">提醒时间</div>
+          <div class="info-label">{{ t('taskDetail.reminderTime') }}</div>
           <div class="info-value">{{ task.reminder || '—' }}</div>
         </div>
         <div class="info-card">
-          <div class="info-label">更新时间</div>
+          <div class="info-label">{{ t('taskDetail.updateTime') }}</div>
           <div class="info-value">{{ task.updateTime || '—' }}</div>
         </div>
       </div>
 
       <!-- 内容区 -->
       <div v-if="task.content" class="content-section">
-        <h3>任务内容</h3>
+        <h3>{{ t('taskDetail.taskContent') }}</h3>
         <div class="content-body">{{ task.content }}</div>
       </div>
       <div v-else class="content-section empty-content">
-        <h3>任务内容</h3>
-        <p class="no-content">暂无详细内容</p>
+        <h3>{{ t('taskDetail.taskContent') }}</h3>
+        <p class="no-content">{{ t('taskDetail.noContent') }}</p>
       </div>
     </main>
   </div>
 
   <!-- 编辑弹窗 -->
-  <el-dialog v-model="editDialogVisible" title="编辑任务" width="480px" destroy-on-close>
+  <el-dialog v-model="editDialogVisible" :title="t('home.editTask')" width="480px" destroy-on-close>
     <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="80px">
-      <el-form-item label="标题" prop="title">
-        <el-input v-model="editForm.title" maxlength="100" placeholder="请输入任务标题" />
+      <el-form-item :label="t('home.taskTitle')" prop="title">
+        <el-input v-model="editForm.title" maxlength="100" :placeholder="t('home.enterTitle')" />
       </el-form-item>
-      <el-form-item label="内容" prop="content">
+      <el-form-item :label="t('home.taskContent')" prop="content">
         <el-input
           v-model="editForm.content"
           type="textarea"
           :rows="4"
           maxlength="1000"
-          placeholder="任务详细内容（选填）"
+          :placeholder="t('home.enterContent')"
         />
       </el-form-item>
-      <el-form-item label="优先级">
+      <el-form-item :label="t('home.priority')">
         <el-select v-model="editForm.priority" style="width: 100%">
-          <el-option label="紧急" :value="2" />
-          <el-option label="重要" :value="1" />
-          <el-option label="普通" :value="3" />
+          <el-option :label="t('home.urgent')" :value="2" />
+          <el-option :label="t('home.important')" :value="1" />
+          <el-option :label="t('home.normal')" :value="3" />
         </el-select>
       </el-form-item>
-      <el-form-item label="分类">
+      <el-form-item :label="t('home.category')">
         <el-select v-model="editForm.categoryId" clearable style="width: 100%">
           <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id">
             <span :style="{ color: c.color || '#909399' }">●</span> {{ c.name }}
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="开始时间">
+      <el-form-item :label="t('home.startTime')">
         <el-date-picker
           v-model="editForm.startTime"
           type="datetime"
-          placeholder="选择开始时间"
+          :placeholder="t('home.selectStartTime')"
           format="YYYY-MM-DD HH:mm"
           value-format="YYYY-MM-DD HH:mm"
           style="width: 100%"
           clearable
         />
       </el-form-item>
-      <el-form-item label="截止时间">
+      <el-form-item :label="t('home.endTime')">
         <el-date-picker
           v-model="editForm.endTime"
           type="datetime"
-          placeholder="选择截止时间"
+          :placeholder="t('home.selectEndTime')"
           format="YYYY-MM-DD HH:mm"
           value-format="YYYY-MM-DD HH:mm"
           style="width: 100%"
           clearable
         />
       </el-form-item>
-      <el-form-item label="提醒时间">
+      <el-form-item :label="t('home.reminderTime')">
         <el-date-picker
           v-model="editForm.reminder"
           type="datetime"
-          placeholder="选择提醒时间"
+          :placeholder="t('home.selectReminderTime')"
           format="YYYY-MM-DD HH:mm"
           value-format="YYYY-MM-DD HH:mm"
           style="width: 100%"
           clearable
         />
       </el-form-item>
-      <el-form-item label="标签">
-        <el-input v-model="editForm.tags" maxlength="200" placeholder="多个标签用逗号分隔，如：工作,重要" />
+      <el-form-item :label="t('home.tags')">
+        <el-input v-model="editForm.tags" maxlength="200" :placeholder="t('home.tagsPlaceholder')" />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="editDialogVisible = false">取消</el-button>
-      <el-button type="primary" :loading="editSubmitting" @click="handleEditSubmit">确定</el-button>
+      <el-button @click="editDialogVisible = false">{{ t('common.cancel') }}</el-button>
+      <el-button type="primary" :loading="editSubmitting" @click="handleEditSubmit">{{
+        t('common.confirm')
+      }}</el-button>
     </template>
   </el-dialog>
 </template>
@@ -185,8 +187,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { ArrowLeft, Check, Loading } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { getTaskDetail, updateTask, toggleTask, deleteTask, getCategoryList } from '@/api'
 import type { TaskDetail, TaskFormData, CategoryItem } from '@/types'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -212,8 +217,8 @@ const editForm = ref<TaskFormData>({
 })
 const editRules = {
   title: [
-    { required: true, message: '请输入任务标题', trigger: 'blur' },
-    { max: 100, message: '标题最长100字符', trigger: 'blur' },
+    { required: true, message: () => t('home.enterTitle'), trigger: 'blur' },
+    { max: 100, message: () => t('home.titleMaxLength'), trigger: 'blur' },
   ],
 }
 
@@ -265,7 +270,7 @@ async function loadCategories() {
 async function loadDetail() {
   const id = Number(route.params.id)
   if (!id) {
-    loadError.value = '无效的任务ID'
+    loadError.value = t('taskDetail.invalidTaskId')
     loading.value = false
     return
   }
@@ -274,7 +279,7 @@ async function loadDetail() {
   try {
     task.value = await getTaskDetail(id)
   } catch {
-    loadError.value = '加载任务详情失败'
+    loadError.value = t('taskDetail.loadFailed')
   } finally {
     loading.value = false
   }
@@ -284,10 +289,10 @@ async function handleToggle() {
   if (!task.value) return
   try {
     await toggleTask(task.value.id)
-    ElMessage.success(task.value.status === 2 ? '已标记待办' : '已标记完成')
+    ElMessage.success(task.value.status === 2 ? t('home.markedTodo') : t('home.markedDone'))
     await loadDetail()
   } catch {
-    ElMessage.error('切换状态失败')
+    ElMessage.error(t('home.toggleFailed'))
   }
 }
 
@@ -295,10 +300,10 @@ async function handleDelete() {
   if (!task.value) return
   try {
     await deleteTask(task.value.id)
-    ElMessage.success('已删除')
+    ElMessage.success(t('home.deleted'))
     router.push('/')
   } catch {
-    ElMessage.error('删除任务失败')
+    ElMessage.error(t('home.deleteTaskFailed'))
   }
 }
 
@@ -323,11 +328,11 @@ async function handleEditSubmit() {
   editSubmitting.value = true
   try {
     await updateTask(task.value.id, editForm.value)
-    ElMessage.success('修改成功')
+    ElMessage.success(t('home.updateSuccess'))
     editDialogVisible.value = false
     await loadDetail()
   } catch {
-    ElMessage.error('修改任务失败')
+    ElMessage.error(t('home.updateFailed'))
   } finally {
     editSubmitting.value = false
   }

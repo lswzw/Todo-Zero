@@ -5,17 +5,22 @@
         <div class="logo-area">
           <span class="logo-icon">📝</span>
           <h1>Todo App</h1>
-          <p>个人待办管理平台</p>
+          <p>{{ t('auth.subtitle') }}</p>
         </div>
         <el-form ref="formRef" :model="form" :rules="rules" @submit.prevent="handleRegister">
           <el-form-item prop="username">
-            <el-input v-model="form.username" placeholder="请输入用户名(3-20位)" size="large" :prefix-icon="User" />
+            <el-input
+              v-model="form.username"
+              :placeholder="t('auth.enterUsernameHint')"
+              size="large"
+              :prefix-icon="User"
+            />
           </el-form-item>
           <el-form-item prop="password">
             <el-input
               v-model="form.password"
               type="password"
-              placeholder="请输入密码(6-20位，需含字母和数字)"
+              :placeholder="t('auth.enterPasswordHint')"
               size="large"
               :prefix-icon="Lock"
               show-password
@@ -25,7 +30,7 @@
             <el-input
               v-model="form.confirmPassword"
               type="password"
-              placeholder="请确认密码"
+              :placeholder="t('auth.enterConfirmPassword')"
               size="large"
               :prefix-icon="Lock"
               show-password
@@ -33,18 +38,25 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary" size="large" :loading="loading" native-type="submit" class="register-btn">
-              注 册
+              {{ t('auth.register') }}
             </el-button>
           </el-form-item>
         </el-form>
-        <div class="login-link">已有账号？<router-link to="/login">去登录 →</router-link></div>
+        <div class="locale-switch">
+          <el-select v-model="currentLang" size="small" style="width: 100px" @change="handleLocaleChange">
+            <el-option v-for="opt in localeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </div>
+        <div class="login-link">
+          {{ t('auth.hasAccount') }}<router-link to="/login">{{ t('auth.goToLogin') }}</router-link>
+        </div>
       </template>
       <template v-else>
         <div class="closed-area">
           <span class="closed-icon">🔒</span>
-          <h2>注册功能暂未开放</h2>
-          <p>请联系管理员开通账号</p>
-          <router-link to="/login" class="back-link">← 返回登录</router-link>
+          <h2>{{ t('auth.registerClosed') }}</h2>
+          <p>{{ t('auth.registerClosedDesc') }}</p>
+          <router-link to="/login" class="back-link">{{ t('auth.backToLogin') }}</router-link>
         </div>
       </template>
     </div>
@@ -57,18 +69,24 @@ import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { register, checkRegister } from '@/api'
+import { useLocale } from '@/composables/useLocale'
+
+const { t } = useI18n()
+const { currentLocale, setLocale, localeOptions } = useLocale()
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const allowRegister = ref(true)
+const currentLang = ref(currentLocale.value)
 
 const form = ref({ username: '', password: '', confirmPassword: '' })
 
 const validateConfirm = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (value !== form.value.password) {
-    callback(new Error('两次输入的密码不一致'))
+    callback(new Error(t('auth.passwordMismatch')))
   } else {
     callback()
   }
@@ -76,18 +94,22 @@ const validateConfirm = (_rule: unknown, value: string, callback: (error?: Error
 
 const rules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度3-20位', trigger: 'blur' },
+    { required: true, message: () => t('auth.enterUsername'), trigger: 'blur' },
+    { min: 3, max: 20, message: () => t('auth.usernameLength'), trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度6-20位', trigger: 'blur' },
-    { pattern: /^(?=.*[a-zA-Z])(?=.*\d)/, message: '密码必须包含字母和数字', trigger: 'blur' },
+    { required: true, message: () => t('auth.enterPassword'), trigger: 'blur' },
+    { min: 6, max: 20, message: () => t('auth.passwordLength'), trigger: 'blur' },
+    { pattern: /^(?=.*[a-zA-Z])(?=.*\d)/, message: () => t('auth.passwordComplexity'), trigger: 'blur' },
   ],
   confirmPassword: [
-    { required: true, message: '请确认密码', trigger: 'blur' },
+    { required: true, message: () => t('auth.enterConfirmPassword'), trigger: 'blur' },
     { validator: validateConfirm, trigger: 'blur' },
   ],
+}
+
+function handleLocaleChange(lang: string) {
+  setLocale(lang)
 }
 
 onMounted(async () => {
@@ -104,7 +126,7 @@ const handleRegister = async () => {
   loading.value = true
   try {
     await register({ username: form.value.username, password: form.value.password })
-    ElMessage.success('注册成功，请登录')
+    ElMessage.success(t('auth.registerSuccess'))
     router.push('/login')
   } catch {
     // 错误已由拦截器处理
@@ -158,6 +180,12 @@ const handleRegister = async () => {
   border-radius: 8px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
+}
+
+.locale-switch {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
 }
 
 .login-link {

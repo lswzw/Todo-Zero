@@ -8,11 +8,16 @@
           <span class="logo-text">Todo App</span>
         </div>
         <div class="nav-right">
+          <el-select v-model="currentLang" size="small" style="width: 90px" @change="handleLocaleChange">
+            <el-option v-for="opt in localeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
           <span class="username">{{ userStore.username }}</span>
-          <el-button v-if="userStore.isAdmin" text type="warning" @click="$router.push('/admin')">管理后台</el-button>
-          <el-button text @click="$router.push('/trash')">回收站</el-button>
-          <el-button text @click="showPasswordDialog = true">修改密码</el-button>
-          <el-button text type="danger" @click="handleLogout">退出登录</el-button>
+          <el-button v-if="userStore.isAdmin" text type="warning" @click="$router.push('/admin')">{{
+            t('home.adminPanel')
+          }}</el-button>
+          <el-button text @click="$router.push('/trash')">{{ t('home.trash') }}</el-button>
+          <el-button text @click="showPasswordDialog = true">{{ t('auth.changePassword') }}</el-button>
+          <el-button text type="danger" @click="handleLogout">{{ t('common.logout') }}</el-button>
         </div>
       </div>
     </header>
@@ -23,40 +28,40 @@
       <div class="stat-row">
         <div class="stat-card total">
           <div class="stat-value">{{ stat.total }}</div>
-          <div class="stat-label">总任务</div>
+          <div class="stat-label">{{ t('home.totalTasks') }}</div>
         </div>
         <div class="stat-card todo">
           <div class="stat-value">{{ stat.todo }}</div>
-          <div class="stat-label">待办</div>
+          <div class="stat-label">{{ t('home.todo') }}</div>
         </div>
         <div class="stat-card done">
           <div class="stat-value">{{ stat.done }}</div>
-          <div class="stat-label">已完成</div>
+          <div class="stat-label">{{ t('home.completed') }}</div>
         </div>
         <div class="stat-card rate">
           <div class="stat-value">{{ stat.doneRate }}%</div>
-          <div class="stat-label">完成率</div>
+          <div class="stat-label">{{ t('home.completionRate') }}</div>
         </div>
       </div>
 
       <!-- 任务列表区 -->
       <div class="task-section">
         <div class="section-header">
-          <h2>任务列表</h2>
+          <h2>{{ t('home.taskList') }}</h2>
           <div class="section-actions">
             <el-select
               v-model="filters.status"
-              placeholder="状态"
+              :placeholder="t('home.status')"
               clearable
               style="width: 100px"
               @change="onFilterChange"
             >
-              <el-option label="待办" :value="0" />
-              <el-option label="已完成" :value="2" />
+              <el-option :label="t('home.todo')" :value="0" />
+              <el-option :label="t('home.completed')" :value="2" />
             </el-select>
             <el-select
               v-model="filters.categoryId"
-              placeholder="分类"
+              :placeholder="t('home.category')"
               clearable
               style="width: 100px"
               @change="onFilterChange"
@@ -67,21 +72,21 @@
             </el-select>
             <el-select
               v-model="filters.priority"
-              placeholder="优先级"
+              :placeholder="t('home.priority')"
               clearable
               style="width: 100px"
               @change="onFilterChange"
             >
-              <el-option label="紧急" :value="2" />
-              <el-option label="重要" :value="1" />
-              <el-option label="普通" :value="3" />
+              <el-option :label="t('home.urgent')" :value="2" />
+              <el-option :label="t('home.important')" :value="1" />
+              <el-option :label="t('home.normal')" :value="3" />
             </el-select>
             <el-button :type="selectMode ? 'primary' : ''" @click="toggleSelectMode">
-              {{ selectMode ? '退出多选' : '多选' }}
+              {{ selectMode ? t('home.exitMultiSelect') : t('home.multiSelect') }}
             </el-button>
             <el-input
               v-model="filters.keyword"
-              placeholder="搜索"
+              :placeholder="t('common.search')"
               clearable
               style="width: 180px"
               @clear="onFilterChange"
@@ -92,30 +97,32 @@
               ></template>
             </el-input>
             <el-button type="primary" @click="openTaskDialog()">
-              <el-icon><Plus /></el-icon> 新增任务
+              <el-icon><Plus /></el-icon> {{ t('home.newTask') }}
             </el-button>
             <el-dropdown @command="handleExport">
               <el-button>
-                <el-icon><Download /></el-icon> 导出
+                <el-icon><Download /></el-icon> {{ t('common.export') }}
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="json">导出 JSON</el-dropdown-item>
-                  <el-dropdown-item command="csv">导出 CSV</el-dropdown-item>
+                  <el-dropdown-item command="json">{{ t('common.exportJson') }}</el-dropdown-item>
+                  <el-dropdown-item command="csv">{{ t('common.exportCsv') }}</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
-            <el-button @click="showCategoryDialog = true">分类管理</el-button>
+            <el-button @click="showCategoryDialog = true">{{ t('home.categoryManage') }}</el-button>
           </div>
         </div>
 
         <!-- 批量操作栏 -->
         <div v-if="selectMode && selectedIds.length > 0" class="batch-bar">
-          <span>已选 {{ selectedIds.length }} 项</span>
-          <el-button size="small" type="success" @click="handleBatch('complete')">批量完成</el-button>
-          <el-button size="small" type="warning" @click="handleBatch('undo')">批量取消</el-button>
-          <el-button size="small" type="danger" @click="handleBatch('delete')">批量删除</el-button>
-          <el-button size="small" @click="selectedIds = []">取消选择</el-button>
+          <span>{{ t('home.selected', { count: selectedIds.length }) }}</span>
+          <el-button size="small" type="success" @click="handleBatch('complete')">{{
+            t('home.batchComplete')
+          }}</el-button>
+          <el-button size="small" type="warning" @click="handleBatch('undo')">{{ t('home.batchUndo') }}</el-button>
+          <el-button size="small" type="danger" @click="handleBatch('delete')">{{ t('home.batchDelete') }}</el-button>
+          <el-button size="small" @click="selectedIds = []">{{ t('home.cancelSelect') }}</el-button>
         </div>
 
         <!-- 任务列表 -->
@@ -130,7 +137,7 @@
           >
             <template #item="{ element: task }">
               <div class="task-item">
-                <div class="drag-handle" title="拖拽排序">⠿</div>
+                <div class="drag-handle" :title="t('home.sortSaveFailed')">⠿</div>
                 <div v-if="selectMode" class="task-check" @click="toggleSelect(task.id)">
                   <div :class="['check-dot', { active: selectedIds.includes(task.id) }]" />
                 </div>
@@ -143,9 +150,11 @@
                   <div :class="['task-title', { 'line-through': task.status === 2 }]">{{ task.title }}</div>
                   <div v-if="task.content" class="task-content">{{ task.content }}</div>
                   <div class="task-meta">
-                    <el-tag v-if="task.priority === 2" size="small" type="danger">紧急</el-tag>
-                    <el-tag v-else-if="task.priority === 1" size="small" type="warning">重要</el-tag>
-                    <el-tag v-else size="small" type="success">普通</el-tag>
+                    <el-tag v-if="task.priority === 2" size="small" type="danger">{{ t('home.urgent') }}</el-tag>
+                    <el-tag v-else-if="task.priority === 1" size="small" type="warning">{{
+                      t('home.important')
+                    }}</el-tag>
+                    <el-tag v-else size="small" type="success">{{ t('home.normal') }}</el-tag>
                     <el-tag
                       v-if="task.categoryName"
                       size="small"
@@ -155,20 +164,28 @@
                       :style="{ color: getCategoryTextColor(task.categoryId) }"
                       >{{ task.categoryName }}</el-tag
                     >
-                    <el-tag v-for="tag in parseTags(task.tags)" :key="tag" size="small" effect="plain" class="task-tag">{{
-                      tag
-                    }}</el-tag>
-                    <span v-if="task.endTime" class="task-time" :class="{ overdue: isOverdue(task.endTime, task.status) }"
-                      >截止 {{ task.endTime }}</span
+                    <el-tag
+                      v-for="tag in parseTags(task.tags)"
+                      :key="tag"
+                      size="small"
+                      effect="plain"
+                      class="task-tag"
+                      >{{ tag }}</el-tag
+                    >
+                    <span
+                      v-if="task.endTime"
+                      class="task-time"
+                      :class="{ overdue: isOverdue(task.endTime, task.status) }"
+                      >{{ t('home.deadline', { time: task.endTime }) }}</span
                     >
                     <span v-else class="task-time">{{ task.createTime }}</span>
                   </div>
                 </div>
                 <div class="task-actions">
-                  <el-button text size="small" @click="openTaskDialog(task)">编辑</el-button>
-                  <el-popconfirm title="确定删除该任务？" @confirm="handleDelete(task.id)">
+                  <el-button text size="small" @click="openTaskDialog(task)">{{ t('common.edit') }}</el-button>
+                  <el-popconfirm :title="t('home.deleteConfirm')" @confirm="handleDelete(task.id)">
                     <template #reference>
-                      <el-button text size="small" type="danger">删除</el-button>
+                      <el-button text size="small" type="danger">{{ t('common.delete') }}</el-button>
                     </template>
                   </el-popconfirm>
                 </div>
@@ -178,7 +195,7 @@
         </div>
         <div v-else class="empty-state">
           <span class="empty-icon">📋</span>
-          <p>暂无任务</p>
+          <p>{{ t('home.noTasks') }}</p>
         </div>
 
         <!-- 分页 -->
@@ -191,122 +208,126 @@
     <!-- 新增/编辑任务弹窗 -->
     <el-dialog
       v-model="taskDialogVisible"
-      :title="editingTask ? '编辑任务' : '新增任务'"
+      :title="editingTask ? t('home.editTask') : t('home.newTask')"
       width="480px"
       destroy-on-close
     >
       <el-form ref="taskFormRef" :model="taskForm" :rules="taskRules" label-width="80px">
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="taskForm.title" maxlength="100" placeholder="请输入任务标题" />
+        <el-form-item :label="t('home.taskTitle')" prop="title">
+          <el-input v-model="taskForm.title" maxlength="100" :placeholder="t('home.enterTitle')" />
         </el-form-item>
-        <el-form-item label="内容" prop="content">
+        <el-form-item :label="t('home.taskContent')" prop="content">
           <el-input
             v-model="taskForm.content"
             type="textarea"
             :rows="4"
             maxlength="1000"
-            placeholder="任务详细内容（选填）"
+            :placeholder="t('home.enterContent')"
           />
         </el-form-item>
-        <el-form-item label="优先级">
+        <el-form-item :label="t('home.priority')">
           <el-select v-model="taskForm.priority" style="width: 100%">
-            <el-option label="紧急" :value="2" />
-            <el-option label="重要" :value="1" />
-            <el-option label="普通" :value="3" />
+            <el-option :label="t('home.urgent')" :value="2" />
+            <el-option :label="t('home.important')" :value="1" />
+            <el-option :label="t('home.normal')" :value="3" />
           </el-select>
         </el-form-item>
-        <el-form-item label="分类">
+        <el-form-item :label="t('home.category')">
           <el-select v-model="taskForm.categoryId" clearable style="width: 100%">
             <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id">
               <span :style="{ color: c.color || '#909399' }">●</span> {{ c.name }}
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="开始时间">
+        <el-form-item :label="t('home.startTime')">
           <el-date-picker
             v-model="taskForm.startTime"
             type="datetime"
-            placeholder="选择开始时间"
+            :placeholder="t('home.selectStartTime')"
             format="YYYY-MM-DD HH:mm"
             value-format="YYYY-MM-DD HH:mm"
             style="width: 100%"
             clearable
           />
         </el-form-item>
-        <el-form-item label="截止时间">
+        <el-form-item :label="t('home.endTime')">
           <el-date-picker
             v-model="taskForm.endTime"
             type="datetime"
-            placeholder="选择截止时间"
+            :placeholder="t('home.selectEndTime')"
             format="YYYY-MM-DD HH:mm"
             value-format="YYYY-MM-DD HH:mm"
             style="width: 100%"
             clearable
           />
         </el-form-item>
-        <el-form-item label="提醒时间">
+        <el-form-item :label="t('home.reminderTime')">
           <el-date-picker
             v-model="taskForm.reminder"
             type="datetime"
-            placeholder="选择提醒时间"
+            :placeholder="t('home.selectReminderTime')"
             format="YYYY-MM-DD HH:mm"
             value-format="YYYY-MM-DD HH:mm"
             style="width: 100%"
             clearable
           />
         </el-form-item>
-        <el-form-item label="标签">
-          <el-input v-model="taskForm.tags" maxlength="200" placeholder="多个标签用逗号分隔，如：工作,重要" />
+        <el-form-item :label="t('home.tags')">
+          <el-input v-model="taskForm.tags" maxlength="200" :placeholder="t('home.tagsPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="taskDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmitTask">确定</el-button>
+        <el-button @click="taskDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmitTask">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 修改密码弹窗 -->
-    <el-dialog v-model="showPasswordDialog" title="修改密码" width="420px" destroy-on-close>
+    <el-dialog v-model="showPasswordDialog" :title="t('auth.changePassword')" width="420px" destroy-on-close>
       <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="90px">
-        <el-form-item label="当前密码" prop="oldPassword">
+        <el-form-item :label="t('auth.currentPassword')" prop="oldPassword">
           <el-input v-model="pwdForm.oldPassword" type="password" show-password />
         </el-form-item>
-        <el-form-item label="新密码" prop="newPassword">
+        <el-form-item :label="t('auth.newPassword')" prop="newPassword">
           <el-input v-model="pwdForm.newPassword" type="password" show-password />
         </el-form-item>
-        <el-form-item label="确认新密码" prop="confirmPassword">
+        <el-form-item :label="t('auth.confirmNewPassword')" prop="confirmPassword">
           <el-input v-model="pwdForm.confirmPassword" type="password" show-password />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showPasswordDialog = false">取消</el-button>
-        <el-button type="primary" :loading="pwdLoading" @click="handleChangePassword">确定</el-button>
+        <el-button @click="showPasswordDialog = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="pwdLoading" @click="handleChangePassword">{{
+          t('common.confirm')
+        }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 分类管理弹窗 -->
-    <el-dialog v-model="showCategoryDialog" title="分类管理" width="480px" destroy-on-close>
+    <el-dialog v-model="showCategoryDialog" :title="t('home.categoryManage')" width="480px" destroy-on-close>
       <div class="category-manage">
         <div class="category-add-row">
           <el-input
             v-model="newCategoryName"
-            placeholder="分类名称"
+            :placeholder="t('home.categoryName')"
             maxlength="20"
             style="flex: 1"
             @keyup.enter="handleAddCategory"
           />
           <el-color-picker v-model="newCategoryColor" size="small" />
-          <el-button type="primary" @click="handleAddCategory">添加</el-button>
+          <el-button type="primary" @click="handleAddCategory">{{ t('common.add') }}</el-button>
         </div>
         <div class="category-list">
           <div v-for="c in categories" :key="c.id" class="category-item">
             <el-color-picker v-model="c._color" size="small" @change="handleUpdateCategory(c)" />
             <el-input v-model="c._name" size="small" maxlength="20" style="flex: 1" @blur="handleUpdateCategory(c)" />
-            <el-tag v-if="c.isSystem" size="small" type="info">系统</el-tag>
-            <el-button v-else text size="small" type="danger" @click="handleDeleteCategory(c)">删除</el-button>
+            <el-tag v-if="c.isSystem" size="small" type="info">{{ t('common.system') }}</el-tag>
+            <el-button v-else text size="small" type="danger" @click="handleDeleteCategory(c)">{{
+              t('common.delete')
+            }}</el-button>
           </div>
           <div v-if="!categories.length" class="empty-state" style="padding: 20px 0">
-            <p>暂无分类</p>
+            <p>{{ t('home.noCategories') }}</p>
           </div>
         </div>
       </div>
@@ -321,8 +342,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { Search, Plus, Check, Download } from '@element-plus/icons-vue'
 import draggable from 'vuedraggable'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
+import { useLocale } from '@/composables/useLocale'
 import {
   getTaskList,
   createTask,
@@ -340,6 +363,10 @@ import {
   exportTasks,
 } from '@/api'
 import type { TaskItem, TaskFormData, StatResp, CategoryItem } from '@/types'
+
+const { t } = useI18n()
+const { currentLocale, setLocale, localeOptions } = useLocale()
+const currentLang = ref(currentLocale.value)
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -383,8 +410,8 @@ const taskForm = ref<TaskFormData>({
 })
 const taskRules = {
   title: [
-    { required: true, message: '请输入任务标题', trigger: 'blur' },
-    { max: 100, message: '标题最长100字符', trigger: 'blur' },
+    { required: true, message: () => t('home.enterTitle'), trigger: 'blur' },
+    { max: 100, message: () => t('home.titleMaxLength'), trigger: 'blur' },
   ],
 }
 
@@ -399,20 +426,24 @@ const newCategoryColor = ref('#409eff')
 const pwdFormRef = ref<FormInstance>()
 const pwdForm = ref({ oldPassword: '', newPassword: '', confirmPassword: '' })
 const validatePwdConfirm = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
-  if (value !== pwdForm.value.newPassword) callback(new Error('两次输入的密码不一致'))
+  if (value !== pwdForm.value.newPassword) callback(new Error(t('auth.passwordMismatch')))
   else callback()
 }
 const pwdRules = {
-  oldPassword: [{ required: true, message: '请输入当前密码', trigger: 'blur' }],
+  oldPassword: [{ required: true, message: () => t('auth.enterCurrentPassword'), trigger: 'blur' }],
   newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度6-20位', trigger: 'blur' },
-    { pattern: /^(?=.*[a-zA-Z])(?=.*\d)/, message: '密码必须包含字母和数字', trigger: 'blur' },
+    { required: true, message: () => t('auth.enterNewPassword'), trigger: 'blur' },
+    { min: 6, max: 20, message: () => t('auth.passwordLength'), trigger: 'blur' },
+    { pattern: /^(?=.*[a-zA-Z])(?=.*\d)/, message: () => t('auth.passwordComplexity'), trigger: 'blur' },
   ],
   confirmPassword: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
+    { required: true, message: () => t('auth.confirmNewPasswordPrompt'), trigger: 'blur' },
     { validator: validatePwdConfirm, trigger: 'blur' },
   ],
+}
+
+function handleLocaleChange(lang: string) {
+  setLocale(lang)
 }
 
 function onFilterChange() {
@@ -432,7 +463,7 @@ async function loadStat() {
   try {
     stat.value = await getStat()
   } catch {
-    ElMessage.error('加载统计数据失败')
+    ElMessage.error(t('home.loadStatFailed'))
   }
 }
 
@@ -441,7 +472,7 @@ async function loadCategories() {
     const res = await getCategoryList()
     categories.value = (res.list || []).map((c) => ({ ...c, _name: c.name, _color: c.color || '#409eff' }))
   } catch {
-    ElMessage.error('加载分类失败')
+    ElMessage.error(t('home.loadCategoriesFailed'))
   }
 }
 
@@ -456,7 +487,7 @@ async function loadTasks() {
     tasks.value = res.list || []
     total.value = res.total || 0
   } catch {
-    ElMessage.error('加载任务列表失败')
+    ElMessage.error(t('home.loadTasksFailed'))
   }
 }
 
@@ -474,34 +505,34 @@ function toggleSelect(id: number) {
 async function handleToggle(task: TaskItem) {
   try {
     await toggleTask(task.id)
-    ElMessage.success(task.status === 0 ? '已标记完成' : '已标记待办')
+    ElMessage.success(task.status === 0 ? t('home.markedDone') : t('home.markedTodo'))
     loadTasks()
     loadStat()
   } catch {
-    ElMessage.error('切换状态失败')
+    ElMessage.error(t('home.toggleFailed'))
   }
 }
 
 async function handleDelete(id: number) {
   try {
     await deleteTask(id)
-    ElMessage.success('已删除')
+    ElMessage.success(t('home.deleted'))
     loadTasks()
     loadStat()
   } catch {
-    ElMessage.error('删除任务失败')
+    ElMessage.error(t('home.deleteTaskFailed'))
   }
 }
 
 async function handleBatch(action: string) {
   try {
     await batchTask({ ids: selectedIds.value, action })
-    ElMessage.success('操作成功')
+    ElMessage.success(t('home.batchSuccess'))
     selectedIds.value = []
     loadTasks()
     loadStat()
   } catch {
-    ElMessage.error('批量操作失败')
+    ElMessage.error(t('home.batchFailed'))
   }
 }
 
@@ -552,16 +583,16 @@ async function handleSubmitTask() {
   try {
     if (editingTask.value) {
       await updateTask(editingTask.value.id, taskForm.value)
-      ElMessage.success('修改成功')
+      ElMessage.success(t('home.updateSuccess'))
     } else {
       await createTask(taskForm.value)
-      ElMessage.success('创建成功')
+      ElMessage.success(t('home.createSuccess'))
     }
     taskDialogVisible.value = false
     loadTasks()
     loadStat()
   } catch {
-    ElMessage.error(editingTask.value ? '修改任务失败' : '创建任务失败')
+    ElMessage.error(editingTask.value ? t('home.updateFailed') : t('home.createFailed'))
   } finally {
     submitting.value = false
   }
@@ -572,13 +603,13 @@ async function handleChangePassword() {
   pwdLoading.value = true
   try {
     await changePassword({ oldPassword: pwdForm.value.oldPassword, newPassword: pwdForm.value.newPassword })
-    ElMessage.success('密码修改成功，请重新登录')
+    ElMessage.success(t('auth.passwordChanged'))
     showPasswordDialog.value = false
     resetAuthVerified()
     userStore.logout()
     router.push('/login')
   } catch {
-    ElMessage.error('修改密码失败')
+    ElMessage.error(t('auth.changePasswordFailed'))
   } finally {
     pwdLoading.value = false
   }
@@ -604,7 +635,7 @@ function getCategoryTextColor(categoryId: number): string {
 
 async function handleAddCategory() {
   if (!newCategoryName.value.trim()) {
-    ElMessage.warning('请输入分类名称')
+    ElMessage.warning(t('home.enterCategoryName'))
     return
   }
   try {
@@ -612,15 +643,15 @@ async function handleAddCategory() {
     newCategoryName.value = ''
     newCategoryColor.value = '#409eff'
     await loadCategories()
-    ElMessage.success('分类已添加')
+    ElMessage.success(t('home.categoryAdded'))
   } catch {
-    ElMessage.error('添加分类失败')
+    ElMessage.error(t('home.addCategoryFailed'))
   }
 }
 
 async function handleUpdateCategory(c: CategoryItem & { _name: string; _color: string }) {
   if (!c._name.trim()) {
-    ElMessage.warning('分类名称不能为空')
+    ElMessage.warning(t('home.categoryNameEmpty'))
     c._name = c.name
     return
   }
@@ -630,7 +661,7 @@ async function handleUpdateCategory(c: CategoryItem & { _name: string; _color: s
     await updateCategory(c.id, { name: c._name.trim(), color: c._color })
     await loadCategories()
   } catch {
-    ElMessage.error('更新分类失败')
+    ElMessage.error(t('home.updateCategoryFailed'))
     await loadCategories()
   }
 }
@@ -638,16 +669,16 @@ async function handleUpdateCategory(c: CategoryItem & { _name: string; _color: s
 async function handleDeleteCategory(c: CategoryItem) {
   if (c.isSystem) return
   try {
-    await ElMessageBox.confirm(`确定删除分类"${c.name}"？该分类下的任务不会被删除。`, '提示', { type: 'warning' })
+    await ElMessageBox.confirm(t('home.deleteCategoryConfirm', { name: c.name }), t('common.tip'), { type: 'warning' })
   } catch {
     return // 用户取消
   }
   try {
     await deleteCategory(c.id)
     await loadCategories()
-    ElMessage.success('分类已删除')
+    ElMessage.success(t('home.categoryDeleted'))
   } catch {
-    ElMessage.error('删除分类失败')
+    ElMessage.error(t('home.deleteCategoryFailed'))
   }
 }
 
@@ -659,7 +690,7 @@ async function onDragEnd() {
   try {
     await sortTask({ orders })
   } catch {
-    ElMessage.error('排序保存失败')
+    ElMessage.error(t('home.sortSaveFailed'))
     loadTasks()
   }
 }
@@ -680,12 +711,12 @@ function handleExport(format: string) {
       window.URL.revokeObjectURL(url)
     })
     .catch(() => {
-      ElMessage.error('导出失败')
+      ElMessage.error(t('common.exportFailed'))
     })
 }
 
 function handleLogout() {
-  ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' })
+  ElMessageBox.confirm(t('common.logoutConfirm'), t('common.tip'), { type: 'warning' })
     .then(() => {
       resetAuthVerified()
       userStore.logout()

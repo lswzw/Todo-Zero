@@ -4,12 +4,15 @@
     <header class="admin-navbar">
       <div class="nav-left">
         <span class="logo-icon">📝</span>
-        <span class="logo-text">Todo App 管理后台</span>
+        <span class="logo-text">Todo App {{ t('admin.adminPanel') }}</span>
       </div>
       <div class="nav-right">
-        <span>管理员：{{ userStore.username }}</span>
-        <el-button text @click="router.push('/')">前台首页</el-button>
-        <el-button text type="danger" @click="handleLogout">退出登录</el-button>
+        <el-select v-model="currentLang" size="small" style="width: 90px" @change="handleLocaleChange">
+          <el-option v-for="opt in localeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+        </el-select>
+        <span>{{ t('admin.admin') }}：{{ userStore.username }}</span>
+        <el-button text @click="router.push('/')">{{ t('admin.homePage') }}</el-button>
+        <el-button text type="danger" @click="handleLogout">{{ t('common.logout') }}</el-button>
       </div>
     </header>
 
@@ -17,17 +20,19 @@
       <!-- 侧边栏 -->
       <aside class="admin-sidebar">
         <router-link to="/admin/user" class="sidebar-item" active-class="active">
-          <span>👤</span> 用户管理
+          <span>👤</span> {{ t('admin.userManagement') }}
         </router-link>
         <router-link to="/admin/config" class="sidebar-item" active-class="active">
-          <span>⚙️</span> 系统设置
+          <span>⚙️</span> {{ t('admin.systemSettings') }}
         </router-link>
-        <router-link to="/admin/log" class="sidebar-item" active-class="active"> <span>📋</span> 操作日志 </router-link>
+        <router-link to="/admin/log" class="sidebar-item" active-class="active">
+          <span>📋</span> {{ t('admin.operationLog') }}
+        </router-link>
         <router-link to="/admin/login-log" class="sidebar-item" active-class="active">
-          <span>🔑</span> 登录日志
+          <span>🔑</span> {{ t('admin.loginLog') }}
         </router-link>
         <router-link to="/admin/backup" class="sidebar-item" active-class="active">
-          <span>💾</span> 数据库备份
+          <span>💾</span> {{ t('admin.dbBackup') }}
         </router-link>
       </aside>
 
@@ -40,21 +45,32 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
+import { useLocale } from '@/composables/useLocale'
+
+const { t } = useI18n()
+const { currentLocale, setLocale, localeOptions } = useLocale()
+const currentLang = ref(currentLocale.value)
 
 const router = useRouter()
 const userStore = useUserStore()
 
+function handleLocaleChange(lang: string) {
+  setLocale(lang)
+}
+
 function handleLogout() {
-  ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' })
+  ElMessageBox.confirm(t('common.logoutConfirm'), t('common.tip'), { type: 'warning' })
     .then(() => {
       resetAuthVerified()
       userStore.logout()
       router.push('/login')
-      ElMessage.success('已退出登录')
+      ElMessage.success(t('common.logoutSuccess'))
     })
     .catch(() => {})
 }

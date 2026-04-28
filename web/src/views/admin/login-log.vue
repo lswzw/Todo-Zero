@@ -1,10 +1,10 @@
 <template>
   <div class="admin-card">
     <div class="card-header">
-      <h2>登录日志</h2>
+      <h2>{{ t('log.loginLog') }}</h2>
       <el-input
         v-model="keyword"
-        placeholder="搜索用户名"
+        :placeholder="t('log.searchUsername')"
         clearable
         style="width: 240px"
         @clear="loadLogs"
@@ -17,18 +17,18 @@
     </div>
 
     <el-table :data="logs" stripe style="width: 100%">
-      <el-table-column prop="id" label="ID" width="70" />
-      <el-table-column prop="username" label="用户名" width="130" />
-      <el-table-column label="状态" width="90">
+      <el-table-column prop="id" :label="t('admin.id')" width="70" />
+      <el-table-column prop="username" :label="t('admin.username')" width="130" />
+      <el-table-column :label="t('admin.status')" width="90">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
-            {{ row.status === 1 ? '成功' : '失败' }}
+            {{ row.status === 1 ? t('log.success') : t('log.failed') }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="ip" label="IP地址" width="150" />
-      <el-table-column prop="remark" label="备注" width="150" show-overflow-tooltip />
-      <el-table-column prop="createTime" label="登录时间" width="180" />
+      <el-table-column prop="ip" :label="t('log.ipAddress')" width="150" />
+      <el-table-column prop="remark" :label="t('log.remark')" width="150" show-overflow-tooltip />
+      <el-table-column prop="createTime" :label="t('log.loginTime')" width="180" />
     </el-table>
 
     <div class="pagination">
@@ -41,8 +41,11 @@
 import { ref, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { getLoginLogList } from '@/api'
 import type { LoginLogItem } from '@/types'
+
+const { t } = useI18n()
 
 const logs = ref<LoginLogItem[]>([])
 const total = ref(0)
@@ -61,7 +64,7 @@ async function loadLogs() {
     logs.value = res.list || []
     total.value = res.total || 0
   } catch {
-    ElMessage.error('加载登录日志失败')
+    ElMessage.error(t('log.loadLoginLogFailed'))
   }
 }
 </script>

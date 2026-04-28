@@ -35,7 +35,8 @@ export const toggleTask = (id: number) => request.patch(`/task/${id}/toggle`)
 export const deleteTask = (id: number) => request.delete(`/task/${id}`)
 export const batchTask = (data: { ids: number[]; action: string }) => request.post('/task/batch', data)
 export const sortTask = (data: { orders: { id: number; sortOrder: number }[] }) => request.put('/task/sort', data)
-export const getTrashList = (params: Record<string, unknown>) => request.get<never, TrashListResp>('/task/trash', { params })
+export const getTrashList = (params: Record<string, unknown>) =>
+  request.get<never, TrashListResp>('/task/trash', { params })
 export const restoreTask = (id: number) => request.patch(`/task/${id}/restore`)
 export const permanentDeleteTask = (id: number) => request.delete(`/task/${id}/permanent`)
 
@@ -75,4 +76,5 @@ export const getLoginLogList = (params: Record<string, unknown>) =>
 export const getBackupList = () => request.get<never, BackupListResp>('/admin/backup')
 export const triggerBackup = () => request.post<never, TriggerBackupResp>('/admin/backup')
 export const downloadBackup = (fileName: string) => `/api/v1/admin/backup/download/${fileName}`
-export const restoreBackup = (fileName: string) => request.post<never, RestoreBackupResp>(`/admin/backup/restore/${fileName}`)
+export const restoreBackup = (fileName: string) =>
+  request.post<never, RestoreBackupResp>(`/admin/backup/restore/${fileName}`)

@@ -1,6 +1,9 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import i18n from '@/locales'
+
+const { t } = i18n.global
 
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
@@ -30,11 +33,11 @@ request.interceptors.response.use(
     if (res.code === 40001) {
       localStorage.removeItem('token')
       router.push('/login')
-      ElMessage.error('登录已过期，请重新登录')
+      ElMessage.error(t('auth.loginExpired'))
     } else {
-      ElMessage.error(res.msg || '请求失败')
+      ElMessage.error(res.msg || t('auth.requestFailed'))
     }
-    return Promise.reject(new Error(res.msg || '请求失败'))
+    return Promise.reject(new Error(res.msg || t('auth.requestFailed')))
   },
   (error) => {
     if (error.response) {
@@ -42,12 +45,12 @@ request.interceptors.response.use(
       if (data?.code === 40001) {
         localStorage.removeItem('token')
         router.push('/login')
-        ElMessage.error('登录已过期，请重新登录')
+        ElMessage.error(t('auth.loginExpired'))
       } else {
-        ElMessage.error(data?.msg || '请求失败')
+        ElMessage.error(data?.msg || t('auth.requestFailed'))
       }
     } else {
-      ElMessage.error('网络错误')
+      ElMessage.error(t('auth.networkError'))
     }
     return Promise.reject(error)
   },

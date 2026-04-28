@@ -364,3 +364,44 @@
 
 - [x] **test.sh 集成测试更新** — 新增拖拽排序测试区块（6 项：排序成功、sortOrder 验证、空 orders 拒绝、跨用户拒绝、无 token 拒绝）
 - [x] **单元测试 mock 修复** — `taskdetaillogic_test.go`、`cleanup_test.go` mock 补齐 `FindAllForExport`、`UpdateSortOrder` 方法
+
+---
+
+## v2.2.0 — P4-A 国际化 (i18n)
+
+### 基础设施
+
+- [x] **安装 vue-i18n@9** — `npm install vue-i18n`
+- [x] **创建翻译文件** — `src/locales/zh-CN.ts` + `src/locales/en.ts`，按模块拆分：`common`、`auth`、`home`、`taskDetail`、`trash`、`admin`、`config`、`log`、`backup`
+- [x] **注册 i18n 插件** — `src/locales/index.ts` 创建 i18n 实例，`main.ts` 中 `app.use(i18n)`，移除硬编码 `zh-cn` import
+- [x] **Element Plus 国际化联动** — `App.vue` 使用 `el-config-provider` + `:locale` 动态绑定 Element Plus locale，与 vue-i18n 语言同步切换
+- [x] **语言持久化** — 语言偏好存入 `localStorage('locale')`，刷新后恢复
+- [x] **语言切换 composable** — `src/composables/useLocale.ts`，封装 `setLocale`/`currentLocale`/`elementLocale`/`localeOptions`
+
+### 中文提取（前端全量）
+
+- [x] **提取 `request.ts`** — 4 处：网络错误、登录过期、请求失败（成功/错误分支各 2 处）
+- [x] **提取 `login.vue`** — ~10 处：表单标签、placeholder、验证消息、登录成功提示、注册链接、语言切换
+- [x] **提取 `register.vue`** — ~20 处：表单标签、placeholder、验证消息（含密码不一致/复杂度）、注册成功提示、登录链接、注册关闭页、语言切换
+- [x] **提取 `home.vue`** — ~80 处：统计标签、状态/优先级/分类筛选、任务列表、批量操作、新增/编辑弹窗、修改密码弹窗、分类管理弹窗、导出、拖拽、所有 ElMessage/ElMessageBox
+- [x] **提取 `task-detail.vue`** — ~45 处：导航栏、详情页标签、信息卡片、编辑弹窗、所有提示消息
+- [x] **提取 `trash.vue`** — ~25 处：导航栏、列表、批量操作、永久删除确认、所有提示消息
+- [x] **提取 `admin/layout.vue`** — ~10 处：侧边栏菜单、导航栏、退出登录
+- [x] **提取 `admin/config.vue`** — ~20 处：configMeta 标题/描述（8 个配置项）、开关 active/inactive 文本、保存提示
+- [x] **提取 `admin/user.vue`** — ~20 处：表头、角色/状态标签、重置密码弹窗、所有提示消息
+- [x] **提取 `admin/log.vue`** — ~15 处：表头、操作类型筛选、所有提示消息
+- [x] **提取 `admin/login-log.vue`** — ~10 处：表头、状态标签、所有提示消息
+- [x] **提取 `admin/backup.vue`** — ~25 处：备份状态、列表、恢复对话框（危险操作提示、确认输入、所有提示消息）
+
+### 语言切换入口
+
+- 登录页/注册页 — `el-select` 下拉切换（中文/English）
+- 首页导航栏 — `el-select` 下拉切换
+- 管理后台导航栏 — `el-select` 下拉切换
+
+### 技术细节
+
+- 表单验证消息使用 `() => t('key')` 函数式写法，确保语言切换后验证消息也更新
+- `config.vue` 的 `configMeta` 使用 `computed` + `tm`/`rt` API 实现响应式翻译
+- `backup.vue` 的确认输入框使用 `t('backup.confirmRestore')` 作为验证值，中英文切换时匹配对应文本
+- `request.ts` 使用 `i18n.global.t()` 全局方式调用（非组件内）

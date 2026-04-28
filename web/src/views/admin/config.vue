@@ -1,7 +1,7 @@
 <template>
   <div class="admin-card">
     <div class="card-header">
-      <h2>系统设置</h2>
+      <h2>{{ t('config.systemSettings') }}</h2>
     </div>
 
     <div v-for="item in configs" :key="item.key" class="config-item">
@@ -13,22 +13,24 @@
         <template v-if="item.key === 'allow_register'">
           <el-switch
             :model-value="item._value === 'true'"
-            active-text="开启"
-            inactive-text="关闭"
+            :active-text="t('config.open')"
+            :inactive-text="t('config.close')"
             @change="(val: boolean) => handleUpdate(item.key, String(val))"
           />
         </template>
         <template v-else-if="item.key === 'db_backup_enabled'">
           <el-switch
             :model-value="item._value === '1'"
-            active-text="开启"
-            inactive-text="关闭"
+            :active-text="t('config.open')"
+            :inactive-text="t('config.close')"
             @change="(val: boolean) => handleUpdate(item.key, val ? '1' : '0')"
           />
         </template>
         <template v-else>
           <el-input v-model="item._value" style="width: 200px" />
-          <el-button type="primary" size="small" @click="handleUpdate(item.key, item._value)">保存</el-button>
+          <el-button type="primary" size="small" @click="handleUpdate(item.key, item._value)">{{
+            t('common.save')
+          }}</el-button>
         </template>
       </div>
     </div>
@@ -36,47 +38,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { getConfigList, updateConfig } from '@/api'
 import type { ConfigItem } from '@/types'
 
+const { t, tm, rt } = useI18n()
+
 const configs = ref<ConfigItem[]>([])
 
-const configMeta: Record<string, { title: string; desc: string }> = {
+const configMeta = computed(() => ({
   allow_register: {
-    title: '开放注册',
-    desc: '开启后允许新用户自行注册账号，关闭后仅管理员可创建账号',
+    title: rt(tm('config.allowRegister.title') as string),
+    desc: rt(tm('config.allowRegister.desc') as string),
   },
   site_name: {
-    title: '站点名称',
-    desc: '显示在浏览器标题栏和登录页面',
+    title: rt(tm('config.siteName.title') as string),
+    desc: rt(tm('config.siteName.desc') as string),
   },
   task_auto_delete_days: {
-    title: '自动清理已完成任务',
-    desc: '已完成任务超过指定天数后自动永久删除（0=不清理）',
+    title: rt(tm('config.taskAutoDeleteDays.title') as string),
+    desc: rt(tm('config.taskAutoDeleteDays.desc') as string),
   },
   task_trash_retention_days: {
-    title: '回收站保留天数',
-    desc: '手动删除的任务在回收站中保留的天数，超过后永久删除（0=不清理，默认30天）',
+    title: rt(tm('config.taskTrashRetentionDays.title') as string),
+    desc: rt(tm('config.taskTrashRetentionDays.desc') as string),
   },
   log_auto_delete_days: {
-    title: '自动清理日志',
-    desc: '操作日志和登录日志超过指定天数后自动删除（0=不清理）',
+    title: rt(tm('config.logAutoDeleteDays.title') as string),
+    desc: rt(tm('config.logAutoDeleteDays.desc') as string),
   },
   db_backup_enabled: {
-    title: '数据库自动备份',
-    desc: '开启后系统将按设定间隔自动备份SQLite数据库文件（0=关闭 1=开启）',
+    title: rt(tm('config.dbBackupEnabled.title') as string),
+    desc: rt(tm('config.dbBackupEnabled.desc') as string),
   },
   db_backup_interval_hours: {
-    title: '备份间隔（小时）',
-    desc: '自动备份的时间间隔，单位为小时（默认24小时）',
+    title: rt(tm('config.dbBackupIntervalHours.title') as string),
+    desc: rt(tm('config.dbBackupIntervalHours.desc') as string),
   },
   db_backup_max_count: {
-    title: '最大备份数量',
-    desc: '保留的最大备份数量，超过后自动删除最旧的备份（默认7份）',
+    title: rt(tm('config.dbBackupMaxCount.title') as string),
+    desc: rt(tm('config.dbBackupMaxCount.desc') as string),
   },
-}
+}))
 
 onMounted(() => loadConfigs())
 
@@ -85,17 +90,17 @@ async function loadConfigs() {
     const res = await getConfigList()
     configs.value = (res.list || []).map((item: ConfigItem) => ({ ...item, _value: item.value }))
   } catch {
-    ElMessage.error('加载配置失败')
+    ElMessage.error(t('config.loadConfigFailed'))
   }
 }
 
 async function handleUpdate(key: string, value: string) {
   try {
     await updateConfig({ key, value })
-    ElMessage.success(`配置已保存：${key}`)
+    ElMessage.success(t('config.configSaved', { key }))
     loadConfigs()
   } catch {
-    ElMessage.error('保存配置失败')
+    ElMessage.error(t('config.saveConfigFailed'))
   }
 }
 </script>
