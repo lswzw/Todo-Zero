@@ -11,6 +11,18 @@ type BatchTaskReq struct {
 type BatchTaskResp struct {
 }
 
+type SortTaskReq struct {
+	Orders []SortOrderItem `json:"orders"`
+}
+
+type SortOrderItem struct {
+	Id        int64 `json:"id"`
+	SortOrder int64 `json:"sortOrder"`
+}
+
+type SortTaskResp struct {
+}
+
 type CategoryItem struct {
 	Id       int64  `json:"id"`
 	Name     string `json:"name"`
@@ -113,6 +125,7 @@ type TrashItem struct {
 	EndTime      string `json:"endTime"`
 	Reminder     string `json:"reminder"`
 	Tags         string `json:"tags"`
+	SortOrder    int64  `json:"sortOrder"`
 	CreateTime   string `json:"createTime"`
 	UpdateTime   string `json:"updateTime"`
 }
@@ -244,6 +257,7 @@ type TaskDetailResp struct {
 	EndTime      string `json:"endTime"`
 	Reminder     string `json:"reminder"`
 	Tags         string `json:"tags"`
+	SortOrder    int64  `json:"sortOrder"`
 	CreateTime   string `json:"createTime"`
 	UpdateTime   string `json:"updateTime"`
 }
@@ -260,6 +274,7 @@ type TaskItem struct {
 	EndTime      string `json:"endTime"`
 	Reminder     string `json:"reminder"`
 	Tags         string `json:"tags"`
+	SortOrder    int64  `json:"sortOrder"`
 	CreateTime   string `json:"createTime"`
 }
 

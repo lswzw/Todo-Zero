@@ -38,6 +38,7 @@ type Task struct {
 	EndTime    sql.NullTime   `db:"end_time"`    // 截止时间
 	Reminder   sql.NullTime   `db:"reminder"`    // 提醒时间
 	Tags       string         `db:"tags"`        // 标签(逗号分隔)
+	SortOrder  int64          `db:"sort_order"`  // 排序顺序
 	IsDeleted  int64          `db:"is_deleted"`  // 是否删除: 0=否 1=是
 	CreateTime time.Time      `db:"create_time"` // 创建时间
 	UpdateTime time.Time      `db:"update_time"` // 更新时间

@@ -54,6 +54,12 @@ func (m *mockTaskModel) HardDeleteCompletedBefore(ctx context.Context, beforeTim
 func (m *mockTaskModel) HardDeleteSoftDeletedBefore(ctx context.Context, beforeTime time.Time) (int64, error) {
 	return 0, nil
 }
+func (m *mockTaskModel) FindAllForExport(ctx context.Context, userId int64, keyword string, status, priority, categoryId int64) ([]*model.Task, error) {
+	return nil, nil
+}
+func (m *mockTaskModel) UpdateSortOrder(ctx context.Context, userId int64, orders []model.SortOrderItem) error {
+	return nil
+}
 
 type mockCategoryModel struct {
 	category *model.Category

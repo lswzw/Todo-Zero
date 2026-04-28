@@ -149,6 +149,7 @@ type (
 		EndTime      string `json:"endTime"`
 		Reminder     string `json:"reminder"`
 		Tags         string `json:"tags"`
+		SortOrder    int64  `json:"sortOrder"`
 		CreateTime   string `json:"createTime"`
 	}
 	TaskListResp {
@@ -164,6 +165,18 @@ type (
 		Action string  `json:"action" validate:"required" options:"complete|undo|delete|restore"`
 	}
 	BatchTaskResp  {}
+)
+
+// 拖拽排序
+type (
+	SortOrderItem {
+		Id        int64 `json:"id"`
+		SortOrder int64 `json:"sortOrder"`
+	}
+	SortTaskReq {
+		Orders []SortOrderItem `json:"orders"`
+	}
+	SortTaskResp  {}
 )
 
 // 导出任务
@@ -508,6 +521,10 @@ service todo-api {
 	@doc "批量操作任务"
 	@handler BatchTask
 	post /task/batch (BatchTaskReq) returns (BatchTaskResp)
+
+	@doc "拖拽排序任务"
+	@handler SortTask
+	put /task/sort (SortTaskReq) returns (SortTaskResp)
 
 	@doc "获取回收站列表"
 	@handler TrashList

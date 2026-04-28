@@ -193,6 +193,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Handler: task.BatchTaskHandler(serverCtx),
 				},
 				{
+					Method:  http.MethodPut,
+					Path:    "/task/sort",
+					Handler: task.SortTaskHandler(serverCtx),
+				},
+				{
 					Method:  http.MethodGet,
 					Path:    "/task/trash",
 					Handler: task.TrashListHandler(serverCtx),

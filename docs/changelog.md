@@ -335,3 +335,32 @@
   - `GET /openapi.json` — Swagger 2.0 规范 JSON
   - **仅 `-debug` 模式开启**，生产环境不暴露
   - Config 新增 `Debug bool` 字段，命令行 `-debug` 参数
+
+---
+
+## v2.1.0 — P3-B 实用功能
+
+### 数据导出
+
+- [x] **导出任务为 CSV/JSON** — 新增 `GET /api/v1/task/export` 端点
+  - 支持 `format=json`（默认）和 `format=csv` 两种导出格式
+  - CSV 使用 UTF-8 BOM 编码，中文列名表头（ID/标题/内容/状态/优先级/分类/开始时间/截止时间/提醒/标签）
+  - 支持与任务列表相同的筛选条件（keyword/status/priority/categoryId）
+  - 仅导出当前用户的未删除任务，权限隔离与列表接口一致
+  - 新增 `TaskModel.FindAllForExport` 方法（无分页，全量查询）
+  - 前端首页添加"导出"按钮，支持 JSON/CSV 格式选择
+
+### 拖拽排序
+
+- [x] **任务列表拖拽排序** — 新增 `PUT /api/v1/task/sort` 端点
+  - 数据库新增 `sort_order` 字段（默认 0），任务列表按 `sort_order ASC, id DESC` 排序
+  - `SortTaskReq` 接收 `orders` 数组（id + sortOrder），批量更新排序
+  - 权限校验：排序前逐个验证任务归属，跨用户排序返回 40001
+  - 空数组请求拒绝（RequestParamError）
+  - 前端集成 `vuedraggable@next`，拖拽手柄 + ghost 样式，拖拽结束后自动同步排序
+  - `TaskItem`、`TaskDetailResp`、`TrashItem` 响应均包含 `sortOrder` 字段
+
+### 其他
+
+- [x] **test.sh 集成测试更新** — 新增拖拽排序测试区块（6 项：排序成功、sortOrder 验证、空 orders 拒绝、跨用户拒绝、无 token 拒绝）
+- [x] **单元测试 mock 修复** — `taskdetaillogic_test.go`、`cleanup_test.go` mock 补齐 `FindAllForExport`、`UpdateSortOrder` 方法

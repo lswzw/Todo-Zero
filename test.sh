@@ -553,6 +553,54 @@ assert_err "$RESP" "跨用户修改任务拒绝"
 RESP=$(get "/api/v1/task/99999" "$ADMIN_TOKEN")
 assert_err "$RESP" "查询不存在的任务"
 
+# ========== 8.4.5 拖拽排序 ==========
+section "8.4.5 拖拽排序"
+
+# 创建3个任务用于排序测试
+RESP=$(post "/api/v1/task" "{\"title\":\"排序C\",\"priority\":3}" "$ADMIN_TOKEN")
+SORT_TASK1=$(jval "$RESP" ".data.id")
+RESP=$(post "/api/v1/task" "{\"title\":\"排序A\",\"priority\":3}" "$ADMIN_TOKEN")
+SORT_TASK2=$(jval "$RESP" ".data.id")
+RESP=$(post "/api/v1/task" "{\"title\":\"排序B\",\"priority\":3}" "$ADMIN_TOKEN")
+SORT_TASK3=$(jval "$RESP" ".data.id")
+
+# 查看排序前的顺序
+RESP=$(get "/api/v1/task?page=1&pageSize=50" "$ADMIN_TOKEN")
+BEFORE_ORDER=$(echo "$RESP" | jq -r '[.data.list[] | select(.id=='"$SORT_TASK1"' or .id=='"$SORT_TASK2"' or .id=='"$SORT_TASK3"') | .id] | join(",")' 2>/dev/null)
+pass "排序前顺序: [${BEFORE_ORDER}]"
+
+# 拖拽排序：将3个任务按 sortOrder 重新排列
+RESP=$(put "/api/v1/task/sort" "{\"orders\":[{\"id\":${SORT_TASK1},\"sortOrder\":3},{\"id\":${SORT_TASK2},\"sortOrder\":1},{\"id\":${SORT_TASK3},\"sortOrder\":2}]}" "$ADMIN_TOKEN")
+assert_ok "$RESP" "拖拽排序"
+
+# 验证排序后的 sortOrder
+RESP=$(get "/api/v1/task?page=1&pageSize=50" "$ADMIN_TOKEN")
+SORT_ORDER_2=$(echo "$RESP" | jq -r '.data.list[] | select(.id=='"$SORT_TASK2"') | .sortOrder' 2>/dev/null)
+SORT_ORDER_3=$(echo "$RESP" | jq -r '.data.list[] | select(.id=='"$SORT_TASK3"') | .sortOrder' 2>/dev/null)
+SORT_ORDER_1=$(echo "$RESP" | jq -r '.data.list[] | select(.id=='"$SORT_TASK1"') | .sortOrder' 2>/dev/null)
+if [ "$SORT_ORDER_2" = "1" ] && [ "$SORT_ORDER_3" = "2" ] && [ "$SORT_ORDER_1" = "3" ]; then
+    pass "排序后顺序验证: 排序A sortOrder=1, 排序B sortOrder=2, 排序C sortOrder=3"
+else
+    fail "排序后顺序验证: A=${SORT_ORDER_2}, B=${SORT_ORDER_3}, C=${SORT_ORDER_1} (expected 1,2,3)"
+fi
+
+# 空orders — 应被拒绝
+RESP=$(put "/api/v1/task/sort" "{\"orders\":[]}" "$ADMIN_TOKEN")
+assert_err "$RESP" "空orders排序拒绝"
+
+# 跨用户排序 — 普通用户不能排序管理员的任务
+RESP=$(put "/api/v1/task/sort" "{\"orders\":[{\"id\":${SORT_TASK1},\"sortOrder\":1}]}" "$USER_TOKEN")
+assert_err "$RESP" "跨用户排序拒绝"
+
+# 无token排序拒绝
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "${BASE_URL}/api/v1/task/sort" \
+    -H "Content-Type: application/json" -d '{"orders":[{"id":1,"sortOrder":1}]}')
+if [ "$HTTP_CODE" = "401" ]; then
+    pass "无token排序拒绝: HTTP 401"
+else
+    fail "无token排序拒绝: HTTP ${HTTP_CODE} (expected 401)"
+fi
+
 # ========== 8.5 回收站 ==========
 section "8.5 回收站"
 

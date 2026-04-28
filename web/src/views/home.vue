@@ -120,49 +120,61 @@
 
         <!-- 任务列表 -->
         <div v-if="tasks.length" class="task-list">
-          <div v-for="task in tasks" :key="task.id" class="task-item">
-            <div v-if="selectMode" class="task-check" @click="toggleSelect(task.id)">
-              <div :class="['check-dot', { active: selectedIds.includes(task.id) }]" />
-            </div>
-            <div class="task-status" @click="handleToggle(task)">
-              <div :class="['status-circle', { done: task.status === 2 }]">
-                <el-icon v-if="task.status === 2"><Check /></el-icon>
+          <draggable
+            v-model="tasks"
+            item-key="id"
+            handle=".drag-handle"
+            ghost-class="ghost"
+            animation="200"
+            @end="onDragEnd"
+          >
+            <template #item="{ element: task }">
+              <div class="task-item">
+                <div class="drag-handle" title="拖拽排序">⠿</div>
+                <div v-if="selectMode" class="task-check" @click="toggleSelect(task.id)">
+                  <div :class="['check-dot', { active: selectedIds.includes(task.id) }]" />
+                </div>
+                <div class="task-status" @click="handleToggle(task)">
+                  <div :class="['status-circle', { done: task.status === 2 }]">
+                    <el-icon v-if="task.status === 2"><Check /></el-icon>
+                  </div>
+                </div>
+                <div class="task-body" @click="router.push(`/task/${task.id}`)">
+                  <div :class="['task-title', { 'line-through': task.status === 2 }]">{{ task.title }}</div>
+                  <div v-if="task.content" class="task-content">{{ task.content }}</div>
+                  <div class="task-meta">
+                    <el-tag v-if="task.priority === 2" size="small" type="danger">紧急</el-tag>
+                    <el-tag v-else-if="task.priority === 1" size="small" type="warning">重要</el-tag>
+                    <el-tag v-else size="small" type="success">普通</el-tag>
+                    <el-tag
+                      v-if="task.categoryName"
+                      size="small"
+                      type="info"
+                      :color="getCategoryColor(task.categoryId)"
+                      style="border-color: transparent"
+                      :style="{ color: getCategoryTextColor(task.categoryId) }"
+                      >{{ task.categoryName }}</el-tag
+                    >
+                    <el-tag v-for="tag in parseTags(task.tags)" :key="tag" size="small" effect="plain" class="task-tag">{{
+                      tag
+                    }}</el-tag>
+                    <span v-if="task.endTime" class="task-time" :class="{ overdue: isOverdue(task.endTime, task.status) }"
+                      >截止 {{ task.endTime }}</span
+                    >
+                    <span v-else class="task-time">{{ task.createTime }}</span>
+                  </div>
+                </div>
+                <div class="task-actions">
+                  <el-button text size="small" @click="openTaskDialog(task)">编辑</el-button>
+                  <el-popconfirm title="确定删除该任务？" @confirm="handleDelete(task.id)">
+                    <template #reference>
+                      <el-button text size="small" type="danger">删除</el-button>
+                    </template>
+                  </el-popconfirm>
+                </div>
               </div>
-            </div>
-            <div class="task-body" @click="router.push(`/task/${task.id}`)">
-              <div :class="['task-title', { 'line-through': task.status === 2 }]">{{ task.title }}</div>
-              <div v-if="task.content" class="task-content">{{ task.content }}</div>
-              <div class="task-meta">
-                <el-tag v-if="task.priority === 2" size="small" type="danger">紧急</el-tag>
-                <el-tag v-else-if="task.priority === 1" size="small" type="warning">重要</el-tag>
-                <el-tag v-else size="small" type="success">普通</el-tag>
-                <el-tag
-                  v-if="task.categoryName"
-                  size="small"
-                  type="info"
-                  :color="getCategoryColor(task.categoryId)"
-                  style="border-color: transparent"
-                  :style="{ color: getCategoryTextColor(task.categoryId) }"
-                  >{{ task.categoryName }}</el-tag
-                >
-                <el-tag v-for="tag in parseTags(task.tags)" :key="tag" size="small" effect="plain" class="task-tag">{{
-                  tag
-                }}</el-tag>
-                <span v-if="task.endTime" class="task-time" :class="{ overdue: isOverdue(task.endTime, task.status) }"
-                  >截止 {{ task.endTime }}</span
-                >
-                <span v-else class="task-time">{{ task.createTime }}</span>
-              </div>
-            </div>
-            <div class="task-actions">
-              <el-button text size="small" @click="openTaskDialog(task)">编辑</el-button>
-              <el-popconfirm title="确定删除该任务？" @confirm="handleDelete(task.id)">
-                <template #reference>
-                  <el-button text size="small" type="danger">删除</el-button>
-                </template>
-              </el-popconfirm>
-            </div>
-          </div>
+            </template>
+          </draggable>
         </div>
         <div v-else class="empty-state">
           <span class="empty-icon">📋</span>
@@ -308,6 +320,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { Search, Plus, Check, Download } from '@element-plus/icons-vue'
+import draggable from 'vuedraggable'
 import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
 import {
@@ -317,6 +330,7 @@ import {
   toggleTask,
   deleteTask,
   batchTask,
+  sortTask,
   getCategoryList,
   createCategory,
   updateCategory,
@@ -637,6 +651,19 @@ async function handleDeleteCategory(c: CategoryItem) {
   }
 }
 
+async function onDragEnd() {
+  const orders = tasks.value.map((t, index) => ({
+    id: t.id,
+    sortOrder: index + 1,
+  }))
+  try {
+    await sortTask({ orders })
+  } catch {
+    ElMessage.error('排序保存失败')
+    loadTasks()
+  }
+}
+
 function handleExport(format: string) {
   const params: Record<string, unknown> = { format }
   if (filters.value.status !== undefined && filters.value.status !== '') params.status = filters.value.status
@@ -818,6 +845,24 @@ function handleLogout() {
   padding: 14px 12px;
   border-radius: 8px;
   transition: background 0.2s;
+}
+
+.task-item.ghost {
+  opacity: 0.4;
+  background: #ecf5ff;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: #c0c4cc;
+  font-size: 16px;
+  padding: 4px 4px 0 0;
+  user-select: none;
+  line-height: 1;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .task-item:hover {

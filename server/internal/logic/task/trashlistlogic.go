@@ -79,6 +79,7 @@ func (l *TrashListLogic) TrashList(req *types.TrashListReq) (resp *types.TrashLi
 			EndTime:      formatNullTime(t.EndTime),
 			Reminder:     formatNullTime(t.Reminder),
 			Tags:         t.Tags,
+			SortOrder:    t.SortOrder,
 			CreateTime:   t.CreateTime.Format("2006-01-02 15:04"),
 			UpdateTime:   t.UpdateTime.Format("2006-01-02 15:04"),
 		})

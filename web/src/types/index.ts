@@ -12,6 +12,7 @@ export interface TaskItem {
   endTime: string
   reminder: string
   tags: string
+  sortOrder: number
   createTime: string
 }
 

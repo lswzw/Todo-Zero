@@ -20,6 +20,7 @@ type (
 		FindAllForExport(ctx context.Context, userId int64, keyword string, status, priority, categoryId int64) ([]*Task, error)
 		FindDeletedList(ctx context.Context, userId int64, page, pageSize int64) ([]*Task, int64, error)
 		UpdateStatus(ctx context.Context, id, status int64) error
+		UpdateSortOrder(ctx context.Context, userId int64, orders []SortOrderItem) error
 		Restore(ctx context.Context, id int64) error
 		PermanentDelete(ctx context.Context, id int64) error
 		CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error)
@@ -36,20 +37,26 @@ func NewTaskModel(db *sql.DB) TaskModel {
 	return &defaultTaskModel{db: db}
 }
 
+// SortOrderItem 排序项
+type SortOrderItem struct {
+	Id        int64 `json:"id"`
+	SortOrder int64 `json:"sortOrder"`
+}
+
 func (m *defaultTaskModel) tableName() string { return "`tasks`" }
 
 func (m *defaultTaskModel) Insert(ctx context.Context, data *Task) (sql.Result, error) {
-	query := fmt.Sprintf(`INSERT INTO %s (title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`, m.tableName())
+	query := fmt.Sprintf(`INSERT INTO %s (title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, sort_order, is_deleted, create_time, update_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`, m.tableName())
 	now := time.Now()
 	data.CreateTime = now
 	data.UpdateTime = now
-	return m.db.ExecContext(ctx, query, data.Title, data.Content, data.Priority, data.Status, data.CategoryId, data.UserId, data.StartTime, data.EndTime, data.Reminder, data.Tags, data.CreateTime, data.UpdateTime)
+	return m.db.ExecContext(ctx, query, data.Title, data.Content, data.Priority, data.Status, data.CategoryId, data.UserId, data.StartTime, data.EndTime, data.Reminder, data.Tags, data.SortOrder, data.CreateTime, data.UpdateTime)
 }
 
 func (m *defaultTaskModel) Update(ctx context.Context, data *Task) error {
-	query := fmt.Sprintf(`UPDATE %s SET title = ?, content = ?, priority = ?, status = ?, category_id = ?, start_time = ?, end_time = ?, reminder = ?, tags = ?, update_time = ? WHERE id = ?`, m.tableName())
+	query := fmt.Sprintf(`UPDATE %s SET title = ?, content = ?, priority = ?, status = ?, category_id = ?, start_time = ?, end_time = ?, reminder = ?, tags = ?, sort_order = ?, update_time = ? WHERE id = ?`, m.tableName())
 	data.UpdateTime = time.Now()
-	_, err := m.db.ExecContext(ctx, query, data.Title, data.Content, data.Priority, data.Status, data.CategoryId, data.StartTime, data.EndTime, data.Reminder, data.Tags, data.UpdateTime, data.Id)
+	_, err := m.db.ExecContext(ctx, query, data.Title, data.Content, data.Priority, data.Status, data.CategoryId, data.StartTime, data.EndTime, data.Reminder, data.Tags, data.SortOrder, data.UpdateTime, data.Id)
 	return err
 }
 
@@ -60,9 +67,9 @@ func (m *defaultTaskModel) Delete(ctx context.Context, id int64) error {
 }
 
 func (m *defaultTaskModel) FindOne(ctx context.Context, id int64) (*Task, error) {
-	query := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s WHERE id = ? AND is_deleted = 0 LIMIT 1`, m.tableName())
+	query := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, sort_order, is_deleted, create_time, update_time FROM %s WHERE id = ? AND is_deleted = 0 LIMIT 1`, m.tableName())
 	var resp Task
-	err := m.db.QueryRowContext(ctx, query, id).Scan(&resp.Id, &resp.Title, &resp.Content, &resp.Priority, &resp.Status, &resp.CategoryId, &resp.UserId, &resp.StartTime, &resp.EndTime, &resp.Reminder, &resp.Tags, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
+	err := m.db.QueryRowContext(ctx, query, id).Scan(&resp.Id, &resp.Title, &resp.Content, &resp.Priority, &resp.Status, &resp.CategoryId, &resp.UserId, &resp.StartTime, &resp.EndTime, &resp.Reminder, &resp.Tags, &resp.SortOrder, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -97,7 +104,7 @@ func (m *defaultTaskModel) FindList(ctx context.Context, userId int64, keyword s
 	}
 
 	offset := (page - 1) * pageSize
-	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY id DESC LIMIT ? OFFSET ?`
+	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, sort_order, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY sort_order ASC, id DESC LIMIT ? OFFSET ?`
 	listArgs := append(args, pageSize, offset)
 	rows, err := m.db.QueryContext(ctx, listQuery, listArgs...)
 	if err != nil {
@@ -108,7 +115,7 @@ func (m *defaultTaskModel) FindList(ctx context.Context, userId int64, keyword s
 	var list []*Task
 	for rows.Next() {
 		var t Task
-		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
+		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.SortOrder, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -137,7 +144,7 @@ func (m *defaultTaskModel) FindAllForExport(ctx context.Context, userId int64, k
 		args = append(args, categoryId)
 	}
 
-	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY id DESC`
+	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, sort_order, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY sort_order ASC, id DESC`
 	rows, err := m.db.QueryContext(ctx, listQuery, args...)
 	if err != nil {
 		return nil, err
@@ -147,7 +154,7 @@ func (m *defaultTaskModel) FindAllForExport(ctx context.Context, userId int64, k
 	var list []*Task
 	for rows.Next() {
 		var t Task
-		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
+		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.SortOrder, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
 		if err != nil {
 			return nil, err
 		}
@@ -163,9 +170,9 @@ func (m *defaultTaskModel) UpdateStatus(ctx context.Context, id, status int64) e
 }
 
 func (m *defaultTaskModel) FindOneIncludeDeleted(ctx context.Context, id int64) (*Task, error) {
-	query := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s WHERE id = ? LIMIT 1`, m.tableName())
+	query := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, sort_order, is_deleted, create_time, update_time FROM %s WHERE id = ? LIMIT 1`, m.tableName())
 	var resp Task
-	err := m.db.QueryRowContext(ctx, query, id).Scan(&resp.Id, &resp.Title, &resp.Content, &resp.Priority, &resp.Status, &resp.CategoryId, &resp.UserId, &resp.StartTime, &resp.EndTime, &resp.Reminder, &resp.Tags, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
+	err := m.db.QueryRowContext(ctx, query, id).Scan(&resp.Id, &resp.Title, &resp.Content, &resp.Priority, &resp.Status, &resp.CategoryId, &resp.UserId, &resp.StartTime, &resp.EndTime, &resp.Reminder, &resp.Tags, &resp.SortOrder, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -184,7 +191,7 @@ func (m *defaultTaskModel) FindDeletedList(ctx context.Context, userId int64, pa
 	}
 
 	offset := (page - 1) * pageSize
-	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY update_time DESC LIMIT ? OFFSET ?`
+	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, sort_order, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY update_time DESC LIMIT ? OFFSET ?`
 	listArgs := append(args, pageSize, offset)
 	rows, err := m.db.QueryContext(ctx, listQuery, listArgs...)
 	if err != nil {
@@ -195,7 +202,7 @@ func (m *defaultTaskModel) FindDeletedList(ctx context.Context, userId int64, pa
 	var list []*Task
 	for rows.Next() {
 		var t Task
-		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
+		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.SortOrder, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -248,4 +255,16 @@ func (m *defaultTaskModel) CountStats(ctx context.Context, userId int64) (total,
 		return
 	}
 	return
+}
+
+func (m *defaultTaskModel) UpdateSortOrder(ctx context.Context, userId int64, orders []SortOrderItem) error {
+	query := fmt.Sprintf(`UPDATE %s SET sort_order = ?, update_time = ? WHERE id = ? AND user_id = ? AND is_deleted = 0`, m.tableName())
+	now := time.Now()
+	for _, item := range orders {
+		_, err := m.db.ExecContext(ctx, query, item.SortOrder, now, item.Id, userId)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

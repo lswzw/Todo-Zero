@@ -97,6 +97,7 @@ func (l *ExportTaskLogic) ExportTask(req *types.ExportTaskReq, w http.ResponseWr
 			EndTime:      formatNullTimeExport(t.EndTime),
 			Reminder:     formatNullTimeExport(t.Reminder),
 			Tags:         t.Tags,
+			SortOrder:    t.SortOrder,
 			CreateTime:   t.CreateTime.Format("2006-01-02 15:04"),
 		})
 	}
@@ -130,9 +131,10 @@ func (l *ExportTaskLogic) writeCSV(items []types.TaskItem, w http.ResponseWriter
 			statusText = "已完成"
 		}
 		priorityText := "普通"
-		if item.Priority == 1 {
+		switch item.Priority {
+		case 1:
 			priorityText = "重要"
-		} else if item.Priority == 2 {
+		case 2:
 			priorityText = "紧急"
 		}
 

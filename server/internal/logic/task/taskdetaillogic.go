@@ -68,6 +68,7 @@ func (l *TaskDetailLogic) TaskDetail(req *types.TaskDetailReq) (resp *types.Task
 		EndTime:      formatNullTime(task.EndTime),
 		Reminder:     formatNullTime(task.Reminder),
 		Tags:         task.Tags,
+		SortOrder:    task.SortOrder,
 		CreateTime:   task.CreateTime.Format("2006-01-02 15:04"),
 		UpdateTime:   task.UpdateTime.Format("2006-01-02 15:04"),
 	}, nil
