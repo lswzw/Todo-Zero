@@ -38,6 +38,10 @@ export const getTrashList = (params: Record<string, unknown>) => request.get<nev
 export const restoreTask = (id: number) => request.patch(`/task/${id}/restore`)
 export const permanentDeleteTask = (id: number) => request.delete(`/task/${id}/permanent`)
 
+// 导出任务（Blob 下载）
+export const exportTasks = (params: Record<string, unknown>) =>
+  request.get('/task/export', { params, responseType: 'blob' })
+
 // 分类
 export const getCategoryList = () => request.get<never, CategoryListResp>('/category')
 export const createCategory = (data: { name: string; color?: string }) => request.post('/category', data)

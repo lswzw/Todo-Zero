@@ -94,6 +94,17 @@
             <el-button type="primary" @click="openTaskDialog()">
               <el-icon><Plus /></el-icon> 新增任务
             </el-button>
+            <el-dropdown @command="handleExport">
+              <el-button>
+                <el-icon><Download /></el-icon> 导出
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="json">导出 JSON</el-dropdown-item>
+                  <el-dropdown-item command="csv">导出 CSV</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
             <el-button @click="showCategoryDialog = true">分类管理</el-button>
           </div>
         </div>
@@ -296,7 +307,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { Search, Plus, Check } from '@element-plus/icons-vue'
+import { Search, Plus, Check, Download } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
 import {
@@ -312,6 +323,7 @@ import {
   deleteCategory,
   getStat,
   changePassword,
+  exportTasks,
 } from '@/api'
 import type { TaskItem, TaskFormData, StatResp, CategoryItem } from '@/types'
 
@@ -623,6 +635,26 @@ async function handleDeleteCategory(c: CategoryItem) {
   } catch {
     ElMessage.error('删除分类失败')
   }
+}
+
+function handleExport(format: string) {
+  const params: Record<string, unknown> = { format }
+  if (filters.value.status !== undefined && filters.value.status !== '') params.status = filters.value.status
+  if (filters.value.categoryId) params.categoryId = filters.value.categoryId
+  if (filters.value.priority) params.priority = filters.value.priority
+  if (filters.value.keyword) params.keyword = filters.value.keyword
+  exportTasks(params)
+    .then((blob: unknown) => {
+      const url = window.URL.createObjectURL(blob as Blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `tasks.${format}`
+      a.click()
+      window.URL.revokeObjectURL(url)
+    })
+    .catch(() => {
+      ElMessage.error('导出失败')
+    })
 }
 
 function handleLogout() {

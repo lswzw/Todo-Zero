@@ -163,6 +163,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Handler: task.TaskListHandler(serverCtx),
 				},
 				{
+					Method:  http.MethodGet,
+					Path:    "/task/export",
+					Handler: task.ExportTaskHandler(serverCtx),
+				},
+				{
 					Method:  http.MethodPut,
 					Path:    "/task/:id",
 					Handler: task.UpdateTaskHandler(serverCtx),

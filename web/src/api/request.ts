@@ -17,6 +17,10 @@ request.interceptors.request.use((config) => {
 
 request.interceptors.response.use(
   (response) => {
+    // Blob 响应直接返回（文件下载）
+    if (response.config.responseType === 'blob') {
+      return response.data
+    }
     const res = response.data
     // 业务成功：解包 data 字段，调用方直接拿到业务数据
     if (res.code === 0) {

@@ -17,6 +17,7 @@ type (
 		FindOne(ctx context.Context, id int64) (*Task, error)
 		FindOneIncludeDeleted(ctx context.Context, id int64) (*Task, error)
 		FindList(ctx context.Context, userId int64, keyword string, status, priority, categoryId, page, pageSize int64) ([]*Task, int64, error)
+		FindAllForExport(ctx context.Context, userId int64, keyword string, status, priority, categoryId int64) ([]*Task, error)
 		FindDeletedList(ctx context.Context, userId int64, page, pageSize int64) ([]*Task, int64, error)
 		UpdateStatus(ctx context.Context, id, status int64) error
 		Restore(ctx context.Context, id int64) error
@@ -114,6 +115,45 @@ func (m *defaultTaskModel) FindList(ctx context.Context, userId int64, keyword s
 		list = append(list, &t)
 	}
 	return list, total, rows.Err()
+}
+
+func (m *defaultTaskModel) FindAllForExport(ctx context.Context, userId int64, keyword string, status, priority, categoryId int64) ([]*Task, error) {
+	where := " WHERE user_id = ? AND is_deleted = 0"
+	args := []interface{}{userId}
+	if keyword != "" {
+		where += " AND (title LIKE ? OR content LIKE ?)"
+		args = append(args, "%"+keyword+"%", "%"+keyword+"%")
+	}
+	if status >= 0 {
+		where += " AND status = ?"
+		args = append(args, status)
+	}
+	if priority >= 0 {
+		where += " AND priority = ?"
+		args = append(args, priority)
+	}
+	if categoryId > 0 {
+		where += " AND category_id = ?"
+		args = append(args, categoryId)
+	}
+
+	listQuery := fmt.Sprintf(`SELECT id, title, content, priority, status, category_id, user_id, start_time, end_time, reminder, tags, is_deleted, create_time, update_time FROM %s`, m.tableName()) + where + ` ORDER BY id DESC`
+	rows, err := m.db.QueryContext(ctx, listQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*Task
+	for rows.Next() {
+		var t Task
+		err := rows.Scan(&t.Id, &t.Title, &t.Content, &t.Priority, &t.Status, &t.CategoryId, &t.UserId, &t.StartTime, &t.EndTime, &t.Reminder, &t.Tags, &t.IsDeleted, &t.CreateTime, &t.UpdateTime)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, &t)
+	}
+	return list, rows.Err()
 }
 
 func (m *defaultTaskModel) UpdateStatus(ctx context.Context, id, status int64) error {

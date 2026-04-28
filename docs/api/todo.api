@@ -166,6 +166,17 @@ type (
 	BatchTaskResp  {}
 )
 
+// 导出任务
+type (
+	ExportTaskReq {
+		Format     string `form:"format,default=json" options:"csv|json"`
+		Status     int64  `form:"status,optional" options:"-1|0|2"`
+		CategoryId int64  `form:"categoryId,optional"`
+		Priority   int64  `form:"priority,optional" options:"-1|1|2|3"`
+		Keyword    string `form:"keyword,optional"`
+	}
+)
+
 // 回收站列表
 type (
 	TrashListReq {
@@ -489,6 +500,10 @@ service todo-api {
 	@doc "获取任务列表"
 	@handler TaskList
 	get /task (TaskListReq) returns (TaskListResp)
+
+	@doc "导出任务数据"
+	@handler ExportTask
+	get /task/export (ExportTaskReq)
 
 	@doc "批量操作任务"
 	@handler BatchTask

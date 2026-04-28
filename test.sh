@@ -710,6 +710,102 @@ else
     fail "统计: 异常 → $RESP"
 fi
 
+# ========== 9.5 数据导出 ==========
+section "9.5 数据导出"
+
+# 9.5.1 导出 JSON（默认格式）
+HTTP_CODE=$(curl -s -o /tmp/export_test.json -w "%{http_code}" \
+    -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+    "${BASE_URL}/api/v1/task/export")
+if [ "$HTTP_CODE" = "200" ]; then
+    # 验证是合法 JSON 数组
+    EXPORT_TYPE=$(jq -r 'type' /tmp/export_test.json 2>/dev/null)
+    EXPORT_LEN=$(jq 'length' /tmp/export_test.json 2>/dev/null)
+    if [ "$EXPORT_TYPE" = "array" ]; then
+        pass "导出JSON: 返回数组, ${EXPORT_LEN}条记录"
+    else
+        fail "导出JSON: 非数组类型 → ${EXPORT_TYPE}"
+    fi
+    # 验证字段完整性
+    FIRST_TITLE=$(jq -r '.[0].title' /tmp/export_test.json 2>/dev/null)
+    if [ -n "$FIRST_TITLE" ] && [ "$FIRST_TITLE" != "null" ]; then
+        pass "导出JSON: 首条title=${FIRST_TITLE}"
+    else
+        fail "导出JSON: 字段缺失"
+    fi
+else
+    fail "导出JSON: HTTP ${HTTP_CODE}"
+fi
+
+# 9.5.2 导出 CSV
+HTTP_CODE=$(curl -s -o /tmp/export_test.csv -w "%{http_code}" \
+    -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+    "${BASE_URL}/api/v1/task/export?format=csv")
+if [ "$HTTP_CODE" = "200" ]; then
+    # 验证 CSV 有 BOM + 表头 + 数据行
+    CSV_SIZE=$(stat -c%s /tmp/export_test.csv 2>/dev/null || stat -f%z /tmp/export_test.csv 2>/dev/null || echo "0")
+    if [ "$CSV_SIZE" -gt "0" ] 2>/dev/null; then
+        pass "导出CSV: 文件大小 ${CSV_SIZE} bytes"
+    else
+        fail "导出CSV: 文件为空"
+    fi
+    # 验证 CSV 表头
+    CSV_HEADER=$(head -1 /tmp/export_test.csv | tr -d '\r')
+    if echo "$CSV_HEADER" | grep -q "标题"; then
+        pass "导出CSV: 表头包含中文列名"
+    else
+        fail "导出CSV: 表头异常 → ${CSV_HEADER}"
+    fi
+    # 验证至少有数据行（表头 + BOM 行 = 1，数据行应 >= 1）
+    CSV_LINES=$(wc -l < /tmp/export_test.csv | tr -d ' ')
+    if [ "$CSV_LINES" -ge "2" ] 2>/dev/null; then
+        pass "导出CSV: ${CSV_LINES}行(含表头)"
+    else
+        fail "导出CSV: 仅${CSV_LINES}行，数据缺失"
+    fi
+else
+    fail "导出CSV: HTTP ${HTTP_CODE}"
+fi
+
+# 9.5.3 导出带筛选条件
+HTTP_CODE=$(curl -s -o /tmp/export_filtered.json -w "%{http_code}" \
+    -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+    "${BASE_URL}/api/v1/task/export?format=json&status=2")
+if [ "$HTTP_CODE" = "200" ]; then
+    FILTERED_LEN=$(jq 'length' /tmp/export_filtered.json 2>/dev/null)
+    # 所有导出的任务状态应为已完成
+    ALL_DONE=$(jq '[.[] | select(.status==2)] | length' /tmp/export_filtered.json 2>/dev/null)
+    if [ "$FILTERED_LEN" = "$ALL_DONE" ] 2>/dev/null; then
+        pass "导出筛选已完成: ${FILTERED_LEN}条, 全部status=2"
+    else
+        fail "导出筛选已完成: ${FILTERED_LEN}条中仅${ALL_DONE}条status=2"
+    fi
+else
+    fail "导出筛选: HTTP ${HTTP_CODE}"
+fi
+
+# 9.5.4 无 token 导出拒绝
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/v1/task/export")
+if [ "$HTTP_CODE" = "401" ]; then
+    pass "无token导出拒绝: HTTP 401"
+else
+    fail "无token导出拒绝: HTTP ${HTTP_CODE} (expected 401)"
+fi
+
+# 9.5.5 普通用户导出自己的任务
+HTTP_CODE=$(curl -s -o /tmp/export_user.json -w "%{http_code}" \
+    -H "Authorization: Bearer ${USER_TOKEN}" \
+    "${BASE_URL}/api/v1/task/export?format=json")
+if [ "$HTTP_CODE" = "200" ]; then
+    USER_EXPORT_LEN=$(jq 'length' /tmp/export_user.json 2>/dev/null)
+    pass "普通用户导出: ${USER_EXPORT_LEN}条任务"
+else
+    fail "普通用户导出: HTTP ${HTTP_CODE}"
+fi
+
+# 清理临时文件
+rm -f /tmp/export_test.json /tmp/export_test.csv /tmp/export_filtered.json /tmp/export_user.json
+
 # ========== 10. 管理员功能 ==========
 section "10. 管理员功能"
 

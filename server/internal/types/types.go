@@ -86,6 +86,14 @@ type CreateTaskResp struct {
 	Id int64 `json:"id"`
 }
 
+type ExportTaskReq struct {
+	Format     string `form:"format,default=json,options=csv|json"`
+	Status     int64  `form:"status,default=-1,options=-1|0|2"`
+	CategoryId int64  `form:"categoryId,default=-1"`
+	Priority   int64  `form:"priority,default=-1,options=-1|1|2|3"`
+	Keyword    string `form:"keyword,optional"`
+}
+
 type DeleteTaskReq struct {
 	Id int64 `path:"id"`
 }
