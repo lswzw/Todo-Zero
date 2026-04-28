@@ -20,10 +20,10 @@
 
 详见 [changelog.md](./changelog.md) v2.2.0。
 
-### 后端（可选，暂不实施）
+### 后端（已完成，详见 changelog.md）
 
-- **后端错误码国际化** — `xerr` 错误消息支持 `Accept-Language` 请求头，返回对应语言错误描述（当前仅中文）
-- **导出 CSV 中文列名国际化** — `exporttasklogic.go` 中 CSV 表头硬编码中文列名，需根据语言参数切换
+- ✅ **后端错误码国际化** — `xerr` 错误消息支持 `Accept-Language` 请求头，返回对应语言错误描述（中文/英文）
+- ✅ **导出 CSV 中文列名国际化** — `exporttasklogic.go` 中 CSV 表头根据语言参数动态切换
 
 ---
 

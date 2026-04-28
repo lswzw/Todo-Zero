@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"server/internal/middleware"
 	"server/internal/pkg/jwtx"
 	"server/internal/pkg/xerr"
 	"server/internal/svc"
@@ -71,7 +72,7 @@ func (l *ExportTaskLogic) ExportTask(req *types.ExportTaskReq, w http.ResponseWr
 	// 构建导出数据
 	var items []types.TaskItem
 	for _, t := range tasks {
-		categoryName := "未分类"
+		categoryName := l.getUncategorizedText()
 		categoryId := int64(0)
 		if t.CategoryId.Valid && t.CategoryId.Int64 > 0 {
 			categoryId = t.CategoryId.Int64
@@ -110,6 +111,66 @@ func (l *ExportTaskLogic) ExportTask(req *types.ExportTaskReq, w http.ResponseWr
 	}
 }
 
+// getLang 从 context 中获取语言
+func (l *ExportTaskLogic) getLang() string {
+	return middleware.GetLangFromCtx(l.ctx)
+}
+
+// getCSVHeader 获取CSV表头（国际化）
+func (l *ExportTaskLogic) getCSVHeader() []string {
+	lang := l.getLang()
+	if lang == xerr.LangEn {
+		return []string{"ID", "Title", "Content", "Status", "Priority", "Category", "Start Time", "End Time", "Reminder", "Tags", "Created At"}
+	}
+	return []string{"ID", "标题", "内容", "状态", "优先级", "分类", "开始时间", "截止时间", "提醒时间", "标签", "创建时间"}
+}
+
+// getStatusText 获取状态文本（国际化）
+func (l *ExportTaskLogic) getStatusText(status int64) string {
+	lang := l.getLang()
+	if status == 2 {
+		if lang == xerr.LangEn {
+			return "Completed"
+		}
+		return "已完成"
+	}
+	if lang == xerr.LangEn {
+		return "Todo"
+	}
+	return "待办"
+}
+
+// getPriorityText 获取优先级文本（国际化）
+func (l *ExportTaskLogic) getPriorityText(priority int64) string {
+	lang := l.getLang()
+	switch priority {
+	case 1:
+		if lang == xerr.LangEn {
+			return "Important"
+		}
+		return "重要"
+	case 2:
+		if lang == xerr.LangEn {
+			return "Urgent"
+		}
+		return "紧急"
+	default:
+		if lang == xerr.LangEn {
+			return "Normal"
+		}
+		return "普通"
+	}
+}
+
+// getUncategorizedText 获取未分类文本（国际化）
+func (l *ExportTaskLogic) getUncategorizedText() string {
+	lang := l.getLang()
+	if lang == xerr.LangEn {
+		return "Uncategorized"
+	}
+	return "未分类"
+}
+
 func (l *ExportTaskLogic) writeCSV(items []types.TaskItem, w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 	w.Header().Set("Content-Disposition", "attachment; filename=tasks.csv")
@@ -120,23 +181,15 @@ func (l *ExportTaskLogic) writeCSV(items []types.TaskItem, w http.ResponseWriter
 	cw := csv.NewWriter(w)
 	defer cw.Flush()
 
-	header := []string{"ID", "标题", "内容", "状态", "优先级", "分类", "开始时间", "截止时间", "提醒时间", "标签", "创建时间"}
+	// 获取国际化表头
+	header := l.getCSVHeader()
 	if err := cw.Write(header); err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		statusText := "待办"
-		if item.Status == 2 {
-			statusText = "已完成"
-		}
-		priorityText := "普通"
-		switch item.Priority {
-		case 1:
-			priorityText = "重要"
-		case 2:
-			priorityText = "紧急"
-		}
+		statusText := l.getStatusText(item.Status)
+		priorityText := l.getPriorityText(item.Priority)
 
 		row := []string{
 			fmt.Sprintf("%d", item.Id),
