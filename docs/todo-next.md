@@ -16,12 +16,6 @@
 
 ---
 
-## P4-B — 性能优化 （v2.3.0）
+## P4-B — 性能优化 （v2.3.0）— 已全部完成
 
-### P0 — 高优先级
-
-- [ ] **Element Plus 按需导入** — 当前全量 `import ElementPlus` + 全量注册图标，改为：
-  - 安装 `unplugin-vue-components` + `unplugin-auto-import`
-  - `vite.config.ts` 配置 Element Plus resolver
-  - 移除 `main.ts` 中 `import ElementPlus` 和 `import * as ElementPlusIconsVue` 全量注册
-  - 预期减少 bundle 体积 30%+
+详见 [changelog.md](./changelog.md) v2.3.0。
