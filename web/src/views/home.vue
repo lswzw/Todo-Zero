@@ -199,6 +199,7 @@
           <p>{{ t('home.noTasks') }}</p>
         </div>
 
+        <!-- 虚拟滚动预留：当前 pageSize=10 性能无问题；若未来增大分页或取消分页，需引入 vue-virtual-scroller 或 @tanstack/vue-virtual -->
         <!-- 分页 -->
         <div v-if="total > 0" class="pagination">
           <el-pagination v-model:current-page="page" :page-size="pageSize" :total="total" layout="prev, pager, next" />
