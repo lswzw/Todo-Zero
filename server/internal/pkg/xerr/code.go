@@ -100,3 +100,33 @@ func NewCodeErrFromMsg(msg string) *CodeError {
 func (e *CodeError) Error() string {
 	return fmt.Sprintf("code: %d, msg: %s", e.Code, e.Msg)
 }
+
+// ValidationError 表示输入验证失败的安全错误，其消息可以安全地返回给客户端。
+// 与 CodeError 不同，ValidationError 携带的是动态的、上下文相关的验证提示，
+// 如 "分类名称最多20个字符"。所有非 ValidationError 的普通 error 均不会暴露原始消息。
+type ValidationError struct {
+	Msg string
+}
+
+// NewValidationError 创建一个可安全暴露给客户端的验证错误。
+func NewValidationError(msg string) *ValidationError {
+	return &ValidationError{Msg: msg}
+}
+
+func (e *ValidationError) Error() string {
+	return e.Msg
+}
+
+// RateLimitError 表示请求频率超过限制的错误，返回 HTTP 429 状态码。
+type RateLimitError struct {
+	Msg string
+}
+
+// NewRateLimitError 创建一个限流错误。
+func NewRateLimitError(msg string) *RateLimitError {
+	return &RateLimitError{Msg: msg}
+}
+
+func (e *RateLimitError) Error() string {
+	return e.Msg
+}

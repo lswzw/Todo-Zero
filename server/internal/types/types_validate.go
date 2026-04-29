@@ -5,23 +5,25 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"server/internal/pkg/xerr"
 )
 
 // --- SortTaskReq ---
 
 func (r *SortTaskReq) Validate() error {
 	if len(r.Orders) == 0 {
-		return fmt.Errorf("排序数据不能为空")
+		return xerr.NewValidationError("排序数据不能为空")
 	}
 	if len(r.Orders) > 100 {
-		return fmt.Errorf("排序数据最多100条")
+		return xerr.NewValidationError("排序数据最多100条")
 	}
 	for i, item := range r.Orders {
 		if item.Id <= 0 {
-			return fmt.Errorf("第%d项ID无效", i+1)
+			return xerr.NewValidationError(fmt.Sprintf("第%d项ID无效", i+1))
 		}
 		if item.SortOrder < 0 {
-			return fmt.Errorf("第%d项排序值无效", i+1)
+			return xerr.NewValidationError(fmt.Sprintf("第%d项排序值无效", i+1))
 		}
 	}
 	return nil
@@ -31,18 +33,18 @@ func (r *SortTaskReq) Validate() error {
 
 func (r *BatchTaskReq) Validate() error {
 	if len(r.Ids) == 0 {
-		return fmt.Errorf("ids不能为空")
+		return xerr.NewValidationError("ids不能为空")
 	}
 	if len(r.Ids) > 100 {
-		return fmt.Errorf("批量操作最多100条")
+		return xerr.NewValidationError("批量操作最多100条")
 	}
 	if r.Action == "" {
-		return fmt.Errorf("action不能为空")
+		return xerr.NewValidationError("action不能为空")
 	}
 	switch r.Action {
 	case "complete", "undo", "delete", "restore":
 	default:
-		return fmt.Errorf("action必须是complete、undo、delete或restore")
+		return xerr.NewValidationError("action必须是complete、undo、delete或restore")
 	}
 	return nil
 }
@@ -51,7 +53,7 @@ func (r *BatchTaskReq) Validate() error {
 
 func (r *ChangePasswordReq) Validate() error {
 	if r.OldPassword == "" {
-		return fmt.Errorf("原密码不能为空")
+		return xerr.NewValidationError("原密码不能为空")
 	}
 	if err := validatePassword(r.NewPassword, "新密码"); err != nil {
 		return err
@@ -63,13 +65,13 @@ func (r *ChangePasswordReq) Validate() error {
 
 func (r *CreateCategoryReq) Validate() error {
 	if r.Name == "" {
-		return fmt.Errorf("分类名称不能为空")
+		return xerr.NewValidationError("分类名称不能为空")
 	}
 	if utf8.RuneCountInString(r.Name) > 20 {
-		return fmt.Errorf("分类名称最多20个字符")
+		return xerr.NewValidationError("分类名称最多20个字符")
 	}
 	if utf8.RuneCountInString(r.Color) > 20 {
-		return fmt.Errorf("分类颜色最多20个字符")
+		return xerr.NewValidationError("分类颜色最多20个字符")
 	}
 	return nil
 }
@@ -79,20 +81,20 @@ func (r *CreateCategoryReq) Validate() error {
 func (r *UpdateCategoryReq) Validate() error {
 	if r.Name != nil {
 		if *r.Name == "" {
-			return fmt.Errorf("分类名称不能为空")
+			return xerr.NewValidationError("分类名称不能为空")
 		}
 		if utf8.RuneCountInString(*r.Name) > 20 {
-			return fmt.Errorf("分类名称最多20个字符")
+			return xerr.NewValidationError("分类名称最多20个字符")
 		}
 	}
 	if r.Color != nil && utf8.RuneCountInString(*r.Color) > 20 {
-		return fmt.Errorf("分类颜色最多20个字符")
+		return xerr.NewValidationError("分类颜色最多20个字符")
 	}
 	if r.Icon != nil && utf8.RuneCountInString(*r.Icon) > 50 {
-		return fmt.Errorf("分类图标最多50个字符")
+		return xerr.NewValidationError("分类图标最多50个字符")
 	}
 	if r.Sort != nil && *r.Sort < 0 {
-		return fmt.Errorf("排序值无效")
+		return xerr.NewValidationError("排序值无效")
 	}
 	return nil
 }
@@ -101,7 +103,7 @@ func (r *UpdateCategoryReq) Validate() error {
 
 func (r *DeleteCategoryReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("分类ID无效")
+		return xerr.NewValidationError("分类ID无效")
 	}
 	return nil
 }
@@ -110,36 +112,36 @@ func (r *DeleteCategoryReq) Validate() error {
 
 func (r *CreateTaskReq) Validate() error {
 	if r.Title == "" {
-		return fmt.Errorf("任务标题不能为空")
+		return xerr.NewValidationError("任务标题不能为空")
 	}
 	if utf8.RuneCountInString(r.Title) > 100 {
-		return fmt.Errorf("任务标题最多100个字符")
+		return xerr.NewValidationError("任务标题最多100个字符")
 	}
 	if utf8.RuneCountInString(r.Content) > 1000 {
-		return fmt.Errorf("任务内容最多1000个字符")
+		return xerr.NewValidationError("任务内容最多1000个字符")
 	}
 	if r.Priority != 1 && r.Priority != 2 && r.Priority != 3 {
-		return fmt.Errorf("优先级必须是1、2或3")
+		return xerr.NewValidationError("优先级必须是1、2或3")
 	}
 	if r.CategoryId < 0 {
-		return fmt.Errorf("分类ID无效")
+		return xerr.NewValidationError("分类ID无效")
 	}
 	if utf8.RuneCountInString(r.Tags) > 200 {
-		return fmt.Errorf("标签最多200个字符")
+		return xerr.NewValidationError("标签最多200个字符")
 	}
 	if r.StartTime != "" {
 		if _, err := time.Parse("2006-01-02 15:04", r.StartTime); err != nil {
-			return fmt.Errorf("开始时间格式无效")
+			return xerr.NewValidationError("开始时间格式无效")
 		}
 	}
 	if r.EndTime != "" {
 		if _, err := time.Parse("2006-01-02 15:04", r.EndTime); err != nil {
-			return fmt.Errorf("截止时间格式无效")
+			return xerr.NewValidationError("截止时间格式无效")
 		}
 	}
 	if r.Reminder != "" {
 		if _, err := time.Parse("2006-01-02 15:04", r.Reminder); err != nil {
-			return fmt.Errorf("提醒时间格式无效")
+			return xerr.NewValidationError("提醒时间格式无效")
 		}
 	}
 	return nil
@@ -149,13 +151,13 @@ func (r *CreateTaskReq) Validate() error {
 
 func (r *LoginLogReq) Validate() error {
 	if r.Page < 1 {
-		return fmt.Errorf("页码必须大于0")
+		return xerr.NewValidationError("页码必须大于0")
 	}
 	if r.PageSize < 1 || r.PageSize > 100 {
-		return fmt.Errorf("每页数量必须在1-100之间")
+		return xerr.NewValidationError("每页数量必须在1-100之间")
 	}
 	if utf8.RuneCountInString(r.Username) > 20 {
-		return fmt.Errorf("用户名最多20个字符")
+		return xerr.NewValidationError("用户名最多20个字符")
 	}
 	return nil
 }
@@ -167,7 +169,7 @@ func (r *LoginReq) Validate() error {
 		return err
 	}
 	if r.Password == "" {
-		return fmt.Errorf("密码不能为空")
+		return xerr.NewValidationError("密码不能为空")
 	}
 	return nil
 }
@@ -176,16 +178,16 @@ func (r *LoginReq) Validate() error {
 
 func (r *OperationLogReq) Validate() error {
 	if r.Page < 1 {
-		return fmt.Errorf("页码必须大于0")
+		return xerr.NewValidationError("页码必须大于0")
 	}
 	if r.PageSize < 1 || r.PageSize > 100 {
-		return fmt.Errorf("每页数量必须在1-100之间")
+		return xerr.NewValidationError("每页数量必须在1-100之间")
 	}
 	if utf8.RuneCountInString(r.Action) > 20 {
-		return fmt.Errorf("操作类型最多20个字符")
+		return xerr.NewValidationError("操作类型最多20个字符")
 	}
 	if utf8.RuneCountInString(r.Username) > 20 {
-		return fmt.Errorf("用户名最多20个字符")
+		return xerr.NewValidationError("用户名最多20个字符")
 	}
 	return nil
 }
@@ -215,21 +217,21 @@ func (r *ResetPasswordReq) Validate() error {
 
 func (r *TaskListReq) Validate() error {
 	if r.Page < 1 {
-		return fmt.Errorf("页码必须大于0")
+		return xerr.NewValidationError("页码必须大于0")
 	}
 	if r.PageSize < 1 || r.PageSize > 100 {
-		return fmt.Errorf("每页数量必须在1-100之间")
+		return xerr.NewValidationError("每页数量必须在1-100之间")
 	}
 	// Status: -1=全部, 0=待办, 2=已完成
 	if r.Status != -1 && r.Status != 0 && r.Status != 2 {
-		return fmt.Errorf("状态参数无效")
+		return xerr.NewValidationError("状态参数无效")
 	}
 	// Priority: -1=全部, 1=重要, 2=紧急, 3=普通
 	if r.Priority != -1 && r.Priority != 1 && r.Priority != 2 && r.Priority != 3 {
-		return fmt.Errorf("优先级参数无效")
+		return xerr.NewValidationError("优先级参数无效")
 	}
 	if utf8.RuneCountInString(r.Keyword) > 50 {
-		return fmt.Errorf("搜索关键词最多50个字符")
+		return xerr.NewValidationError("搜索关键词最多50个字符")
 	}
 	return nil
 }
@@ -238,16 +240,16 @@ func (r *TaskListReq) Validate() error {
 
 func (r *UpdateConfigReq) Validate() error {
 	if r.Key == "" {
-		return fmt.Errorf("配置键不能为空")
+		return xerr.NewValidationError("配置键不能为空")
 	}
 	if utf8.RuneCountInString(r.Key) > 50 {
-		return fmt.Errorf("配置键最多50个字符")
+		return xerr.NewValidationError("配置键最多50个字符")
 	}
 	if r.Value == "" {
-		return fmt.Errorf("配置值不能为空")
+		return xerr.NewValidationError("配置值不能为空")
 	}
 	if utf8.RuneCountInString(r.Value) > 500 {
-		return fmt.Errorf("配置值最多500个字符")
+		return xerr.NewValidationError("配置值最多500个字符")
 	}
 	return nil
 }
@@ -257,38 +259,38 @@ func (r *UpdateConfigReq) Validate() error {
 func (r *UpdateTaskReq) Validate() error {
 	if r.Title != nil {
 		if utf8.RuneCountInString(*r.Title) > 100 {
-			return fmt.Errorf("任务标题最多100个字符")
+			return xerr.NewValidationError("任务标题最多100个字符")
 		}
 	}
 	if r.Content != nil {
 		if utf8.RuneCountInString(*r.Content) > 1000 {
-			return fmt.Errorf("任务内容最多1000个字符")
+			return xerr.NewValidationError("任务内容最多1000个字符")
 		}
 	}
 	if r.Priority != nil {
 		if *r.Priority != 1 && *r.Priority != 2 && *r.Priority != 3 {
-			return fmt.Errorf("优先级必须是1、2或3")
+			return xerr.NewValidationError("优先级必须是1、2或3")
 		}
 	}
 	if r.CategoryId != nil && *r.CategoryId < 0 {
-		return fmt.Errorf("分类ID无效")
+		return xerr.NewValidationError("分类ID无效")
 	}
 	if r.Tags != nil && utf8.RuneCountInString(*r.Tags) > 200 {
-		return fmt.Errorf("标签最多200个字符")
+		return xerr.NewValidationError("标签最多200个字符")
 	}
 	if r.StartTime != nil && *r.StartTime != "" {
 		if _, err := time.Parse("2006-01-02 15:04", *r.StartTime); err != nil {
-			return fmt.Errorf("开始时间格式无效")
+			return xerr.NewValidationError("开始时间格式无效")
 		}
 	}
 	if r.EndTime != nil && *r.EndTime != "" {
 		if _, err := time.Parse("2006-01-02 15:04", *r.EndTime); err != nil {
-			return fmt.Errorf("截止时间格式无效")
+			return xerr.NewValidationError("截止时间格式无效")
 		}
 	}
 	if r.Reminder != nil && *r.Reminder != "" {
 		if _, err := time.Parse("2006-01-02 15:04", *r.Reminder); err != nil {
-			return fmt.Errorf("提醒时间格式无效")
+			return xerr.NewValidationError("提醒时间格式无效")
 		}
 	}
 	return nil
@@ -298,13 +300,13 @@ func (r *UpdateTaskReq) Validate() error {
 
 func (r *UserListReq) Validate() error {
 	if r.Page < 1 {
-		return fmt.Errorf("页码必须大于0")
+		return xerr.NewValidationError("页码必须大于0")
 	}
 	if r.PageSize < 1 || r.PageSize > 100 {
-		return fmt.Errorf("每页数量必须在1-100之间")
+		return xerr.NewValidationError("每页数量必须在1-100之间")
 	}
 	if utf8.RuneCountInString(r.Keyword) > 50 {
-		return fmt.Errorf("搜索关键词最多50个字符")
+		return xerr.NewValidationError("搜索关键词最多50个字符")
 	}
 	return nil
 }
@@ -313,28 +315,28 @@ func (r *UserListReq) Validate() error {
 
 func validateUsername(username string, minLen, maxLen int) error {
 	if username == "" {
-		return fmt.Errorf("用户名不能为空")
+		return xerr.NewValidationError("用户名不能为空")
 	}
 	n := utf8.RuneCountInString(username)
 	if n < minLen {
-		return fmt.Errorf("用户名至少%d个字符", minLen)
+		return xerr.NewValidationError(fmt.Sprintf("用户名至少%d个字符", minLen))
 	}
 	if n > maxLen {
-		return fmt.Errorf("用户名最多%d个字符", maxLen)
+		return xerr.NewValidationError(fmt.Sprintf("用户名最多%d个字符", maxLen))
 	}
 	return nil
 }
 
 func validatePassword(password string, field string) error {
 	if password == "" {
-		return fmt.Errorf("%s不能为空", field)
+		return xerr.NewValidationError(fmt.Sprintf("%s不能为空", field))
 	}
 	n := utf8.RuneCountInString(password)
 	if n < 6 {
-		return fmt.Errorf("%s至少6个字符", field)
+		return xerr.NewValidationError(fmt.Sprintf("%s至少6个字符", field))
 	}
 	if n > 20 {
-		return fmt.Errorf("%s最多20个字符", field)
+		return xerr.NewValidationError(fmt.Sprintf("%s最多20个字符", field))
 	}
 	hasLetter := false
 	hasDigit := false
@@ -347,7 +349,7 @@ func validatePassword(password string, field string) error {
 		}
 	}
 	if !hasLetter || !hasDigit {
-		return fmt.Errorf("%s必须同时包含字母和数字", field)
+		return xerr.NewValidationError(fmt.Sprintf("%s必须同时包含字母和数字", field))
 	}
 	return nil
 }
@@ -374,7 +376,7 @@ func (r *RestoreBackupReq) Validate() error {
 
 func (r *DeleteTaskReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("任务ID无效")
+		return xerr.NewValidationError("任务ID无效")
 	}
 	return nil
 }
@@ -383,7 +385,7 @@ func (r *DeleteTaskReq) Validate() error {
 
 func (r *RestoreTaskReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("任务ID无效")
+		return xerr.NewValidationError("任务ID无效")
 	}
 	return nil
 }
@@ -392,7 +394,7 @@ func (r *RestoreTaskReq) Validate() error {
 
 func (r *PermanentDeleteTaskReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("任务ID无效")
+		return xerr.NewValidationError("任务ID无效")
 	}
 	return nil
 }
@@ -401,7 +403,7 @@ func (r *PermanentDeleteTaskReq) Validate() error {
 
 func (r *DeleteUserReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("用户ID无效")
+		return xerr.NewValidationError("用户ID无效")
 	}
 	return nil
 }
@@ -410,7 +412,7 @@ func (r *DeleteUserReq) Validate() error {
 
 func (r *TaskDetailReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("任务ID无效")
+		return xerr.NewValidationError("任务ID无效")
 	}
 	return nil
 }
@@ -419,7 +421,7 @@ func (r *TaskDetailReq) Validate() error {
 
 func (r *ToggleTaskReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("任务ID无效")
+		return xerr.NewValidationError("任务ID无效")
 	}
 	return nil
 }
@@ -428,7 +430,7 @@ func (r *ToggleTaskReq) Validate() error {
 
 func (r *ToggleUserStatusReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("用户ID无效")
+		return xerr.NewValidationError("用户ID无效")
 	}
 	return nil
 }
@@ -437,13 +439,13 @@ func (r *ToggleUserStatusReq) Validate() error {
 
 func (r *CreateTagReq) Validate() error {
 	if r.Name == "" {
-		return fmt.Errorf("标签名称不能为空")
+		return xerr.NewValidationError("标签名称不能为空")
 	}
 	if utf8.RuneCountInString(r.Name) > 20 {
-		return fmt.Errorf("标签名称最多20个字符")
+		return xerr.NewValidationError("标签名称最多20个字符")
 	}
 	if utf8.RuneCountInString(r.Color) > 20 {
-		return fmt.Errorf("标签颜色最多20个字符")
+		return xerr.NewValidationError("标签颜色最多20个字符")
 	}
 	return nil
 }
@@ -452,13 +454,13 @@ func (r *CreateTagReq) Validate() error {
 
 func (r *UpdateTagReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("标签ID无效")
+		return xerr.NewValidationError("标签ID无效")
 	}
 	if r.Name != nil && utf8.RuneCountInString(*r.Name) > 20 {
-		return fmt.Errorf("标签名称最多20个字符")
+		return xerr.NewValidationError("标签名称最多20个字符")
 	}
 	if r.Color != nil && utf8.RuneCountInString(*r.Color) > 20 {
-		return fmt.Errorf("标签颜色最多20个字符")
+		return xerr.NewValidationError("标签颜色最多20个字符")
 	}
 	return nil
 }
@@ -467,7 +469,7 @@ func (r *UpdateTagReq) Validate() error {
 
 func (r *DeleteTagReq) Validate() error {
 	if r.Id <= 0 {
-		return fmt.Errorf("标签ID无效")
+		return xerr.NewValidationError("标签ID无效")
 	}
 	return nil
 }
@@ -476,7 +478,7 @@ func (r *DeleteTagReq) Validate() error {
 
 func (r *TagListReq) Validate() error {
 	if utf8.RuneCountInString(r.Keyword) > 50 {
-		return fmt.Errorf("搜索关键词最多50个字符")
+		return xerr.NewValidationError("搜索关键词最多50个字符")
 	}
 	return nil
 }
@@ -484,19 +486,19 @@ func (r *TagListReq) Validate() error {
 // validateFileName validates backup file name for security
 func validateFileName(fileName string) error {
 	if fileName == "" {
-		return fmt.Errorf("文件名不能为空")
+		return xerr.NewValidationError("文件名不能为空")
 	}
 	if len(fileName) > 255 {
-		return fmt.Errorf("文件名过长")
+		return xerr.NewValidationError("文件名过长")
 	}
 	if strings.Contains(fileName, "..") {
-		return fmt.Errorf("文件名包含非法字符")
+		return xerr.NewValidationError("文件名包含非法字符")
 	}
 	if strings.HasPrefix(fileName, "/") || strings.HasPrefix(fileName, "\\") {
-		return fmt.Errorf("文件名不能是绝对路径")
+		return xerr.NewValidationError("文件名不能是绝对路径")
 	}
 	if !strings.HasSuffix(fileName, ".bak") && !strings.HasSuffix(fileName, ".BAK") {
-		return fmt.Errorf("必须是.bak文件")
+		return xerr.NewValidationError("必须是.bak文件")
 	}
 	return nil
 }

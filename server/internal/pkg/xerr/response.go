@@ -34,17 +34,14 @@ func ErrorResponse(ctx context.Context, err error) (int, interface{}) {
 	case *CodeError:
 		msg := GetMessage(e.Code, lang)
 		return http.StatusOK, &Body{Code: e.Code, Msg: msg}
+	case *ValidationError:
+		// 验证错误：消息已经过审查，可安全暴露给客户端
+		return http.StatusOK, &Body{Code: RequestParamError, Msg: e.Msg}
+	case *RateLimitError:
+		// 限流错误：消息可安全暴露，返回 HTTP 429
+		return http.StatusTooManyRequests, &Body{Code: 42901, Msg: e.Msg}
 	default:
-		msg := err.Error()
-		if msg == "登录尝试次数过多，请稍后再试" || msg == "Too many login attempts, please try again later" {
-			if lang == LangEn {
-				return http.StatusTooManyRequests, &Body{Code: 42901, Msg: "Too many login attempts, please try again later"}
-			}
-			return http.StatusTooManyRequests, &Body{Code: 42901, Msg: msg}
-		}
-		if msg != "" {
-			return http.StatusOK, &Body{Code: RequestParamError, Msg: msg}
-		}
+		// 未知错误：不暴露内部错误详情，统一返回通用消息
 		log.Printf("[xerr] Internal error: %v", err)
 		return http.StatusInternalServerError, &Body{Code: ServerCommonError, Msg: GetMessage(ServerCommonError, lang)}
 	}

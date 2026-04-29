@@ -7,6 +7,8 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
+
+	"server/internal/pkg/xerr"
 )
 
 const (
@@ -117,8 +119,4 @@ func (m *LoginRateLimitMiddleware) cleanup() {
 	}
 }
 
-type loginRateLimitError struct{}
-
-func (e *loginRateLimitError) Error() string { return "登录尝试次数过多，请稍后再试" }
-
-var errLoginRateLimit = &loginRateLimitError{}
+var errLoginRateLimit = xerr.NewRateLimitError("登录尝试次数过多，请稍后再试")

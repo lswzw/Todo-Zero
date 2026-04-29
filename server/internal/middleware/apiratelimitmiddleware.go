@@ -8,6 +8,8 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
+
+	"server/internal/pkg/xerr"
 )
 
 const (
@@ -89,8 +91,4 @@ func (m *APIRateLimitMiddleware) cleanup() {
 	}
 }
 
-type apiRateLimitError struct{}
-
-func (e *apiRateLimitError) Error() string { return "API 请求过于频繁，请稍后再试" }
-
-var errAPIRateLimit = &apiRateLimitError{}
+var errAPIRateLimit = xerr.NewRateLimitError("API 请求过于频繁，请稍后再试")

@@ -8,7 +8,7 @@ import (
 	"server/internal/svc"
 	"server/internal/types"
 
-	"github.com.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/logx"
 	"golang.org/x/crypto/bcrypt"
 )
 
