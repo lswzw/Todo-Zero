@@ -109,9 +109,9 @@ func main() {
 	}
 	defer sqliteDB.Close()
 
-	// JWT Secret security: auto-generate and persist if using default
+	// JWT Secret security: auto-generate and persist if using default or empty
 	const defaultJWTSecret = "todo-app-jwt-secret-key-2024"
-	if c.Auth.AccessSecret == defaultJWTSecret {
+	if c.Auth.AccessSecret == defaultJWTSecret || c.Auth.AccessSecret == "" {
 		secret, generated, err := db.GetOrCreateJWTSecret(sqliteDB)
 		if err != nil {
 			fmt.Printf("[Security] WARNING: Failed to manage JWT secret: %v\n", err)

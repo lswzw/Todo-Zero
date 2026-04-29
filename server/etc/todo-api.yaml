@@ -3,9 +3,9 @@ Host: 0.0.0.0
 Port: 8888
 Debug: false
 
-# JWT 配置（AccessSecret 首次启动时自动生成并持久化到数据库，此值为 fallback）
+# JWT 配置（AccessSecret 首次启动时自动生成并持久化到数据库，空白时使用默认值）
 Auth:
-  AccessSecret: "todo-app-jwt-secret-key-2024"
+  AccessSecret: ""  # 留空或使用默认值，首次启动时自动生成安全的随机密钥
   AccessExpire: 86400
 
 # 数据库配置（运行时注入）
