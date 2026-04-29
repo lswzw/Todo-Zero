@@ -13,7 +13,7 @@ var ErrNotFound = errors.New("record not found")
 type User struct {
 	Id         int64          `db:"id"`          // 用户ID
 	Username   string         `db:"username"`    // 用户名
-	Password   string         `db:"password"`    // 密码(bcrypt加密)
+	Password   string         `db:"password"`    // 密码(存储时由 Model 层使用 bcrypt 加密)
 	Nickname   string         `db:"nickname"`     // 昵称
 	Email      string         `db:"email"`        // 邮箱
 	Phone      string         `db:"phone"`       // 手机号

@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var _ UserModel = (*defaultUserModel)(nil)
@@ -57,6 +59,13 @@ func (m *defaultUserModel) Insert(ctx context.Context, data *User) (sql.Result, 
 	now := time.Now()
 	data.CreateTime = now
 	data.UpdateTime = now
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	data.Password = string(hashedPassword)
+
 	return m.db.ExecContext(ctx, query, data.Username, data.Password, data.Nickname, data.Email, data.Phone, data.Avatar, data.Role, data.Status, data.CreateTime, data.UpdateTime)
 }
 
@@ -121,7 +130,11 @@ func (m *defaultUserModel) UpdateStatus(ctx context.Context, id, status int64) e
 }
 
 func (m *defaultUserModel) UpdatePassword(ctx context.Context, id int64, password string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
 	query := fmt.Sprintf(`UPDATE %s SET password = ?, update_time = ? WHERE id = ?`, m.tableName())
-	_, err := m.db.ExecContext(ctx, query, password, time.Now(), id)
+	_, err = m.db.ExecContext(ctx, query, string(hashedPassword), time.Now(), id)
 	return err
 }

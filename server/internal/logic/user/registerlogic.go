@@ -11,7 +11,6 @@ import (
 	"server/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type RegisterLogic struct {
@@ -35,16 +34,11 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 		return nil, xerr.NewCodeError(xerr.RegisterClosed)
 	}
 
-	// 2. 密码加密
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, xerr.NewCodeError(xerr.ServerCommonError)
-	}
-
+	// 2. 密码加密（由 Model 层处理）
 	// 3. 插入用户（直接 Insert，依赖 UNIQUE 约束避免 TOCTOU 竞态）
 	result, err := l.svcCtx.UserModel.Insert(l.ctx, &model.User{
 		Username: req.Username,
-		Password: string(hashedPassword),
+		Password: req.Password,
 		Role:     0,
 		Status:   1,
 	})
