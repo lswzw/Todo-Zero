@@ -15,6 +15,19 @@ import (
 
 const backupCheckInterval = 6 * time.Hour
 
+var allowedTables = map[string]bool{
+	"tasks":          true,
+	"operation_logs": true,
+	"login_log":      true,
+	"categories":     true,
+	"system_configs": true,
+	"users":          true,
+}
+
+func isValidTableName(table string) bool {
+	return allowedTables[table]
+}
+
 // StartBackupScheduler starts a background goroutine that periodically backs up the SQLite database.
 func StartBackupScheduler(svcCtx *svc.ServiceContext) {
 	go func() {
@@ -232,6 +245,12 @@ func RestoreBackup(db *sql.DB, dataDir string, dbFile string, backupFileName str
 	// Delete data in order (children first to respect foreign keys)
 	deleteOrder := []string{"tasks", "operation_logs", "login_log", "categories", "system_configs", "users"}
 	for _, table := range deleteOrder {
+		if !isValidTableName(table) {
+			tx.Rollback()
+			committed = true
+			db.Exec("DETACH DATABASE backup_db")
+			return fmt.Errorf("invalid table name: %s", table)
+		}
 		if _, err := tx.Exec(fmt.Sprintf("DELETE FROM %s", table)); err != nil {
 			return fmt.Errorf("failed to delete from %s: %w", table, err)
 		}
@@ -240,6 +259,12 @@ func RestoreBackup(db *sql.DB, dataDir string, dbFile string, backupFileName str
 	// Insert data in order (parents first to satisfy foreign keys)
 	insertOrder := []string{"users", "categories", "system_configs", "tasks", "operation_logs", "login_log"}
 	for _, table := range insertOrder {
+		if !isValidTableName(table) {
+			tx.Rollback()
+			committed = true
+			db.Exec("DETACH DATABASE backup_db")
+			return fmt.Errorf("invalid table name: %s", table)
+		}
 		if _, err := tx.Exec(fmt.Sprintf("INSERT INTO %s SELECT * FROM backup_db.%s", table, table)); err != nil {
 			return fmt.Errorf("failed to restore %s: %w", table, err)
 		}
