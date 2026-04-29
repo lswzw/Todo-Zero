@@ -6,6 +6,26 @@ import (
 	"unicode/utf8"
 )
 
+// --- SortTaskReq ---
+
+func (r *SortTaskReq) Validate() error {
+	if len(r.Orders) == 0 {
+		return fmt.Errorf("排序数据不能为空")
+	}
+	if len(r.Orders) > 100 {
+		return fmt.Errorf("排序数据最多100条")
+	}
+	for i, item := range r.Orders {
+		if item.Id <= 0 {
+			return fmt.Errorf("第%d项ID无效", i+1)
+		}
+		if item.SortOrder < 0 {
+			return fmt.Errorf("第%d项排序值无效", i+1)
+		}
+	}
+	return nil
+}
+
 // --- BatchTaskReq ---
 
 func (r *BatchTaskReq) Validate() error {
