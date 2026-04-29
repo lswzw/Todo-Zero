@@ -58,8 +58,8 @@ func runBackup(svcCtx *svc.ServiceContext) {
 	dbFile := svcCtx.Config.Database.DBFile
 	backupDir := filepath.Join(dataDir, "backups")
 
-	// Ensure backup directory exists
-	if err := os.MkdirAll(backupDir, 0755); err != nil {
+	// Ensure backup directory exists with restrictive permissions (owner read/write only)
+	if err := os.MkdirAll(backupDir, 0700); err != nil {
 		fmt.Printf("[Scheduler-Backup] Failed to create backup directory: %v\n", err)
 		return
 	}
@@ -146,8 +146,8 @@ func PerformBackup(db *sql.DB, backupPath string) error {
 
 // BackupInfo represents metadata about a backup file.
 type BackupInfo struct {
-	FileName  string    `json:"fileName"`
-	FileSize  int64     `json:"fileSize"`
+	FileName   string    `json:"fileName"`
+	FileSize   int64     `json:"fileSize"`
 	CreateTime time.Time `json:"createTime"`
 }
 

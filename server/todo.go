@@ -148,10 +148,15 @@ func main() {
 
 	handler.RegisterHandlers(server, ctx)
 
-	// API documentation routes — only in debug mode
+	// API documentation routes — only in debug mode and only when running in development environment
 	if c.Debug {
-		registerAPIDocRoutes(server)
-		fmt.Println("[Debug] API documentation enabled: /api-docs, /openapi.json")
+		// Security: Only allow debug mode in development environment
+		if os.Getenv("GO_ENV") == "production" {
+			fmt.Println("[Security] WARNING: Debug mode disabled in production environment")
+		} else {
+			registerAPIDocRoutes(server)
+			fmt.Println("[Debug] API documentation enabled: /api-docs, /openapi.json")
+		}
 	}
 
 	scheduler.StartCleanupScheduler(ctx)

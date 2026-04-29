@@ -66,14 +66,14 @@
 
 | 状态 | # | 任务描述 | 文件位置 | 风险等级 |
 |:---:|---|----------|----------|----------|
-| [ ] | M20 | 对操作日志 Params 字段进行脱敏处理 | `server/internal/model/loginlogmodel_gen.go` | 🟡 MEDIUM |
-| [ ] | M21 | 审计日志 IP 地址脱敏处理 | `server/internal/middleware/operationlogmiddleware.go` | 🟡 MEDIUM |
+| [x] | M20 | 对操作日志 Params 字段进行脱敏处理 | `server/internal/model/loginlogmodel_gen.go` | 🟡 MEDIUM |
+| [x] | M21 | 审计日志 IP 地址脱敏处理 | `server/internal/middleware/operationlogmiddleware.go` | 🟡 MEDIUM |
 | [x] | M22 | 修复 X-RateLimit-Remaining 头部乱码问题 | `server/internal/middleware/apiratelimitmiddleware.go` | 🟡 MEDIUM |
-| [ ] | M23 | 修改备份文件权限为更严格的 0600 | `server/internal/scheduler/backup.go` | 🟡 MEDIUM |
-| [ ] | M24 | 修复 float64 转 int64 类型混淆风险 | `server/internal/pkg/jwtx/jwt.go` | 🟡 MEDIUM |
-| [ ] | M25 | 添加登录失败次数锁定机制 | `server/internal/handler/routes.go`, `server/internal/logic/user/loginlogic.go` | 🟡 MEDIUM |
-| [ ] | M26 | 添加 /user/check-register 限流保护 | `server/internal/handler/routes.go` | 🟡 MEDIUM |
-| [ ] | M27 | 修复 Debug 模式敏感信息泄露风险 | `server/internal/config/config.go` | 🟡 MEDIUM |
+| [x] | M23 | 修改备份文件权限为更严格的 0600 | `server/internal/scheduler/backup.go` | 🟡 MEDIUM |
+| [x] | M24 | 修复 float64 转 int64 类型混淆风险 | `server/internal/pkg/jwtx/jwt.go` | 🟡 MEDIUM |
+| [x] | M25 | 添加登录失败次数锁定机制 | `server/internal/handler/routes.go`, `server/internal/logic/user/loginlogic.go` | 🟡 MEDIUM |
+| [x] | M26 | 添加 /user/check-register 限流保护 | `server/internal/handler/routes.go` | 🟡 MEDIUM |
+| [x] | M27 | 修复 Debug 模式敏感信息泄露风险 | `server/internal/config/config.go` | 🟡 MEDIUM |
 
 ---
 

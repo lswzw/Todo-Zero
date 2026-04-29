@@ -33,8 +33,25 @@ func NewLoginLogModel(db *sql.DB) LoginLogModel {
 func (m *defaultLoginLogModel) tableName() string { return "`login_log`" }
 
 func (m *defaultLoginLogModel) Insert(ctx context.Context, data *LoginLog) (sql.Result, error) {
+	data.Ip = maskIP(data.Ip)
 	query := fmt.Sprintf(`INSERT INTO %s (user_id, username, ip, user_agent, status, remark) VALUES (?, ?, ?, ?, ?, ?)`, m.tableName())
 	return m.db.ExecContext(ctx, query, data.UserId, data.Username, data.Ip, data.UserAgent, data.Status, data.Remark)
+}
+
+func maskIP(ip string) string {
+	if ip == "" {
+		return ""
+	}
+	if strings.Contains(ip, ".") {
+		parts := strings.Split(ip, ".")
+		if len(parts) >= 4 {
+			return parts[0] + "." + parts[1] + "." + parts[2] + ".x"
+		}
+	}
+	if strings.Contains(ip, ":") {
+		return "::1"
+	}
+	return "***.***.***.x"
 }
 
 func (m *defaultLoginLogModel) FindOne(ctx context.Context, id int64) (*LoginLog, error) {
