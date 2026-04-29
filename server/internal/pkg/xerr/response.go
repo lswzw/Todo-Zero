@@ -2,6 +2,7 @@ package xerr
 
 import (
 	"context"
+	"log"
 	"net/http"
 )
 
@@ -31,22 +32,20 @@ func ErrorResponse(ctx context.Context, err error) (int, interface{}) {
 
 	switch e := err.(type) {
 	case *CodeError:
-		// 根据语言重新获取错误消息
 		msg := GetMessage(e.Code, lang)
 		return http.StatusOK, &Body{Code: e.Code, Msg: msg}
 	default:
 		msg := err.Error()
-		// 登录限流错误
-		if msg == "登录尝试次数过多，请稍后再试" {
+		if msg == "登录尝试次数过多，请稍后再试" || msg == "Too many login attempts, please try again later" {
 			if lang == LangEn {
 				return http.StatusTooManyRequests, &Body{Code: 42901, Msg: "Too many login attempts, please try again later"}
 			}
 			return http.StatusTooManyRequests, &Body{Code: 42901, Msg: msg}
 		}
-		// Validate() 等返回的普通 error 视为参数错误
 		if msg != "" {
 			return http.StatusOK, &Body{Code: RequestParamError, Msg: msg}
 		}
+		log.Printf("[xerr] Internal error: %v", err)
 		return http.StatusInternalServerError, &Body{Code: ServerCommonError, Msg: GetMessage(ServerCommonError, lang)}
 	}
 }
