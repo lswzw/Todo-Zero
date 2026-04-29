@@ -54,6 +54,10 @@ func InitDB(dataDir, dbFile string) (*sql.DB, error) {
 		if err := ensureIndexes(sqliteDB); err != nil {
 			return nil, fmt.Errorf("failed to create indexes: %w", err)
 		}
+		// Run database migrations for existing databases
+		if err := runMigrations(sqliteDB); err != nil {
+			return nil, fmt.Errorf("failed to run migrations: %w", err)
+		}
 	}
 
 	return sqliteDB, nil
@@ -80,6 +84,44 @@ var indexStatements = []string{
 	`CREATE INDEX IF NOT EXISTS idx_task_tags_task_id ON task_tags (task_id)`,
 	`CREATE INDEX IF NOT EXISTS idx_task_tags_tag_id ON task_tags (tag_id)`,
 	`CREATE UNIQUE INDEX IF NOT EXISTS idx_system_configs_key ON system_configs (config_key)`,
+}
+
+func runMigrations(db *sql.DB) error {
+	// Migration 1: Add failed_attempts and locked_until columns to users table (for login lockout feature)
+	if err := migrateAddLoginLockoutColumns(db); err != nil {
+		return fmt.Errorf("failed to add login lockout columns: %w", err)
+	}
+	return nil
+}
+
+func migrateAddLoginLockoutColumns(db *sql.DB) error {
+	// Check if failed_attempts column exists
+	var exists bool
+	err := db.QueryRow(`SELECT EXISTS(SELECT 1 FROM pragma_table_info('users') WHERE name='failed_attempts')`).Scan(&exists)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		_, err := db.Exec(`ALTER TABLE users ADD COLUMN failed_attempts integer NOT NULL DEFAULT 0`)
+		if err != nil {
+			return err
+		}
+		fmt.Println("[DB] Added failed_attempts column to users table")
+	}
+
+	// Check if locked_until column exists
+	err = db.QueryRow(`SELECT EXISTS(SELECT 1 FROM pragma_table_info('users') WHERE name='locked_until')`).Scan(&exists)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		_, err := db.Exec(`ALTER TABLE users ADD COLUMN locked_until datetime DEFAULT NULL`)
+		if err != nil {
+			return err
+		}
+		fmt.Println("[DB] Added locked_until column to users table")
+	}
+	return nil
 }
 
 func ensureIndexes(db *sql.DB) error {

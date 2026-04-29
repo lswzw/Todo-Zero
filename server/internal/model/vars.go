@@ -11,18 +11,20 @@ var ErrNotFound = errors.New("record not found")
 
 // User represents a user record in the database.
 type User struct {
-	Id         int64          `db:"id"`          // 用户ID
-	Username   string         `db:"username"`    // 用户名
-	Password   string         `db:"password"`    // 密码(存储时由 Model 层使用 bcrypt 加密)
-	Nickname   string         `db:"nickname"`     // 昵称
-	Email      string         `db:"email"`        // 邮箱
-	Phone      string         `db:"phone"`       // 手机号
-	Avatar     string         `db:"avatar"`      // 头像URL
-	Role       int64          `db:"role"`        // 角色: 0=普通用户 1=管理员
-	Status     int64          `db:"status"`      // 状态: 0=禁用 1=正常
-	IsDeleted  int64          `db:"is_deleted"`  // 是否删除: 0=否 1=是
-	CreateTime time.Time      `db:"create_time"` // 创建时间
-	UpdateTime time.Time      `db:"update_time"` // 更新时间
+	Id             int64          `db:"id"`              // 用户ID
+	Username       string         `db:"username"`        // 用户名
+	Password       string         `db:"password"`        // 密码(存储时由 Model 层使用 bcrypt 加密)
+	Nickname       string         `db:"nickname"`        // 昵称
+	Email          string         `db:"email"`           // 邮箱
+	Phone          string         `db:"phone"`           // 手机号
+	Avatar         string         `db:"avatar"`          // 头像URL
+	Role           int64          `db:"role"`            // 角色: 0=普通用户 1=管理员
+	Status         int64          `db:"status"`          // 状态: 0=禁用 1=正常
+	IsDeleted      int64          `db:"is_deleted"`      // 是否删除: 0=否 1=是
+	FailedAttempts int64          `db:"failed_attempts"` // 登录失败次数
+	LockedUntil    sql.NullTime   `db:"locked_until"`    // 账户锁定时间
+	CreateTime     time.Time      `db:"create_time"`     // 创建时间
+	UpdateTime     time.Time      `db:"update_time"`     // 更新时间
 }
 
 // Task represents a task record in the database.

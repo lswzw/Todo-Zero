@@ -29,6 +29,11 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 	}
 }
 
+const (
+	maxLoginAttempts     = 5
+	lockDurationMinutes  = 15
+)
+
 func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err error) {
 	// 1. 查找用户
 	user, err := l.svcCtx.UserModel.FindOneByUsername(l.ctx, req.Username)
@@ -39,12 +44,23 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 				Status:   0,
 				Remark:   "用户不存在",
 			})
-			return nil, xerr.NewCodeError(xerr.UserNotFoundError)
+			return nil, xerr.NewCodeError(xerr.UserOrPasswordError)
 		}
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
-	// 2. 检查用户状态
+	// 2. 检查账户是否被锁定
+	if user.LockedUntil.Valid && user.LockedUntil.Time.After(time.Now()) {
+		_ , _ = l.svcCtx.LoginLogModel.Insert(l.ctx, &model.LoginLog{
+			UserId:   sql.NullInt64{Int64: user.Id, Valid: true},
+			Username: req.Username,
+			Status:   0,
+			Remark:   "账户已被锁定",
+		})
+		return nil, xerr.NewCodeError(xerr.AccountLocked)
+	}
+
+	// 3. 检查用户状态
 	if user.Status == 0 {
 		_ , _ = l.svcCtx.LoginLogModel.Insert(l.ctx, &model.LoginLog{
 			UserId:   sql.NullInt64{Int64: user.Id, Valid: true},
@@ -52,10 +68,10 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 			Status:   0,
 			Remark:   "用户已被禁用",
 		})
-		return nil, xerr.NewCodeError(xerr.UserDisabled)
+		return nil, xerr.NewCodeError(xerr.UserOrPasswordError)
 	}
 
-	// 3. 验证密码
+	// 4. 验证密码
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		_ , _ = l.svcCtx.LoginLogModel.Insert(l.ctx, &model.LoginLog{
 			UserId:   sql.NullInt64{Int64: user.Id, Valid: true},
@@ -63,7 +79,11 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 			Status:   0,
 			Remark:   "密码错误",
 		})
-		return nil, xerr.NewCodeError(xerr.PasswordError)
+		
+		// 记录失败次数并检查是否需要锁定
+		_ = l.svcCtx.UserModel.IncrementFailedAttempts(l.ctx, user.Id, maxLoginAttempts, lockDurationMinutes)
+		
+		return nil, xerr.NewCodeError(xerr.UserOrPasswordError)
 	}
 
 	// 4. 生成 JWT Token
@@ -73,7 +93,10 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
-	// 5. 记录登录成功日志
+	// 5. 重置失败次数
+	_ = l.svcCtx.UserModel.ResetFailedAttempts(l.ctx, user.Id)
+
+	// 6. 记录登录成功日志
 	_ , _ = l.svcCtx.LoginLogModel.Insert(l.ctx, &model.LoginLog{
 		UserId:   sql.NullInt64{Int64: user.Id, Valid: true},
 		Username: req.Username,

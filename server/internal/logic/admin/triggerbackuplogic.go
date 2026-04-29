@@ -42,7 +42,7 @@ func (l *TriggerBackupLogic) TriggerBackup(req *types.TriggerBackupReq) (resp *t
 
 	if err := scheduler.PerformBackup(l.svcCtx.DB, backupPath); err != nil {
 		l.Errorf("Manual backup failed: %v", err)
-		return nil, xerr.NewCodeErrFromMsg("备份失败: " + err.Error())
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
 	// Get file size

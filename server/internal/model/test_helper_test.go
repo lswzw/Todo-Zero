@@ -34,6 +34,8 @@ func testDB(t *testing.T) *sql.DB {
 			role tinyint NOT NULL DEFAULT 0,
 			status tinyint NOT NULL DEFAULT 1,
 			is_deleted tinyint NOT NULL DEFAULT 0,
+			failed_attempts integer NOT NULL DEFAULT 0,
+			locked_until datetime DEFAULT NULL,
 			create_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			update_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 		)`,

@@ -19,10 +19,10 @@ PORT=8888
 
 ADMIN_USER="admin"
 ADMIN_PASS="admin123"        # 初始管理员密码（init.sql 预置，不受复杂度限制）
-ADMIN_NEW_PASS="admin456"    # 修改后密码（满足复杂度：字母+数字）
+ADMIN_NEW_PASS="admin4567"    # 修改后密码（满足复杂度：字母+数字）
 TEST_USER="zhangsan"
-TEST_USER_PASS="test123"     # 注册密码（满足复杂度：字母+数字）
-TEST_USER_NEW_PASS="test654" # 重置后密码（满足复杂度：字母+数字）
+TEST_USER_PASS="Test1234"     # 注册密码（满足复杂度：字母+数字）
+TEST_USER_NEW_PASS="Test6543" # 重置后密码（满足复杂度：字母+数字）
 WEAK_PASS="123456"           # 不满足复杂度的密码（纯数字）
 
 # 颜色

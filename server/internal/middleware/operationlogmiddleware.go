@@ -65,7 +65,7 @@ func (m *OperationLogMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc 
 				Module:   module,
 				Action:   action,
 				Method:   method,
-				Ip:       r.RemoteAddr,
+				Ip:       maskIP(r.RemoteAddr),
 				Status:   1,
 				Duration: duration,
 			})
@@ -74,6 +74,25 @@ func (m *OperationLogMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc 
 				method, r.URL.Path, username, module, action, duration)
 		}()
 	}
+}
+
+// maskIP masks the last octet of an IP address for privacy protection.
+func maskIP(ip string) string {
+	if ip == "" {
+		return ""
+	}
+	// Handle IPv4 addresses
+	if strings.Contains(ip, ".") {
+		parts := strings.Split(ip, ".")
+		if len(parts) >= 4 {
+			return parts[0] + "." + parts[1] + "." + parts[2] + ".x"
+		}
+	}
+	// Handle IPv6 addresses
+	if strings.Contains(ip, ":") {
+		return "::1"
+	}
+	return "***.***.***.x"
 }
 
 // parseRoute extracts module and action from the URL path and method.

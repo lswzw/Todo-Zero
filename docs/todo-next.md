@@ -32,12 +32,12 @@
 
 | 状态 | # | 任务描述 | 文件位置 | 风险等级 |
 |:---:|---|----------|----------|----------|
-| [ ] | M1 | 添加密码强度验证 - 注册时验证密码复杂度（8位以上、包含大小写、数字、特殊字符） | `server/internal/logic/user/registerlogic.go` | 🟡 MEDIUM |
-| [ ] | M2 | 统一登录错误提示 - 对外返回"用户名或密码错误"，不区分具体原因 | `server/internal/logic/user/loginlogic.go` | 🟡 MEDIUM |
-| [ ] | M3 | 修复备份失败错误信息泄露 - 返回通用错误消息 | `server/internal/logic/admin/triggerbackuplogic.go` | 🟡 MEDIUM |
-| [ ] | M4 | 修复恢复失败错误信息泄露 - 返回通用错误消息 | `server/internal/logic/admin/restorebackuplogic.go` | 🟡 MEDIUM |
-| [ ] | M5 | 添加 ChangePasswordReq 密码长度验证 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
-| [ ] | M6 | 添加 LoginReq Password 长度验证 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
+| [x] | M1 | 添加密码强度验证 - 注册时验证密码复杂度（8位以上、包含大小写、数字、特殊字符） | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
+| [x] | M2 | 统一登录错误提示 - 对外返回"用户名或密码错误"，不区分具体原因 | `server/internal/logic/user/loginlogic.go` | 🟡 MEDIUM |
+| [x] | M3 | 修复备份失败错误信息泄露 - 返回通用错误消息 | `server/internal/logic/admin/triggerbackuplogic.go` | 🟡 MEDIUM |
+| [x] | M4 | 修复恢复失败错误信息泄露 - 返回通用错误消息 | `server/internal/logic/admin/restorebackuplogic.go` | 🟡 MEDIUM |
+| [x] | M5 | 添加 ChangePasswordReq 密码长度验证 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
+| [x] | M6 | 添加 LoginReq Password 长度验证 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
 
 ### 输入验证缺失
 
@@ -53,14 +53,14 @@
 | [x] | M14 | 添加 UpdateTagReq Validate() 方法 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
 | [x] | M15 | 添加 DeleteTagReq Validate() 方法 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
 | [x] | M16 | 添加 CreateTagReq Name/Color 长度验证 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
-| [ ] | M17 | 添加 ExportTaskReq Keyword 长度限制 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
+| [x] | M17 | 添加 ExportTaskReq Keyword 长度限制 | `server/internal/types/types_validate.go` | 🟡 MEDIUM |
 
 ### 权限/认证问题
 
 | 状态 | # | 任务描述 | 文件位置 | 风险等级 |
 |:---:|---|----------|----------|----------|
-| [ ] | M18 | 修复 CategoryList 忽略 JWT 错误问题 | `server/internal/logic/category/categorylistlogic.go` | 🟡 MEDIUM |
-| [ ] | M19 | 修复 DeleteUser 忽略 JWT 错误问题 | `server/internal/logic/admin/deleteuserlogic.go` | 🟡 MEDIUM |
+| [x] | M18 | 修复 CategoryList 忽略 JWT 错误问题 | `server/internal/logic/category/categorylistlogic.go` | 🟡 MEDIUM |
+| [x] | M19 | 修复 DeleteUser 忽略 JWT 错误问题 | `server/internal/logic/admin/deleteuserlogic.go` | 🟡 MEDIUM |
 
 ### 其他中危问题
 
@@ -114,9 +114,9 @@
 | 优先级 | 总数 | 已完成 | 待处理 | 完成率 |
 |--------|------|--------|--------|--------|
 | 🔴 HIGH | 13 | 13 | 0 | 100% |
-| 🟡 MEDIUM | 27 | 15 | 12 | 56% |
+| 🟡 MEDIUM | 27 | 27 | 0 | 100% |
 | 🟢 LOW | 14 | 4 | 10 | 29% |
-| **合计** | **54** | **32** | **22** | **59%** |
+| **合计** | **54** | **44** | **10** | **81%** |
 
 ---
 

@@ -41,7 +41,7 @@ func (l *RestoreBackupLogic) RestoreBackup(req *types.RestoreBackupReq) (resp *t
 
 	if err := scheduler.RestoreBackup(l.svcCtx.DB, dataDir, dbFile, req.FileName); err != nil {
 		l.Errorf("Restore backup failed: %v", err)
-		return nil, xerr.NewCodeErrFromMsg("恢复失败: " + err.Error())
+		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
 	// Clean up pre-restore safety backups beyond max count

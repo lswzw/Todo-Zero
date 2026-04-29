@@ -8,6 +8,9 @@ TrustedProxies:
   - "127.0.0.1"
   - "::1"
 
+# 允许的 CORS 来源（空列表表示允许所有）
+AllowedOrigins: []
+
 # JWT 配置（AccessSecret 首次启动时自动生成并持久化到数据库，空白时使用默认值）
 Auth:
   AccessSecret: ""  # 留空或使用默认值，首次启动时自动生成安全的随机密钥

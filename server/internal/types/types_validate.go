@@ -55,6 +55,10 @@ func (r *ChangePasswordReq) Validate() error {
 	if r.OldPassword == "" {
 		return xerr.NewValidationError("原密码不能为空")
 	}
+	n := utf8.RuneCountInString(r.OldPassword)
+	if n < 8 || n > 20 {
+		return xerr.NewValidationError("原密码长度必须在8-20个字符之间")
+	}
 	if err := validatePassword(r.NewPassword, "新密码"); err != nil {
 		return err
 	}
@@ -170,6 +174,10 @@ func (r *LoginReq) Validate() error {
 	}
 	if r.Password == "" {
 		return xerr.NewValidationError("密码不能为空")
+	}
+	n := utf8.RuneCountInString(r.Password)
+	if n < 8 || n > 20 {
+		return xerr.NewValidationError("密码长度必须在8-20个字符之间")
 	}
 	return nil
 }
@@ -331,13 +339,6 @@ func validatePassword(password string, field string) error {
 	if password == "" {
 		return xerr.NewValidationError(fmt.Sprintf("%s不能为空", field))
 	}
-	n := utf8.RuneCountInString(password)
-	if n < 6 {
-		return xerr.NewValidationError(fmt.Sprintf("%s至少6个字符", field))
-	}
-	if n > 20 {
-		return xerr.NewValidationError(fmt.Sprintf("%s最多20个字符", field))
-	}
 	hasLetter := false
 	hasDigit := false
 	for _, c := range password {
@@ -350,6 +351,13 @@ func validatePassword(password string, field string) error {
 	}
 	if !hasLetter || !hasDigit {
 		return xerr.NewValidationError(fmt.Sprintf("%s必须同时包含字母和数字", field))
+	}
+	n := utf8.RuneCountInString(password)
+	if n < 8 {
+		return xerr.NewValidationError(fmt.Sprintf("%s至少8个字符", field))
+	}
+	if n > 20 {
+		return xerr.NewValidationError(fmt.Sprintf("%s最多20个字符", field))
 	}
 	return nil
 }
@@ -477,6 +485,27 @@ func (r *DeleteTagReq) Validate() error {
 // --- TagListReq ---
 
 func (r *TagListReq) Validate() error {
+	if utf8.RuneCountInString(r.Keyword) > 50 {
+		return xerr.NewValidationError("搜索关键词最多50个字符")
+	}
+	return nil
+}
+
+// --- ExportTaskReq ---
+
+func (r *ExportTaskReq) Validate() error {
+	if r.Format != "" && r.Format != "csv" && r.Format != "json" {
+		return xerr.NewValidationError("格式必须是csv或json")
+	}
+	if r.Status != -1 && r.Status != 0 && r.Status != 2 {
+		return xerr.NewValidationError("状态参数无效")
+	}
+	if r.Priority != -1 && r.Priority != 1 && r.Priority != 2 && r.Priority != 3 {
+		return xerr.NewValidationError("优先级参数无效")
+	}
+	if r.CategoryId < -1 {
+		return xerr.NewValidationError("分类ID无效")
+	}
 	if utf8.RuneCountInString(r.Keyword) > 50 {
 		return xerr.NewValidationError("搜索关键词最多50个字符")
 	}

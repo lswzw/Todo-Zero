@@ -37,6 +37,10 @@ func (m *mockUserModel) FindList(ctx context.Context, username string, status, p
 }
 func (m *mockUserModel) UpdateStatus(ctx context.Context, id, status int64) error      { return nil }
 func (m *mockUserModel) UpdatePassword(ctx context.Context, id int64, password string) error { return nil }
+func (m *mockUserModel) IncrementFailedAttempts(ctx context.Context, id int64, maxAttempts int, lockDurationMinutes int) error {
+	return nil
+}
+func (m *mockUserModel) ResetFailedAttempts(ctx context.Context, id int64) error { return nil }
 
 type mockLoginLogModel struct{}
 
@@ -106,8 +110,9 @@ func TestLogin_UserNotFound(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected *xerr.CodeError, got %T", err)
 	}
-	if codeErr.Code != xerr.UserNotFoundError {
-		t.Errorf("expected code %d, got %d", xerr.UserNotFoundError, codeErr.Code)
+	// 不再返回 UserNotFoundError，统一返回 UserOrPasswordError 防止用户名枚举
+	if codeErr.Code != xerr.UserOrPasswordError {
+		t.Errorf("expected code %d, got %d", xerr.UserOrPasswordError, codeErr.Code)
 	}
 }
 
@@ -127,8 +132,9 @@ func TestLogin_UserDisabled(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected *xerr.CodeError, got %T", err)
 	}
-	if codeErr.Code != xerr.UserDisabled {
-		t.Errorf("expected code %d, got %d", xerr.UserDisabled, codeErr.Code)
+	// 禁用用户也统一返回 UserOrPasswordError，防止信息泄露
+	if codeErr.Code != xerr.UserOrPasswordError {
+		t.Errorf("expected code %d, got %d", xerr.UserOrPasswordError, codeErr.Code)
 	}
 }
 
@@ -148,8 +154,9 @@ func TestLogin_WrongPassword(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected *xerr.CodeError, got %T", err)
 	}
-	if codeErr.Code != xerr.PasswordError {
-		t.Errorf("expected code %d, got %d", xerr.PasswordError, codeErr.Code)
+	// 密码错误统一返回 UserOrPasswordError
+	if codeErr.Code != xerr.UserOrPasswordError {
+		t.Errorf("expected code %d, got %d", xerr.UserOrPasswordError, codeErr.Code)
 	}
 }
 

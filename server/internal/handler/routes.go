@@ -269,19 +269,21 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 
 	server.AddRoutes(
 		rest.WithMiddleware(localeMw,
-			rest.WithMiddleware(securityMw,
-				[]rest.Route{
-					{
-						Method:  http.MethodGet,
-						Path:    "/user/check-register",
-						Handler: user.CheckRegisterHandler(serverCtx),
-					},
-					{
-						Method:  http.MethodPost,
-						Path:    "/user/register",
-						Handler: user.RegisterHandler(serverCtx),
-					},
-				}...,
+			rest.WithMiddleware(apiRateLimitMw,
+				rest.WithMiddleware(securityMw,
+					[]rest.Route{
+						{
+							Method:  http.MethodGet,
+							Path:    "/user/check-register",
+							Handler: user.CheckRegisterHandler(serverCtx),
+						},
+						{
+							Method:  http.MethodPost,
+							Path:    "/user/register",
+							Handler: user.RegisterHandler(serverCtx),
+						},
+					}...,
+				)...,
 			)...,
 		),
 		rest.WithPrefix("/api/v1"),

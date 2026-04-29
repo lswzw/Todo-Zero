@@ -25,7 +25,10 @@ func NewCategoryListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cate
 }
 
 func (l *CategoryListLogic) CategoryList() (resp *types.CategoryListResp, err error) {
-	userId, _ := jwtx.GetUserIdFromCtx(l.ctx)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 	categories, err := l.svcCtx.CategoryModel.FindAll(l.ctx, userId)
 	if err != nil {
 		return nil, err

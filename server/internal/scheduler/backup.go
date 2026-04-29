@@ -109,9 +109,9 @@ func needsBackup(backupDir string, intervalHours int64) bool {
 // PerformBackup creates a consistent backup of the SQLite database using VACUUM INTO.
 // This is exported for use by the manual backup API.
 func PerformBackup(db *sql.DB, backupPath string) error {
-	// Ensure backup directory exists
+	// Ensure backup directory exists with restrictive permissions
 	backupDir := filepath.Dir(backupPath)
-	if err := os.MkdirAll(backupDir, 0755); err != nil {
+	if err := os.MkdirAll(backupDir, 0700); err != nil {
 		return fmt.Errorf("failed to create backup directory: %w", err)
 	}
 
@@ -124,6 +124,11 @@ func PerformBackup(db *sql.DB, backupPath string) error {
 		// Clean up failed backup file
 		os.Remove(backupPath)
 		return fmt.Errorf("VACUUM INTO failed: %w", err)
+	}
+
+	// Set restrictive permissions on backup file (owner read/write only)
+	if err := os.Chmod(backupPath, 0600); err != nil {
+		return fmt.Errorf("failed to set backup file permissions: %w", err)
 	}
 
 	// Verify backup file exists and has content

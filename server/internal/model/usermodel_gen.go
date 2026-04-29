@@ -21,6 +21,8 @@ type (
 		FindList(ctx context.Context, username string, status, page, pageSize int64) ([]*User, int64, error)
 		UpdateStatus(ctx context.Context, id, status int64) error
 		UpdatePassword(ctx context.Context, id int64, password string) error
+		IncrementFailedAttempts(ctx context.Context, id int64, maxAttempts int, lockDurationMinutes int) error
+		ResetFailedAttempts(ctx context.Context, id int64) error
 	}
 
 	defaultUserModel struct {
@@ -45,9 +47,9 @@ func (m *defaultUserModel) FindOne(ctx context.Context, id int64) (*User, error)
 }
 
 func (m *defaultUserModel) FindOneByUsername(ctx context.Context, username string) (*User, error) {
-	query := fmt.Sprintf(`SELECT id, username, password, nickname, email, phone, avatar, role, status, is_deleted, create_time, update_time FROM %s WHERE username = ? AND is_deleted = 0 LIMIT 1`, m.tableName())
+	query := fmt.Sprintf(`SELECT id, username, password, nickname, email, phone, avatar, role, status, is_deleted, failed_attempts, locked_until, create_time, update_time FROM %s WHERE username = ? AND is_deleted = 0 LIMIT 1`, m.tableName())
 	var resp User
-	err := m.db.QueryRowContext(ctx, query, username).Scan(&resp.Id, &resp.Username, &resp.Password, &resp.Nickname, &resp.Email, &resp.Phone, &resp.Avatar, &resp.Role, &resp.Status, &resp.IsDeleted, &resp.CreateTime, &resp.UpdateTime)
+	err := m.db.QueryRowContext(ctx, query, username).Scan(&resp.Id, &resp.Username, &resp.Password, &resp.Nickname, &resp.Email, &resp.Phone, &resp.Avatar, &resp.Role, &resp.Status, &resp.IsDeleted, &resp.FailedAttempts, &resp.LockedUntil, &resp.CreateTime, &resp.UpdateTime)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -136,5 +138,18 @@ func (m *defaultUserModel) UpdatePassword(ctx context.Context, id int64, passwor
 	}
 	query := fmt.Sprintf(`UPDATE %s SET password = ?, update_time = ? WHERE id = ?`, m.tableName())
 	_, err = m.db.ExecContext(ctx, query, string(hashedPassword), time.Now(), id)
+	return err
+}
+
+func (m *defaultUserModel) IncrementFailedAttempts(ctx context.Context, id int64, maxAttempts int, lockDurationMinutes int) error {
+	query := fmt.Sprintf(`UPDATE %s SET failed_attempts = failed_attempts + 1, locked_until = CASE WHEN failed_attempts + 1 >= ? THEN ? ELSE NULL END, update_time = ? WHERE id = ? AND (locked_until IS NULL OR locked_until < ?)`, m.tableName())
+	lockedUntil := time.Now().Add(time.Duration(lockDurationMinutes) * time.Minute)
+	_, err := m.db.ExecContext(ctx, query, maxAttempts, lockedUntil, time.Now(), id, time.Now())
+	return err
+}
+
+func (m *defaultUserModel) ResetFailedAttempts(ctx context.Context, id int64) error {
+	query := fmt.Sprintf(`UPDATE %s SET failed_attempts = 0, locked_until = NULL, update_time = ? WHERE id = ?`, m.tableName())
+	_, err := m.db.ExecContext(ctx, query, time.Now(), id)
 	return err
 }

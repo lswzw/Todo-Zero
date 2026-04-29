@@ -13,6 +13,8 @@ const (
 	UserDisabled       = 20004
 	RegisterClosed     = 20005
 	OldPasswordError   = 20006
+	UserOrPasswordError = 20007
+	AccountLocked      = 20008
 	TaskNotFoundError     = 30001
 	CategoryNotFoundError = 30002
 	NoPermission         = 40001
@@ -27,16 +29,18 @@ const (
 
 // 中文错误消息
 var codeMessagesZhCN = map[int]string{
-	OK:                "OK",
-	ServerCommonError: "服务器内部错误",
-	RequestParamError: "请求参数错误",
-	UserAlreadyExist:  "用户名已存在",
-	UserNotFoundError: "用户不存在",
-	PasswordError:     "密码错误",
-	UserDisabled:      "用户已被禁用",
-	RegisterClosed:    "注册已关闭",
-	OldPasswordError:  "原密码错误",
-	TaskNotFoundError: "任务不存在",
+	OK:                 "OK",
+	ServerCommonError:  "服务器内部错误",
+	RequestParamError:  "请求参数错误",
+	UserAlreadyExist:   "用户名已存在",
+	UserNotFoundError:  "用户不存在",
+	PasswordError:      "密码错误",
+	UserDisabled:       "用户已被禁用",
+	RegisterClosed:     "注册已关闭",
+	OldPasswordError:   "原密码错误",
+	UserOrPasswordError: "用户名或密码错误",
+	AccountLocked:      "账户已被锁定，请稍后再试",
+	TaskNotFoundError:     "任务不存在",
 	CategoryNotFoundError: "分类不存在",
 	NoPermission:          "无权限操作",
 	AdminRequired:     "需要管理员权限",
@@ -44,16 +48,18 @@ var codeMessagesZhCN = map[int]string{
 
 // 英文错误消息
 var codeMessagesEn = map[int]string{
-	OK:                "OK",
-	ServerCommonError: "Internal server error",
-	RequestParamError: "Request parameter error",
-	UserAlreadyExist:  "Username already exists",
-	UserNotFoundError: "User not found",
-	PasswordError:     "Password error",
-	UserDisabled:      "User has been disabled",
-	RegisterClosed:    "Registration is closed",
-	OldPasswordError:  "Old password error",
-	TaskNotFoundError: "Task not found",
+	OK:                 "OK",
+	ServerCommonError:  "Internal server error",
+	RequestParamError:  "Request parameter error",
+	UserAlreadyExist:   "Username already exists",
+	UserNotFoundError:  "User not found",
+	PasswordError:      "Password error",
+	UserDisabled:       "User has been disabled",
+	RegisterClosed:     "Registration is closed",
+	OldPasswordError:   "Old password error",
+	UserOrPasswordError: "Username or password error",
+	AccountLocked:      "Account locked, please try again later",
+	TaskNotFoundError:     "Task not found",
 	CategoryNotFoundError: "Category not found",
 	NoPermission:          "No permission",
 	AdminRequired:     "Admin required",

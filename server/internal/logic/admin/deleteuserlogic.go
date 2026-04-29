@@ -27,7 +27,10 @@ func NewDeleteUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 
 func (l *DeleteUserLogic) DeleteUser(req *types.DeleteUserReq) (resp *types.DeleteUserResp, err error) {
 	// 不能删除自己
-	userId, _ := jwtx.GetUserIdFromCtx(l.ctx)
+	userId, err := jwtx.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 	if userId == req.Id {
 		return nil, xerr.NewCodeErrFromMsg("不能删除自己")
 	}

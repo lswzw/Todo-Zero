@@ -22,6 +22,9 @@ func GetUserIdFromCtx(ctx interface{ Value(any) any }) (int64, error) {
 		}
 		return n, nil
 	case float64:
+		if v < 0 || v > 9223372036854775807 || v != float64(int64(v)) {
+			return 0, xerr.NewCodeError(xerr.NoPermission)
+		}
 		return int64(v), nil
 	case int64:
 		return v, nil
@@ -46,6 +49,9 @@ func GetIsAdminFromCtx(ctx interface{ Value(any) any }) (int64, error) {
 		}
 		return n, nil
 	case float64:
+		if v < 0 || v > 1 || v != float64(int64(v)) {
+			return 0, xerr.NewCodeError(xerr.AdminRequired)
+		}
 		return int64(v), nil
 	case int64:
 		return v, nil

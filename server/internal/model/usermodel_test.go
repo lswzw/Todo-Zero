@@ -172,8 +172,9 @@ func TestUserModel_UpdatePassword(t *testing.T) {
 	}
 
 	user, _ := m.FindOne(ctx, id)
-	if user.Password != "newhash" {
-		t.Errorf("expected password newhash, got %s", user.Password)
+	// UpdatePassword 现在会用 bcrypt 加密，所以密码不等于明文
+	if user.Password == "newhash" {
+		t.Error("expected bcrypt-hashed password, got plaintext")
 	}
 }
 

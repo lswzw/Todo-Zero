@@ -34,7 +34,21 @@ func (m *defaultOperationLogModel) tableName() string { return "`operation_logs`
 func (m *defaultOperationLogModel) Insert(ctx context.Context, data *OperationLog) (sql.Result, error) {
 	query := fmt.Sprintf(`INSERT INTO %s (user_id, username, module, action, method, ip, location, params, status, error_msg, duration, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, m.tableName())
 	data.CreatedAt = time.Now()
+	data.Params = sanitizeParams(data.Params)
 	return m.db.ExecContext(ctx, query, data.UserId, data.Username, data.Module, data.Action, data.Method, data.Ip, data.Location, data.Params, data.Status, data.ErrorMsg, data.Duration, data.CreatedAt)
+}
+
+func sanitizeParams(params string) string {
+	if params == "" {
+		return params
+	}
+	sensitiveKeys := []string{"password", "oldPassword", "newPassword", "token", "secret"}
+	result := params
+	for _, key := range sensitiveKeys {
+		result = strings.ReplaceAll(result, "\""+key+"\":\"", "\""+key+"\":\"***\"")
+		result = strings.ReplaceAll(result, "'"+key+"':'", "'"+key+"':'***'")
+	}
+	return result
 }
 
 func (m *defaultOperationLogModel) FindList(ctx context.Context, action, username string, page, pageSize int64) ([]*OperationLog, int64, error) {
