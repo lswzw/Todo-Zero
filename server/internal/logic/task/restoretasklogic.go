@@ -44,7 +44,7 @@ func (l *RestoreTaskLogic) RestoreTask(req *types.RestoreTaskReq) (resp *types.R
 		return nil, xerr.NewCodeError(xerr.RequestParamError)
 	}
 
-	if err := l.svcCtx.TaskModel.Restore(l.ctx, req.Id); err != nil {
+	if err := l.svcCtx.TaskModel.Restore(l.ctx, req.Id, userId); err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 

@@ -82,19 +82,19 @@
 | 状态 | # | 任务描述 | 文件位置 | 风险等级 |
 |:---:|---|----------|----------|----------|
 | [x] | L1 | 修正 vars.go 密码加密注释与实现不符问题 | `server/internal/model/vars.go` | 🟢 LOW |
-| [ ] | L2 | 修复 FindList 返回密码字段问题 | `server/internal/model/usermodel_gen.go` | 🟢 LOW |
-| [ ] | L3 | 添加系统配置缓存访问控制 | `server/internal/model/systemconfigmodel_gen.go` | 🟢 LOW |
-| [ ] | L4 | 简化错误消息，避免泄露敏感信息 | `server/internal/pkg/xerr/code.go` | 🟢 LOW |
-| [ ] | L5 | 配置化中间件安全参数 | `server/internal/svc/servicecontext.go` | 🟢 LOW |
-| [ ] | L6 | 清理日志中的敏感操作信息 | `server/internal/scheduler/cleanup.go` | 🟢 LOW |
-| [ ] | L7 | 修复测试文件接口信息暴露 | `server/internal/scheduler/cleanup_test.go` | 🟢 LOW |
-| [ ] | L8 | 添加 /user/check-register 和 /user/register 限流 | `server/internal/handler/routes.go` | 🟢 LOW |
-| [ ] | L9 | 添加改密额外验证（当前密码验证） | `server/internal/logic/user/changepasswordlogic.go` | 🟢 LOW |
+| [x] | L2 | 修复 FindList 返回密码字段问题 | `server/internal/model/usermodel_gen.go` | 🟢 LOW |
+| [x] | L3 | 添加系统配置缓存访问控制 | `server/internal/model/systemconfigmodel_gen.go` | 🟢 LOW |
+| [x] | L4 | 简化错误消息，避免泄露敏感信息 | `server/internal/pkg/xerr/code.go` | 🟢 LOW |
+| [x] | L5 | 配置化中间件安全参数 | `server/internal/svc/servicecontext.go` | 🟢 LOW |
+| [x] | L6 | 清理日志中的敏感操作信息 | `server/internal/scheduler/cleanup.go` | 🟢 LOW |
+| [x] | L7 | 修复测试文件接口信息暴露 | `server/internal/scheduler/cleanup_test.go` | 🟢 LOW |
+| [x] | L8 | 添加 /user/check-register 和 /user/register 限流 | `server/internal/handler/routes.go` | 🟢 LOW |
+| [x] | L9 | 添加改密额外验证（当前密码验证） | `server/internal/logic/user/changepasswordlogic.go` | 🟢 LOW |
 | [x] | L10 | 修复文件扩展名大小写绕过问题 | `server/internal/handler/admin/downloadbackuphandler.go` | 🟢 LOW |
-| [ ] | L11 | 添加软删除恢复权限控制 | `server/internal/model/taskmodel_gen.go`, `server/internal/model/usermodel_gen.go` | 🟢 LOW |
-| [ ] | L12 | 统一 LoginLogReq Username 长度验证 | `server/internal/types/types.go` | 🟢 LOW |
+| [x] | L11 | 添加软删除恢复权限控制 | `server/internal/model/taskmodel_gen.go`, `server/internal/model/usermodel_gen.go` | 🟢 LOW |
+| [x] | L12 | 统一 LoginLogReq Username 长度验证 | `server/internal/types/types.go` | 🟢 LOW |
 | [x] | L13 | 添加 Keyword 查询字段长度限制 | `server/internal/types/types_validate.go` | 🟢 LOW |
-| [ ] | L14 | 添加 CSP、HSTS 等安全响应头 | `server/internal/middleware/securityheadsmiddleware.go` | 🟢 LOW |
+| [x] | L14 | 添加 CSP、HSTS 等安全响应头 | `server/internal/middleware/securityheadsmiddleware.go` | 🟢 LOW |
 
 ---
 

@@ -2,6 +2,7 @@ package svc
 
 import (
 	"database/sql"
+	"time"
 
 	"server/internal/config"
 	"server/internal/middleware"
@@ -35,6 +36,24 @@ func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
 
 	middleware.SetTrustedProxies(c.TrustedProxies)
 
+	// 配置化限流参数
+	apiRateLimit := middleware.NewAPIRateLimitMiddleware()
+	loginRateLimit := middleware.NewLoginRateLimitMiddleware()
+
+	if c.RateLimit.APIRequestsPerMinute > 0 {
+		apiRateLimit = middleware.NewAPIRateLimitMiddlewareWithConfig(
+			c.RateLimit.APIRequestsPerMinute,
+			1*time.Minute,
+		)
+	}
+	if c.RateLimit.LoginAttempts > 0 {
+		loginRateLimit = middleware.NewLoginRateLimitMiddlewareWithConfig(
+			c.RateLimit.LoginAttempts,
+			time.Duration(c.RateLimit.LoginWindowMinutes)*time.Minute,
+			time.Duration(c.RateLimit.LoginLockoutMinutes)*time.Minute,
+		)
+	}
+
 	return &ServiceContext{
 		Config:                    c,
 		DB:                        db,
@@ -49,8 +68,8 @@ func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
 		AdminMiddleware:           middleware.NewAdminMiddleware(),
 		OperationLogMiddleware:    middleware.NewOperationLogMiddleware(userModel, opLogModel),
 		SecurityHeadersMiddleware: middleware.NewSecurityHeadersMiddleware(),
-		LoginRateLimitMiddleware:  middleware.NewLoginRateLimitMiddleware(),
-		APIRateLimitMiddleware:    middleware.NewAPIRateLimitMiddleware(),
+		LoginRateLimitMiddleware:  loginRateLimit,
+		APIRateLimitMiddleware:    apiRateLimit,
 		LocaleMiddleware:          middleware.NewLocaleMiddleware(),
 	}
 }

@@ -21,8 +21,8 @@ type (
 		FindDeletedList(ctx context.Context, userId int64, page, pageSize int64) ([]*Task, int64, error)
 		UpdateStatus(ctx context.Context, id, status int64) error
 		UpdateSortOrder(ctx context.Context, userId int64, orders []SortOrderItem) error
-		Restore(ctx context.Context, id int64) error
-		PermanentDelete(ctx context.Context, id int64) error
+		Restore(ctx context.Context, id, userId int64) error
+		PermanentDelete(ctx context.Context, id, userId int64) error
 		CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error)
 		HardDeleteCompletedBefore(ctx context.Context, beforeTime time.Time) (int64, error)
 		HardDeleteSoftDeletedBefore(ctx context.Context, beforeTime time.Time) (int64, error)
@@ -211,16 +211,36 @@ func (m *defaultTaskModel) FindDeletedList(ctx context.Context, userId int64, pa
 	return list, total, rows.Err()
 }
 
-func (m *defaultTaskModel) Restore(ctx context.Context, id int64) error {
-	query := fmt.Sprintf(`UPDATE %s SET is_deleted = 0, update_time = ? WHERE id = ? AND is_deleted = 1`, m.tableName())
-	_, err := m.db.ExecContext(ctx, query, time.Now(), id)
-	return err
+func (m *defaultTaskModel) Restore(ctx context.Context, id, userId int64) error {
+	query := fmt.Sprintf(`UPDATE %s SET is_deleted = 0, update_time = ? WHERE id = ? AND user_id = ? AND is_deleted = 1`, m.tableName())
+	result, err := m.db.ExecContext(ctx, query, time.Now(), id, userId)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
-func (m *defaultTaskModel) PermanentDelete(ctx context.Context, id int64) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id = ? AND is_deleted = 1`, m.tableName())
-	_, err := m.db.ExecContext(ctx, query, id)
-	return err
+func (m *defaultTaskModel) PermanentDelete(ctx context.Context, id, userId int64) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id = ? AND user_id = ? AND is_deleted = 1`, m.tableName())
+	result, err := m.db.ExecContext(ctx, query, id, userId)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 func (m *defaultTaskModel) HardDeleteCompletedBefore(ctx context.Context, beforeTime time.Time) (int64, error) {

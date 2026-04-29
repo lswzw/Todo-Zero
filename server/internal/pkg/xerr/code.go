@@ -1,24 +1,27 @@
 package xerr
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // 错误码
 const (
-	OK                 = 0
-	ServerCommonError  = 10001
-	RequestParamError  = 10002
-	UserAlreadyExist   = 20001
-	UserNotFoundError  = 20002
-	PasswordError      = 20003
-	UserDisabled       = 20004
-	RegisterClosed     = 20005
-	OldPasswordError   = 20006
-	UserOrPasswordError = 20007
-	AccountLocked      = 20008
+	OK                    = 0
+	ServerCommonError     = 10001
+	RequestParamError     = 10002
+	UserAlreadyExist      = 20001
+	UserNotFoundError     = 20002
+	PasswordError         = 20003
+	UserDisabled          = 20004
+	RegisterClosed        = 20005
+	OldPasswordError      = 20006
+	UserOrPasswordError   = 20007
+	AccountLocked         = 20008
 	TaskNotFoundError     = 30001
 	CategoryNotFoundError = 30002
-	NoPermission         = 40001
-	AdminRequired      = 40002
+	NoPermission          = 40001
+	AdminRequired         = 40002
 )
 
 // 支持的语言
@@ -29,40 +32,40 @@ const (
 
 // 中文错误消息
 var codeMessagesZhCN = map[int]string{
-	OK:                 "OK",
-	ServerCommonError:  "服务器内部错误",
-	RequestParamError:  "请求参数错误",
-	UserAlreadyExist:   "用户名已存在",
-	UserNotFoundError:  "用户不存在",
-	PasswordError:      "密码错误",
-	UserDisabled:       "用户已被禁用",
-	RegisterClosed:     "注册已关闭",
-	OldPasswordError:   "原密码错误",
-	UserOrPasswordError: "用户名或密码错误",
-	AccountLocked:      "账户已被锁定，请稍后再试",
+	OK:                    "OK",
+	ServerCommonError:     "服务器内部错误",
+	RequestParamError:     "请求参数错误",
+	UserAlreadyExist:      "用户名已存在",
+	UserNotFoundError:     "用户不存在",
+	PasswordError:         "密码错误",
+	UserDisabled:          "用户已被禁用",
+	RegisterClosed:        "注册已关闭",
+	OldPasswordError:      "原密码错误",
+	UserOrPasswordError:   "用户名或密码错误",
+	AccountLocked:         "账户已被锁定，请稍后再试",
 	TaskNotFoundError:     "任务不存在",
 	CategoryNotFoundError: "分类不存在",
 	NoPermission:          "无权限操作",
-	AdminRequired:     "需要管理员权限",
+	AdminRequired:         "需要管理员权限",
 }
 
 // 英文错误消息
 var codeMessagesEn = map[int]string{
-	OK:                 "OK",
-	ServerCommonError:  "Internal server error",
-	RequestParamError:  "Request parameter error",
-	UserAlreadyExist:   "Username already exists",
-	UserNotFoundError:  "User not found",
-	PasswordError:      "Password error",
-	UserDisabled:       "User has been disabled",
-	RegisterClosed:     "Registration is closed",
-	OldPasswordError:   "Old password error",
-	UserOrPasswordError: "Username or password error",
-	AccountLocked:      "Account locked, please try again later",
+	OK:                    "OK",
+	ServerCommonError:     "Internal server error",
+	RequestParamError:     "Request parameter error",
+	UserAlreadyExist:      "Username already exists",
+	UserNotFoundError:     "User not found",
+	PasswordError:         "Password error",
+	UserDisabled:          "User has been disabled",
+	RegisterClosed:        "Registration is closed",
+	OldPasswordError:      "Old password error",
+	UserOrPasswordError:   "Username or password error",
+	AccountLocked:         "Account locked, please try again later",
 	TaskNotFoundError:     "Task not found",
 	CategoryNotFoundError: "Category not found",
 	NoPermission:          "No permission",
-	AdminRequired:     "Admin required",
+	AdminRequired:         "Admin required",
 }
 
 // GetMessage 根据语言获取错误消息
@@ -99,7 +102,16 @@ func NewCodeErrorWithLang(code int, lang string) *CodeError {
 	return &CodeError{Code: code, Msg: GetMessage(code, lang)}
 }
 
+// NewCodeErrFromMsg 创建自定义错误消息（仅用于内部已审查的消息）
+// 注意：不建议直接使用此函数，应优先使用预定义的错误码
 func NewCodeErrFromMsg(msg string) *CodeError {
+	// 安全限制：禁止包含敏感关键字的消息
+	sensitiveKeywords := []string{"password", "secret", "token", "database", "SQL", "error"}
+	for _, kw := range sensitiveKeywords {
+		if len(msg) > len(kw) && (strings.Contains(strings.ToLower(msg), kw)) {
+			return &CodeError{Code: ServerCommonError, Msg: GetMessage(ServerCommonError, LangZhCN)}
+		}
+	}
 	return &CodeError{Code: ServerCommonError, Msg: msg}
 }
 

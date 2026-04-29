@@ -43,9 +43,9 @@ func runCleanup(svcCtx *svc.ServiceContext) {
 		before := now.AddDate(0, 0, -int(taskAutoDeleteDays))
 		count, err := svcCtx.TaskModel.HardDeleteCompletedBefore(ctx, before)
 		if err != nil {
-			fmt.Printf("[Scheduler] Failed to cleanup completed tasks: %v\n", err)
+			fmt.Printf("[Scheduler] Cleanup failed: %v\n", sanitizeError(err))
 		} else if count > 0 {
-			fmt.Printf("[Scheduler] Cleaned up %d completed tasks older than %d days\n", count, taskAutoDeleteDays)
+			fmt.Printf("[Scheduler] Cleaned up %d completed tasks\n", count)
 		}
 	}
 
@@ -54,9 +54,9 @@ func runCleanup(svcCtx *svc.ServiceContext) {
 		before := now.AddDate(0, 0, -int(taskTrashRetentionDays))
 		count, err := svcCtx.TaskModel.HardDeleteSoftDeletedBefore(ctx, before)
 		if err != nil {
-			fmt.Printf("[Scheduler] Failed to cleanup soft-deleted tasks: %v\n", err)
+			fmt.Printf("[Scheduler] Cleanup failed: %v\n", sanitizeError(err))
 		} else if count > 0 {
-			fmt.Printf("[Scheduler] Cleaned up %d soft-deleted tasks older than %d days\n", count, taskTrashRetentionDays)
+			fmt.Printf("[Scheduler] Cleaned up %d soft-deleted tasks\n", count)
 		}
 	}
 
@@ -65,9 +65,9 @@ func runCleanup(svcCtx *svc.ServiceContext) {
 		before := now.AddDate(0, 0, -int(logAutoDeleteDays))
 		count, err := svcCtx.OperationLogModel.DeleteOlderThan(ctx, before)
 		if err != nil {
-			fmt.Printf("[Scheduler] Failed to cleanup operation logs: %v\n", err)
+			fmt.Printf("[Scheduler] Cleanup failed: %v\n", sanitizeError(err))
 		} else if count > 0 {
-			fmt.Printf("[Scheduler] Cleaned up %d operation logs older than %d days\n", count, logAutoDeleteDays)
+			fmt.Printf("[Scheduler] Cleaned up %d operation logs\n", count)
 		}
 	}
 
@@ -76,11 +76,51 @@ func runCleanup(svcCtx *svc.ServiceContext) {
 		before := now.AddDate(0, 0, -int(logAutoDeleteDays))
 		count, err := svcCtx.LoginLogModel.DeleteOlderThan(ctx, before)
 		if err != nil {
-			fmt.Printf("[Scheduler] Failed to cleanup login logs: %v\n", err)
+			fmt.Printf("[Scheduler] Cleanup failed: %v\n", sanitizeError(err))
 		} else if count > 0 {
-			fmt.Printf("[Scheduler] Cleaned up %d login logs older than %d days\n", count, logAutoDeleteDays)
+			fmt.Printf("[Scheduler] Cleaned up %d login logs\n", count)
 		}
 	}
+}
+
+// sanitizeError removes sensitive information from error messages for logging
+func sanitizeError(err error) string {
+	msg := err.Error()
+	sensitivePatterns := []string{"password", "secret", "token", "database", "SQL", "connection"}
+	for _, pattern := range sensitivePatterns {
+		if containsIgnoreCase(msg, pattern) {
+			return "internal error"
+		}
+	}
+	return msg
+}
+
+func containsIgnoreCase(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if equalsIgnoreCase(s[i:i+len(substr)], substr) {
+			return true
+		}
+	}
+	return false
+}
+
+func equalsIgnoreCase(s1, s2 string) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	for i := 0; i < len(s1); i++ {
+		if toLower(s1[i]) != toLower(s2[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func toLower(c byte) byte {
+	if c >= 'A' && c <= 'Z' {
+		return c + 32
+	}
+	return c
 }
 
 func getConfigInt(svcCtx *svc.ServiceContext, key string, defaultVal int64) int64 {

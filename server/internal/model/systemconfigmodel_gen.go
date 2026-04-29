@@ -138,3 +138,23 @@ func (m *defaultSystemConfigModel) FindByGroup(ctx context.Context, group string
 	}
 	return list, rows.Err()
 }
+
+// ClearCache 清除所有缓存，用于配置批量更新后调用
+func (m *defaultSystemConfigModel) ClearCache() {
+	m.cache.Range(func(key, value interface{}) bool {
+		m.cache.Delete(key)
+		return true
+	})
+}
+
+// CleanupExpiredCache 清理过期缓存条目
+func (m *defaultSystemConfigModel) CleanupExpiredCache() {
+	now := time.Now()
+	m.cache.Range(func(key, value interface{}) bool {
+		entry := value.(*cacheEntry)
+		if now.After(entry.expiredAt) {
+			m.cache.Delete(key)
+		}
+		return true
+	})
+}

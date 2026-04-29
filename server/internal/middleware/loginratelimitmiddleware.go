@@ -12,27 +12,49 @@ import (
 )
 
 const (
-	maxLoginAttempts = 10              // 最大尝试次数
-	loginWindow      = 15 * time.Minute // 统计窗口
-	lockoutDuration  = 15 * time.Minute // 锁定时长
-	cleanupInterval  = 10 * time.Minute // 清理间隔
+	defaultMaxLoginAttempts = 10               // 默认最大尝试次数
+	defaultLoginWindow      = 15 * time.Minute // 默认统计窗口
+	defaultLockoutDuration  = 15 * time.Minute // 默认锁定时长
+	cleanupInterval         = 10 * time.Minute // 清理间隔
 )
 
 type loginAttempt struct {
-	count    int
-	lastTime time.Time
-	locked   bool
-	lockTime time.Time
+	count       int
+	lastTime    time.Time
+	locked      bool
+	lockTime    time.Time
+	lockoutDur  time.Duration
+	window      time.Duration
+	maxAttempts int
 }
 
 type LoginRateLimitMiddleware struct {
-	mu       sync.Mutex
-	attempts map[string]*loginAttempt
+	mu          sync.Mutex
+	attempts    map[string]*loginAttempt
+	maxAttempts int
+	window      time.Duration
+	lockoutDur  time.Duration
 }
 
 func NewLoginRateLimitMiddleware() *LoginRateLimitMiddleware {
+	return NewLoginRateLimitMiddlewareWithConfig(defaultMaxLoginAttempts, defaultLoginWindow, defaultLockoutDuration)
+}
+
+func NewLoginRateLimitMiddlewareWithConfig(maxAttempts int, window, lockoutDur time.Duration) *LoginRateLimitMiddleware {
+	if maxAttempts <= 0 {
+		maxAttempts = defaultMaxLoginAttempts
+	}
+	if window <= 0 {
+		window = defaultLoginWindow
+	}
+	if lockoutDur <= 0 {
+		lockoutDur = defaultLockoutDuration
+	}
 	m := &LoginRateLimitMiddleware{
-		attempts: make(map[string]*loginAttempt),
+		attempts:    make(map[string]*loginAttempt),
+		maxAttempts: maxAttempts,
+		window:      window,
+		lockoutDur:  lockoutDur,
 	}
 	go m.cleanup()
 	return m
@@ -45,14 +67,18 @@ func (m *LoginRateLimitMiddleware) Handle(next http.HandlerFunc) http.HandlerFun
 		m.mu.Lock()
 		attempt, exists := m.attempts[ip]
 		if !exists {
-			attempt = &loginAttempt{}
+			attempt = &loginAttempt{
+				lockoutDur:  m.lockoutDur,
+				window:      m.window,
+				maxAttempts: m.maxAttempts,
+			}
 			m.attempts[ip] = attempt
 		}
 
 		// 检查是否被锁定
 		if attempt.locked {
-			if time.Since(attempt.lockTime) < lockoutDuration {
-				remaining := lockoutDuration - time.Since(attempt.lockTime)
+			if time.Since(attempt.lockTime) < m.lockoutDur {
+				remaining := m.lockoutDur - time.Since(attempt.lockTime)
 				m.mu.Unlock()
 				logx.Errorf("[LoginRateLimit] IP %s is locked out, remaining: %v", ip, remaining)
 				w.Header().Set("Retry-After", time.Now().Add(remaining).Format(time.RFC1123))
@@ -65,13 +91,13 @@ func (m *LoginRateLimitMiddleware) Handle(next http.HandlerFunc) http.HandlerFun
 		}
 
 		// 检查窗口是否过期，过期则重置
-		if time.Since(attempt.lastTime) > loginWindow {
+		if time.Since(attempt.lastTime) > m.window {
 			attempt.count = 0
 		}
 
 		attempt.lastTime = time.Now()
 		attempt.count++
-		shouldLock := attempt.count > maxLoginAttempts
+		shouldLock := attempt.count > m.maxAttempts
 		if shouldLock {
 			attempt.locked = true
 			attempt.lockTime = time.Now()
@@ -80,7 +106,7 @@ func (m *LoginRateLimitMiddleware) Handle(next http.HandlerFunc) http.HandlerFun
 
 		if shouldLock {
 			logx.Errorf("[LoginRateLimit] IP %s exceeded max attempts, locking out", ip)
-			w.Header().Set("Retry-After", time.Now().Add(lockoutDuration).Format(time.RFC1123))
+			w.Header().Set("Retry-After", time.Now().Add(m.lockoutDur).Format(time.RFC1123))
 			httpx.ErrorCtx(r.Context(), w, errLoginRateLimit)
 			return
 		}

@@ -44,7 +44,7 @@ func (l *PermanentDeleteTaskLogic) PermanentDeleteTask(req *types.PermanentDelet
 		return nil, xerr.NewCodeError(xerr.RequestParamError)
 	}
 
-	if err := l.svcCtx.TaskModel.PermanentDelete(l.ctx, req.Id); err != nil {
+	if err := l.svcCtx.TaskModel.PermanentDelete(l.ctx, req.Id, userId); err != nil {
 		return nil, xerr.NewCodeError(xerr.ServerCommonError)
 	}
 
