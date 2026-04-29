@@ -33,6 +33,8 @@ func NewServiceContext(c config.Config, db *sql.DB) *ServiceContext {
 	userModel := model.NewUserModel(db)
 	opLogModel := model.NewOperationLogModel(db)
 
+	middleware.SetTrustedProxies(c.TrustedProxies)
+
 	return &ServiceContext{
 		Config:                    c,
 		DB:                        db,

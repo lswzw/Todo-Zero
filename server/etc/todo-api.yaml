@@ -3,6 +3,11 @@ Host: 0.0.0.0
 Port: 8888
 Debug: false
 
+# 可信代理列表（仅信任这些代理转发的 X-Forwarded-For）
+TrustedProxies:
+  - "127.0.0.1"
+  - "::1"
+
 # JWT 配置（AccessSecret 首次启动时自动生成并持久化到数据库，空白时使用默认值）
 Auth:
   AccessSecret: ""  # 留空或使用默认值，首次启动时自动生成安全的随机密钥

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -66,7 +67,7 @@ func (m *APIRateLimitMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc 
 		// 设置响应头
 		remaining := maxAPIRequests - req.count
 		w.Header().Set("X-RateLimit-Limit", "100")
-		w.Header().Set("X-RateLimit-Remaining", string(rune('0'+remaining)))
+		w.Header().Set("X-RateLimit-Remaining", strconv.Itoa(remaining))
 		m.mu.Unlock()
 
 		next(w, r)

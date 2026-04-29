@@ -117,53 +117,6 @@ func (m *LoginRateLimitMiddleware) cleanup() {
 	}
 }
 
-func getClientIP(r *http.Request) string {
-	// 优先从 X-Forwarded-For / X-Real-IP 获取（反向代理场景）
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		// X-Forwarded-For 可能包含多个 IP，取第一个
-		for _, ip := range splitByComma(xff) {
-			if ip := trimSpace(ip); ip != "" {
-				return ip
-			}
-		}
-	}
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return trimSpace(xri)
-	}
-	// RemoteAddr 包含端口，如 192.168.1.1:12345
-	addr := r.RemoteAddr
-	for i := len(addr) - 1; i >= 0; i-- {
-		if addr[i] == ':' {
-			return addr[:i]
-		}
-	}
-	return addr
-}
-
-func splitByComma(s string) []string {
-	var result []string
-	start := 0
-	for i := 0; i < len(s); i++ {
-		if s[i] == ',' {
-			result = append(result, s[start:i])
-			start = i + 1
-		}
-	}
-	result = append(result, s[start:])
-	return result
-}
-
-func trimSpace(s string) string {
-	start, end := 0, len(s)
-	for start < end && (s[start] == ' ' || s[start] == '\t') {
-		start++
-	}
-	for end > start && (s[end-1] == ' ' || s[end-1] == '\t') {
-		end--
-	}
-	return s[start:end]
-}
-
 type loginRateLimitError struct{}
 
 func (e *loginRateLimitError) Error() string { return "登录尝试次数过多，请稍后再试" }
