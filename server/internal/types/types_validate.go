@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -335,7 +336,6 @@ func validatePassword(password string, field string) error {
 	if n > 20 {
 		return fmt.Errorf("%s最多20个字符", field)
 	}
-	// 复杂度要求：必须包含字母和数字
 	hasLetter := false
 	hasDigit := false
 	for _, c := range password {
@@ -348,6 +348,155 @@ func validatePassword(password string, field string) error {
 	}
 	if !hasLetter || !hasDigit {
 		return fmt.Errorf("%s必须同时包含字母和数字", field)
+	}
+	return nil
+}
+
+// --- DownloadBackupReq ---
+
+func (r *DownloadBackupReq) Validate() error {
+	if err := validateFileName(r.FileName); err != nil {
+		return err
+	}
+	return nil
+}
+
+// --- RestoreBackupReq ---
+
+func (r *RestoreBackupReq) Validate() error {
+	if err := validateFileName(r.FileName); err != nil {
+		return err
+	}
+	return nil
+}
+
+// --- DeleteTaskReq ---
+
+func (r *DeleteTaskReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("任务ID无效")
+	}
+	return nil
+}
+
+// --- RestoreTaskReq ---
+
+func (r *RestoreTaskReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("任务ID无效")
+	}
+	return nil
+}
+
+// --- PermanentDeleteTaskReq ---
+
+func (r *PermanentDeleteTaskReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("任务ID无效")
+	}
+	return nil
+}
+
+// --- DeleteUserReq ---
+
+func (r *DeleteUserReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("用户ID无效")
+	}
+	return nil
+}
+
+// --- TaskDetailReq ---
+
+func (r *TaskDetailReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("任务ID无效")
+	}
+	return nil
+}
+
+// --- ToggleTaskReq ---
+
+func (r *ToggleTaskReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("任务ID无效")
+	}
+	return nil
+}
+
+// --- ToggleUserStatusReq ---
+
+func (r *ToggleUserStatusReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("用户ID无效")
+	}
+	return nil
+}
+
+// --- CreateTagReq ---
+
+func (r *CreateTagReq) Validate() error {
+	if r.Name == "" {
+		return fmt.Errorf("标签名称不能为空")
+	}
+	if utf8.RuneCountInString(r.Name) > 20 {
+		return fmt.Errorf("标签名称最多20个字符")
+	}
+	if utf8.RuneCountInString(r.Color) > 20 {
+		return fmt.Errorf("标签颜色最多20个字符")
+	}
+	return nil
+}
+
+// --- UpdateTagReq ---
+
+func (r *UpdateTagReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("标签ID无效")
+	}
+	if r.Name != nil && utf8.RuneCountInString(*r.Name) > 20 {
+		return fmt.Errorf("标签名称最多20个字符")
+	}
+	if r.Color != nil && utf8.RuneCountInString(*r.Color) > 20 {
+		return fmt.Errorf("标签颜色最多20个字符")
+	}
+	return nil
+}
+
+// --- DeleteTagReq ---
+
+func (r *DeleteTagReq) Validate() error {
+	if r.Id <= 0 {
+		return fmt.Errorf("标签ID无效")
+	}
+	return nil
+}
+
+// --- TagListReq ---
+
+func (r *TagListReq) Validate() error {
+	if utf8.RuneCountInString(r.Keyword) > 50 {
+		return fmt.Errorf("搜索关键词最多50个字符")
+	}
+	return nil
+}
+
+// validateFileName validates backup file name for security
+func validateFileName(fileName string) error {
+	if fileName == "" {
+		return fmt.Errorf("文件名不能为空")
+	}
+	if len(fileName) > 255 {
+		return fmt.Errorf("文件名过长")
+	}
+	if strings.Contains(fileName, "..") {
+		return fmt.Errorf("文件名包含非法字符")
+	}
+	if strings.HasPrefix(fileName, "/") || strings.HasPrefix(fileName, "\\") {
+		return fmt.Errorf("文件名不能是绝对路径")
+	}
+	if !strings.HasSuffix(fileName, ".bak") && !strings.HasSuffix(fileName, ".BAK") {
+		return fmt.Errorf("必须是.bak文件")
 	}
 	return nil
 }
