@@ -16,6 +16,13 @@ Auth:
   AccessSecret: ""  # 留空或使用默认值，首次启动时自动生成安全的随机密钥
   AccessExpire: 86400
 
+# 限流配置
+RateLimit:
+  APIRequestsPerMinute: 60   # API 限流：每分钟最大请求数（0 使用默认值）
+  LoginAttempts: 10          # 登录限流：最大尝试次数（0 使用默认值）
+  LoginWindowMinutes: 15     # 登录限流：统计窗口（分钟）
+  LoginLockoutMinutes: 15    # 登录限流：锁定时长（分钟）
+
 # 数据库配置（运行时注入）
 Database:
   DataDir: "data"

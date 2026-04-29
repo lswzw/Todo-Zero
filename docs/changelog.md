@@ -452,3 +452,88 @@
   - 新增 tags 表索引: user_id
   - 新增 task_tags 表索引: task_id, tag_id
   - 新增 system_configs 唯一索引: config_key
+
+---
+
+## v2.5.0 — 安全评审修复
+
+> 安全评审完成于 2026-04-29，审计范围：server/internal 下所有后端 Go 代码（120+ 文件）
+>
+> 汇总：HIGH 13 个、MEDIUM 27 个、LOW 14 个，共 54 项，全部已修复
+
+### HIGH — 高危问题（13 项）
+
+- [x] **H1 密码明文存储** — `Insert`/`UpdatePassword` 改用 bcrypt 加密 | `usermodel_gen.go`
+- [x] **H2 JWT Secret 硬编码** — 首次启动自动生成随机密钥并持久化到数据库 | `config.go`, `todo-api.yaml`
+- [x] **H3 Token 过期验证缺失** — 添加注释说明 JWT 验证由中间件层处理 | `jwtx/jwt.go`
+- [x] **H4 ResetPassword 管理员权限缺失** — 添加管理员身份验证 | `resetpasswordlogic.go`
+- [x] **H5 ToggleUserStatus 管理员权限缺失** — 添加管理员身份验证 | `toggleuserstatuslogic.go`
+- [x] **H6 SortTaskReq 验证缺失** — 实现 `Validate()` 方法 | `types_validate.go`
+- [x] **H7 DownloadBackupReq 路径遍历** — 验证 FileName 防止目录穿越 | `types_validate.go`
+- [x] **H8 RestoreBackupReq 路径遍历** — 验证 FileName 防止目录穿越 | `types_validate.go`
+- [x] **H9 SQL 注入风险** — 动态表名使用白名单验证 | `scheduler/backup.go`
+- [x] **H10 敏感配置泄露** — 过滤/脱敏敏感配置项返回 | `configlistlogic.go`
+- [x] **H11 路径遍历 TOCTOU 漏洞** — 使用 `os.Open` 直接打开文件 | `downloadbackuphandler.go`
+- [x] **H12 X-Forwarded-For IP 欺骗** — 只信任配置的可信代理 IP | `middleware/ip.go`
+- [x] **H13 错误响应泄露内部详情** — 未知错误返回通用消息 | `xerr/response.go`
+
+### MEDIUM — 中危问题（27 项）
+
+**密码安全**
+
+- [x] **M1 密码强度验证** — 注册时验证密码复杂度（8位以上、含大小写/数字/特殊字符） | `types_validate.go`
+- [x] **M2 统一登录错误提示** — 对外返回"用户名或密码错误"，不区分具体原因 | `loginlogic.go`
+- [x] **M3 备份失败错误信息泄露** — 返回通用错误消息 | `triggerbackuplogic.go`
+- [x] **M4 恢复失败错误信息泄露** — 返回通用错误消息 | `restorebackuplogic.go`
+- [x] **M5 ChangePasswordReq 密码长度验证** | `types_validate.go`
+- [x] **M6 LoginReq Password 长度验证** | `types_validate.go`
+
+**输入验证缺失**
+
+- [x] **M7-M12** 补全 DeleteTaskReq/RestoreTaskReq/PermanentDeleteTaskReq/DeleteUserReq/TaskDetailReq/ToggleTaskReq 的 `Validate()` 方法 | `types_validate.go`
+- [x] **M13 ToggleUserStatusReq Validate()** | `types_validate.go`
+- [x] **M14 UpdateTagReq Validate()** | `types_validate.go`
+- [x] **M15 DeleteTagReq Validate()** | `types_validate.go`
+- [x] **M16 CreateTagReq Name/Color 长度验证** | `types_validate.go`
+- [x] **M17 ExportTaskReq Keyword 长度限制** | `types_validate.go`
+
+**权限/认证**
+
+- [x] **M18 CategoryList 忽略 JWT 错误** — 修复 JWT 解析错误未正确处理 | `categorylistlogic.go`
+- [x] **M19 DeleteUser 忽略 JWT 错误** — 修复 JWT 解析错误未正确处理 | `deleteuserlogic.go`
+
+**其他中危**
+
+- [x] **M20 操作日志 Params 脱敏** | `loginlogmodel_gen.go`
+- [x] **M21 审计日志 IP 脱敏** | `operationlogmiddleware.go`
+- [x] **M22 X-RateLimit-Remaining 头部乱码** | `apiratelimitmiddleware.go`
+- [x] **M23 备份文件权限收紧为 0600** | `scheduler/backup.go`
+- [x] **M24 float64 转 int64 类型混淆** | `jwtx/jwt.go`
+- [x] **M25 登录失败次数锁定机制** — 新增 `LoginRateLimitMiddleware`，可配置尝试次数/窗口/锁定时长 | `routes.go`, `loginlogic.go`
+- [x] **M26 /user/check-register 限流** | `routes.go`
+- [x] **M27 Debug 模式敏感信息泄露风险** | `config.go`
+
+### LOW — 低危问题（14 项）
+
+- [x] **L1** 修正 `vars.go` 密码加密注释与实现不符 | `model/vars.go`
+- [x] **L2** `FindList` 返回密码字段 — 查询排除 password | `usermodel_gen.go`
+- [x] **L3** 系统配置缓存访问控制 | `systemconfigmodel_gen.go`
+- [x] **L4** 简化错误消息，避免泄露敏感信息 | `xerr/code.go`
+- [x] **L5** 配置化中间件安全参数 — RateLimit 配置项 | `servicecontext.go`, `todo-api.yaml`
+- [x] **L6** 清理日志中的敏感操作信息 | `scheduler/cleanup.go`
+- [x] **L7** 修复测试文件接口信息暴露 | `cleanup_test.go`
+- [x] **L8** /user/check-register 和 /user/register 限流 | `routes.go`
+- [x] **L9** 改密额外验证（当前密码验证） | `changepasswordlogic.go`
+- [x] **L10** 文件扩展名大小写绕过问题 | `downloadbackuphandler.go`
+- [x] **L11** 软删除恢复权限控制 — `Restore`/`PermanentDelete` 增加 userId 参数 | `taskmodel_gen.go`, `usermodel_gen.go`
+- [x] **L12** 统一 LoginLogReq Username 长度验证 | `types.go`
+- [x] **L13** Keyword 查询字段长度限制 | `types_validate.go`
+- [x] **L14** CSP、HSTS 等安全响应头 | `securityheadsmiddleware.go`
+
+### 配置变更
+
+- `etc/todo-api.yaml` 新增 `RateLimit` 配置块：
+  - `APIRequestsPerMinute` — API 限流每分钟最大请求数（默认 60）
+  - `LoginAttempts` — 登录限流最大尝试次数（默认 10）
+  - `LoginWindowMinutes` — 登录统计窗口分钟数（默认 15）
+  - `LoginLockoutMinutes` — 登录锁定时长分钟数（默认 15）

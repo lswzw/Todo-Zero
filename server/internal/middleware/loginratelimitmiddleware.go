@@ -136,8 +136,8 @@ func (m *LoginRateLimitMiddleware) cleanup() {
 		now := time.Now()
 		for ip, attempt := range m.attempts {
 			// 锁定已过期或窗口已过，清除
-			if (attempt.locked && now.Sub(attempt.lockTime) > lockoutDuration) ||
-				(!attempt.locked && now.Sub(attempt.lastTime) > loginWindow) {
+			if (attempt.locked && now.Sub(attempt.lockTime) > attempt.lockoutDur) ||
+				(!attempt.locked && now.Sub(attempt.lastTime) > attempt.window) {
 				delete(m.attempts, ip)
 			}
 		}

@@ -76,7 +76,7 @@ func (l *BatchTaskLogic) BatchTask(req *types.BatchTaskReq) (resp *types.BatchTa
 				failedIds = append(failedIds, id)
 			}
 		case "restore":
-			if err := l.svcCtx.TaskModel.Restore(l.ctx, id); err != nil {
+			if err := l.svcCtx.TaskModel.Restore(l.ctx, id, userId); err != nil {
 				failedIds = append(failedIds, id)
 			}
 		}

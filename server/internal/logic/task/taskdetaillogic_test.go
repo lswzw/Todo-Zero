@@ -43,8 +43,8 @@ func (m *mockTaskModel) FindDeletedList(ctx context.Context, userId int64, page,
 	return nil, 0, nil
 }
 func (m *mockTaskModel) UpdateStatus(ctx context.Context, id, status int64) error { return nil }
-func (m *mockTaskModel) Restore(ctx context.Context, id int64) error              { return nil }
-func (m *mockTaskModel) PermanentDelete(ctx context.Context, id int64) error      { return nil }
+func (m *mockTaskModel) Restore(ctx context.Context, id, userId int64) error         { return nil }
+func (m *mockTaskModel) PermanentDelete(ctx context.Context, id, userId int64) error { return nil }
 func (m *mockTaskModel) CountStats(ctx context.Context, userId int64) (total, todo, done, overdue int64, err error) {
 	return 0, 0, 0, 0, nil
 }
