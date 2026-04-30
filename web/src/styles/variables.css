@@ -1,0 +1,77 @@
+:root {
+  /* ===== 主色调 ===== */
+  --primary: #667eea;
+  --primary-dark: #764ba2;
+  --primary-light: rgba(102, 126, 234, 0.1);
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* ===== 语义色 ===== */
+  --success: #67c23a;
+  --success-light: rgba(103, 194, 58, 0.1);
+  --warning: #e6a23c;
+  --warning-light: rgba(230, 162, 60, 0.1);
+  --danger: #f56c6c;
+  --danger-light: rgba(245, 108, 108, 0.1);
+  --info: #409eff;
+  --info-light: rgba(64, 158, 255, 0.1);
+
+  /* ===== 文字色 ===== */
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --text-placeholder: #c0c4cc;
+
+  /* ===== 背景色 ===== */
+  --bg-page: #f5f7fa;
+  --bg-glass: rgba(255, 255, 255, 0.7);
+  --bg-glass-dark: rgba(255, 255, 255, 0.5);
+  --bg-glass-border: rgba(255, 255, 255, 0.3);
+
+  /* ===== 渐变背景 ===== */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-page: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --gradient-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  --gradient-warm: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --gradient-ocean: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --gradient-sunset: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  --gradient-forest: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+
+  /* ===== 阴影 ===== */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --shadow-primary: 0 4px 16px rgba(102, 126, 234, 0.3);
+
+  /* ===== 圆角 ===== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* ===== 间距 ===== */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* ===== 过渡 ===== */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* ===== 毛玻璃 ===== */
+  --glass-blur: 20px;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+
+  /* ===== z-index 层级 ===== */
+  --z-normal: 1;
+  --z-sticky: 10;
+  --z-fixed: 100;
+  --z-overlay: 1000;
+  --z-modal: 2000;
+}
