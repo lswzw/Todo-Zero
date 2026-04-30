@@ -26,7 +26,7 @@ withDefaults(
   {
     variant: 'primary',
     showDecor: false,
-  }
+  },
 )
 </script>
 
@@ -51,11 +51,7 @@ withDefaults(
 
 .gradient-bg--primary .gradient-bg__layer--secondary {
   will-change: transform;
-  background: radial-gradient(
-    circle at 20% 80%,
-    rgba(120, 80, 200, 0.3) 0%,
-    transparent 50%
-  );
+  background: radial-gradient(circle at 20% 80%, rgba(120, 80, 200, 0.3) 0%, transparent 50%);
   animation: float 15s ease-in-out infinite;
 }
 
@@ -67,11 +63,7 @@ withDefaults(
 
 .gradient-bg--secondary .gradient-bg__layer--secondary {
   will-change: transform;
-  background: radial-gradient(
-    circle at 80% 20%,
-    rgba(102, 126, 234, 0.08) 0%,
-    transparent 50%
-  );
+  background: radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.08) 0%, transparent 50%);
   animation: float 20s ease-in-out infinite;
 }
 
@@ -83,11 +75,7 @@ withDefaults(
 
 .gradient-bg--dark .gradient-bg__layer--secondary {
   will-change: transform;
-  background: radial-gradient(
-    circle at 30% 70%,
-    rgba(102, 126, 234, 0.15) 0%,
-    transparent 50%
-  );
+  background: radial-gradient(circle at 30% 70%, rgba(102, 126, 234, 0.15) 0%, transparent 50%);
   animation: float 18s ease-in-out infinite;
 }
 

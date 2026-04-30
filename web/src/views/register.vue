@@ -38,7 +38,14 @@
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" size="large" :loading="loading" native-type="submit" class="register-btn" v-ripple>
+              <el-button
+                v-ripple
+                type="primary"
+                size="large"
+                :loading="loading"
+                native-type="submit"
+                class="register-btn"
+              >
                 {{ t('auth.register') }}
               </el-button>
             </el-form-item>
@@ -182,8 +189,13 @@ const handleRegister = async () => {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 .logo-area h1 {

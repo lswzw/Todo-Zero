@@ -57,8 +57,7 @@ const router = createRouter({
         {
           path: 'login-log',
           name: 'AdminLoginLog',
-          component: () =>
-            import(/* webpackChunkName: "admin-login-log" */ '@/views/admin/login-log.vue'),
+          component: () => import(/* webpackChunkName: "admin-login-log" */ '@/views/admin/login-log.vue'),
         },
         {
           path: 'backup',

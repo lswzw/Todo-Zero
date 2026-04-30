@@ -426,10 +426,18 @@ async function handleEditSubmit() {
 }
 
 @keyframes check-pop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.2); }
-  70% { transform: scale(0.9); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.2);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .detail-title {
@@ -476,7 +484,9 @@ async function handleEditSubmit() {
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .info-card:hover {

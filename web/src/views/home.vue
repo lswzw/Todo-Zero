@@ -838,7 +838,9 @@ function handleLogout() {
   padding: 20px;
   text-align: center;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .stat-card:hover {
@@ -995,10 +997,18 @@ function handleLogout() {
 }
 
 @keyframes dot-bounce {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.3); }
-  60% { transform: scale(0.9); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.3);
+  }
+  60% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .task-status {
@@ -1032,10 +1042,18 @@ function handleLogout() {
 }
 
 @keyframes check-pop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.2); }
-  70% { transform: scale(0.9); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.2);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .task-body {
@@ -1111,8 +1129,13 @@ function handleLogout() {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 .category-manage {

@@ -1,5 +1,5 @@
 <template>
-  <div :class="glassClasses">
+  <div :class="glassClasses" :style="gradientStyle">
     <slot />
   </div>
 </template>
@@ -25,7 +25,7 @@ const props = withDefaults(
     variant: 'default',
     hoverable: false,
     padding: 'md',
-  }
+  },
 )
 
 const glassClasses = computed(() => [
@@ -37,9 +37,7 @@ const glassClasses = computed(() => [
   },
 ])
 
-const gradientStyle = computed(() =>
-  props.gradient ? { background: props.gradient } : {}
-)
+const gradientStyle = computed(() => (props.gradient ? { background: props.gradient } : {}))
 </script>
 
 <style scoped>
@@ -50,7 +48,9 @@ const gradientStyle = computed(() =>
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   transform: translateZ(0);
   will-change: transform;
 }
