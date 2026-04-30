@@ -8,16 +8,13 @@
           <span class="logo-text">Todo App</span>
         </div>
         <div class="nav-right">
-          <el-select v-model="currentLang" size="small" style="width: 90px" @change="handleLocaleChange">
-            <el-option v-for="opt in localeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-          </el-select>
           <span class="username">{{ userStore.username }}</span>
-          <el-button v-if="userStore.isAdmin" text type="warning" @click="$router.push('/admin')">{{
+          <el-button v-if="userStore.isAdmin" text @click="$router.push('/admin')">{{
             t('home.adminPanel')
           }}</el-button>
           <el-button text @click="$router.push('/trash')">{{ t('home.trash') }}</el-button>
           <el-button text @click="showPasswordDialog = true">{{ t('auth.changePassword') }}</el-button>
-          <el-button text type="danger" @click="handleLogout">{{ t('common.logout') }}</el-button>
+          <el-button text @click="handleLogout">{{ t('common.logout') }}</el-button>
         </div>
       </div>
     </header>
@@ -190,7 +187,7 @@
                   <el-button text size="small" @click="openTaskDialog(task)">{{ t('common.edit') }}</el-button>
                   <el-popconfirm :title="t('home.deleteConfirm')" @confirm="handleDelete(task.id)">
                     <template #reference>
-                      <el-button text size="small" type="danger">{{ t('common.delete') }}</el-button>
+                      <el-button text size="small">{{ t('common.delete') }}</el-button>
                     </template>
                   </el-popconfirm>
                 </div>
@@ -290,7 +287,7 @@
 
     <!-- 修改密码弹窗 -->
     <el-dialog v-model="showPasswordDialog" :title="t('auth.changePassword')" width="420px" destroy-on-close>
-      <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="90px">
+      <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="100px">
         <el-form-item :label="t('auth.currentPassword')" prop="oldPassword">
           <el-input v-model="pwdForm.oldPassword" type="password" show-password />
         </el-form-item>
@@ -356,6 +353,17 @@
         <el-button type="primary" @click="handleNotificationPermission">{{ t('common.allow') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 右下角语言切换悬浮按钮 -->
+    <div class="locale-float-btn">
+      <button
+        class="lang-circle-btn"
+        @click="handleLocaleChange(currentLang === 'en' ? 'zh-CN' : 'en')"
+        :title="currentLang === 'en' ? 'Switch to Chinese' : '切换到英文'"
+      >
+        {{ currentLang === 'en' ? '中' : 'En' }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -392,6 +400,10 @@ import type { TaskItem, TaskFormData, StatResp, CategoryItem } from '@/types'
 const { t } = useI18n()
 const { currentLocale, setLocale, localeOptions } = useLocale()
 const currentLang = ref(currentLocale.value)
+
+watch(currentLocale, (newLocale) => {
+  currentLang.value = newLocale
+})
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -745,7 +757,13 @@ async function handleNotificationPermission() {
 }
 
 function handleLogout() {
-  ElMessageBox.confirm(t('common.logoutConfirm'), t('common.tip'), { type: 'warning' })
+  ElMessageBox.confirm(t('common.logoutConfirm'), t('common.tip'), {
+    type: '',
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
+    closeOnClickModal: false,
+    closeOnPressEscape: false,
+  })
     .then(() => {
       resetAuthVerified()
       userStore.logout()
@@ -1166,6 +1184,39 @@ function handleLogout() {
   margin-top: 20px;
 }
 
+.locale-float-btn {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: var(--z-fixed);
+}
+
+.lang-circle-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lang-circle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+}
+
+.lang-circle-btn:active {
+  transform: scale(0.95);
+}
+
 @media (max-width: 768px) {
   .stat-row {
     grid-template-columns: repeat(2, 1fr);
@@ -1173,6 +1224,15 @@ function handleLogout() {
   .section-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+  .locale-float-btn {
+    right: 16px;
+    bottom: 16px;
+  }
+  .lang-circle-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 13px;
   }
 }
 </style>

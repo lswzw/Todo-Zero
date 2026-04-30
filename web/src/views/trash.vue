@@ -58,12 +58,12 @@
               </div>
             </div>
             <div class="task-actions">
-              <el-button text size="small" type="success" @click="handleRestore(task.id)">{{
+              <el-button text size="small" @click="handleRestore(task.id)">{{
                 t('trash.restore')
               }}</el-button>
               <el-popconfirm :title="t('trash.permanentDeleteConfirm')" @confirm="handlePermanentDelete(task.id)">
                 <template #reference>
-                  <el-button text size="small" type="danger">{{ t('trash.permanentDelete') }}</el-button>
+                  <el-button text size="small">{{ t('trash.permanentDelete') }}</el-button>
                 </template>
               </el-popconfirm>
             </div>
