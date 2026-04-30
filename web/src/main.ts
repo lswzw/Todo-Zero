@@ -4,7 +4,7 @@ import router from './router'
 import { createPinia } from 'pinia'
 import i18n from './locales'
 import { useLocale } from './composables/useLocale'
-import './style.css'
+import './styles/main.css'
 
 const RootApp = defineComponent({
   name: 'RootApp',

@@ -1,0 +1,197 @@
+@import './variables.css';
+
+/* ===== Reset ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== 全局基础 ===== */
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-primary);
+  background: var(--gradient-page);
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary);
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-dark);
+}
+
+/* ===== 毛玻璃基础类 ===== */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.glass--dark {
+  background: var(--bg-glass-dark);
+}
+
+.glass--hover {
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.glass--hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ===== 渐变文字 ===== */
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== 滚动条美化 ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Element Plus 全局样式覆盖 ===== */
+/* 用于 JS API 组件如 ElMessageBox、ElMessage */
+.el-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-overlay);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.el-message-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-modal);
+  width: 420px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glow);
+}
+
+.el-message-box__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.el-message-box__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.el-message-box__headerbtn {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-secondary);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.el-message-box__headerbtn:hover {
+  color: var(--text-regular);
+}
+
+.el-message-box__content {
+  padding: 20px;
+  font-size: 14px;
+  color: var(--text-regular);
+  line-height: 1.8;
+}
+
+.el-message-box__btns {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 15px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.el-message-box__status {
+  margin-right: 10px;
+  font-size: 24px;
+}
+
+.el-message-box__status--warning {
+  color: var(--warning);
+}
+
+.el-message-box__status--success {
+  color: var(--success);
+}
+
+.el-message-box__status--error {
+  color: var(--danger);
+}
+
+.el-message-box__status--info {
+  color: var(--info);
+}
+
+/* ===== 过渡动画基础类 ===== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--transition-normal);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all var(--transition-normal);
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
