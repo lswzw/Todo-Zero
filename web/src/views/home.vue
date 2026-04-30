@@ -354,16 +354,8 @@
       </template>
     </el-dialog>
 
-    <!-- 右下角语言切换悬浮按钮 -->
-    <div class="locale-float-btn">
-      <button
-        class="lang-circle-btn"
-        @click="handleLocaleChange(currentLang === 'en' ? 'zh-CN' : 'en')"
-        :title="currentLang === 'en' ? 'Switch to Chinese' : '切换到英文'"
-      >
-        {{ currentLang === 'en' ? '中' : 'En' }}
-      </button>
-    </div>
+    <!-- 语言切换悬浮按钮 -->
+    <LocaleSwitch type="float" />
   </div>
 </template>
 
@@ -377,8 +369,8 @@ import draggable from 'vuedraggable'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
-import { useLocale } from '@/composables/useLocale'
 import { useNotification } from '@/composables/useNotification'
+import LocaleSwitch from '@/components/LocaleSwitch.vue'
 import {
   getTaskList,
   createTask,
@@ -398,12 +390,6 @@ import {
 import type { TaskItem, TaskFormData, StatResp, CategoryItem } from '@/types'
 
 const { t } = useI18n()
-const { currentLocale, setLocale, localeOptions } = useLocale()
-const currentLang = ref(currentLocale.value)
-
-watch(currentLocale, (newLocale) => {
-  currentLang.value = newLocale
-})
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -480,10 +466,6 @@ const pwdRules = {
     { required: true, message: () => t('auth.confirmNewPasswordPrompt'), trigger: 'blur' },
     { validator: validatePwdConfirm, trigger: 'blur' },
   ],
-}
-
-function handleLocaleChange(lang: string) {
-  setLocale(lang)
 }
 
 function onFilterChange() {
@@ -1184,38 +1166,6 @@ function handleLogout() {
   margin-top: 20px;
 }
 
-.locale-float-btn {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: var(--z-fixed);
-}
-
-.lang-circle-btn {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border: none;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lang-circle-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
-}
-
-.lang-circle-btn:active {
-  transform: scale(0.95);
-}
 
 @media (max-width: 768px) {
   .stat-row {

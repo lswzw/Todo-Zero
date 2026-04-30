@@ -18,6 +18,7 @@ export default {
     exportJson: 'Export JSON',
     exportCsv: 'Export CSV',
     exportFailed: 'Export failed',
+    switchLanguage: 'Switch Language',
   },
   auth: {
     login: 'Login',

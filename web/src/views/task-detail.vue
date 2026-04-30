@@ -106,6 +106,9 @@
     </main>
   </div>
 
+  <!-- 语言切换悬浮按钮 -->
+  <LocaleSwitch type="float" />
+
   <!-- 编辑弹窗 -->
   <el-dialog v-model="editDialogVisible" :title="t('home.editTask')" width="480px" destroy-on-close>
     <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="80px">
@@ -190,6 +193,7 @@ import { ArrowLeft, Check, Loading } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { getTaskDetail, updateTask, toggleTask, deleteTask, getCategoryList } from '@/api'
 import type { TaskDetail, TaskFormData, CategoryItem } from '@/types'
+import LocaleSwitch from '@/components/LocaleSwitch.vue'
 
 const { t } = useI18n()
 

@@ -50,24 +50,6 @@
               </el-button>
             </el-form-item>
           </el-form>
-          <div class="locale-switch">
-            <div class="lang-toggle">
-              <div
-                class="lang-slider"
-                :style="{
-                  transform: currentLang === 'en' ? 'translateX(100%)' : 'translateX(0)',
-                }"
-              />
-              <button
-                v-for="opt in localeOptions"
-                :key="opt.value"
-                :class="['lang-btn', { active: currentLang === opt.value }]"
-                @click="handleLocaleChange(opt.value)"
-              >
-                {{ opt.label }}
-              </button>
-            </div>
-          </div>
           <div class="login-link">
             {{ t('auth.hasAccount') }}<router-link to="/login">{{ t('auth.goToLogin') }}</router-link>
           </div>
@@ -82,6 +64,9 @@
         </template>
       </div>
     </div>
+
+    <!-- 语言切换悬浮按钮 -->
+    <LocaleSwitch type="float" />
   </GradientBg>
 </template>
 
@@ -93,17 +78,15 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { register, checkRegister } from '@/api'
-import { useLocale } from '@/composables/useLocale'
 import GradientBg from '@/components/GradientBg.vue'
+import LocaleSwitch from '@/components/LocaleSwitch.vue'
 
 const { t } = useI18n()
-const { currentLocale, setLocale, localeOptions } = useLocale()
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const allowRegister = ref(true)
-const currentLang = ref(currentLocale.value)
 
 const form = ref({ username: '', password: '', confirmPassword: '' })
 
@@ -129,11 +112,6 @@ const rules = {
     { required: true, message: () => t('auth.enterConfirmPassword'), trigger: 'blur' },
     { validator: validateConfirm, trigger: 'blur' },
   ],
-}
-
-function handleLocaleChange(lang: string) {
-  currentLang.value = lang
-  setLocale(lang)
 }
 
 onMounted(async () => {
@@ -235,57 +213,6 @@ const handleRegister = async () => {
 .register-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.locale-switch {
-  display: flex;
-  justify-content: center;
-  margin: 8px 0;
-}
-
-.lang-toggle {
-  display: inline-flex;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 3px;
-  gap: 2px;
-  position: relative;
-}
-
-.lang-slider {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: calc(50% - 4px);
-  height: calc(100% - 6px);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.lang-btn {
-  padding: 5px 16px;
-  border: none;
-  border-radius: 16px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.7);
-  background: transparent;
-  transition: color 0.3s ease;
-  font-family: inherit;
-  position: relative;
-  z-index: 1;
-}
-
-.lang-btn:hover {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.lang-btn.active {
-  color: #fff;
 }
 
 .login-link {

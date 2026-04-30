@@ -35,6 +35,7 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     GlassCard: typeof import('./src/components/GlassCard.vue')['default']
     GradientBg: typeof import('./src/components/GradientBg.vue')['default']
+    LocaleSwitch: typeof import('./src/components/LocaleSwitch.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

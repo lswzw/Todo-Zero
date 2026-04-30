@@ -18,6 +18,7 @@ export default {
     exportJson: '导出 JSON',
     exportCsv: '导出 CSV',
     exportFailed: '导出失败',
+    switchLanguage: '切换语言',
   },
   auth: {
     login: '登 录',

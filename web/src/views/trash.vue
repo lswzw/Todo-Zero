@@ -80,6 +80,9 @@
         </div>
       </div>
     </main>
+
+    <!-- 语言切换悬浮按钮 -->
+    <LocaleSwitch type="float" />
   </div>
 </template>
 
@@ -91,6 +94,7 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { getTrashList, restoreTask, permanentDeleteTask, batchTask } from '@/api'
 import type { TrashItem } from '@/types'
+import LocaleSwitch from '@/components/LocaleSwitch.vue'
 
 const { t } = useI18n()
 
