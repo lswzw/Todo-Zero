@@ -51,6 +51,8 @@ const gradientStyle = computed(() =>
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* 变体 */

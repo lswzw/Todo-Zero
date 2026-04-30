@@ -50,6 +50,7 @@ withDefaults(
 }
 
 .gradient-bg--primary .gradient-bg__layer--secondary {
+  will-change: transform;
   background: radial-gradient(
     circle at 20% 80%,
     rgba(120, 80, 200, 0.3) 0%,
@@ -65,6 +66,7 @@ withDefaults(
 }
 
 .gradient-bg--secondary .gradient-bg__layer--secondary {
+  will-change: transform;
   background: radial-gradient(
     circle at 80% 20%,
     rgba(102, 126, 234, 0.08) 0%,
@@ -80,6 +82,7 @@ withDefaults(
 }
 
 .gradient-bg--dark .gradient-bg__layer--secondary {
+  will-change: transform;
   background: radial-gradient(
     circle at 30% 70%,
     rgba(102, 126, 234, 0.15) 0%,
@@ -100,6 +103,7 @@ withDefaults(
   position: absolute;
   border-radius: 50%;
   opacity: 0.12;
+  will-change: transform;
 }
 
 .gradient-bg__bubble--1 {

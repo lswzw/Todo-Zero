@@ -77,6 +77,13 @@ a:hover {
   -webkit-text-fill-color: transparent;
 }
 
+/* ===== GPU 加速 ===== */
+.gpu {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
 /* ===== 滚动条美化 ===== */
 ::-webkit-scrollbar {
   width: 6px;
