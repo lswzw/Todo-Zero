@@ -342,16 +342,19 @@ async function handleEditSubmit() {
 <style scoped>
 .detail-page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: #fff;
+  z-index: var(--z-sticky);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   height: 56px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 .nav-inner {
@@ -406,11 +409,16 @@ async function handleEditSubmit() {
   cursor: pointer;
   flex-shrink: 0;
   margin-top: 2px;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+}
+
+.status-indicator:hover {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
 }
 
 .status-indicator.done {
-  background: #67c23a;
+  background: linear-gradient(135deg, #67c23a, #38f9d7);
   border-color: #67c23a;
   color: #fff;
   font-size: 14px;
@@ -450,10 +458,19 @@ async function handleEditSubmit() {
 }
 
 .info-card {
-  background: #fff;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .info-label {
@@ -473,18 +490,24 @@ async function handleEditSubmit() {
 }
 
 .content-section {
-  background: #fff;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .content-section h3 {
   font-size: 15px;
-  color: #303133;
+  background: linear-gradient(135deg, #303133, #667eea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .content-body {
