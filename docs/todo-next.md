@@ -201,5 +201,5 @@
 - [x] 性能指标达标：LCP < 2.5s, FID < 100ms
 - [x] 响应式适配：移动端 / 平板 / 桌面端
 - [x] 浏览器兼容：Chrome / Firefox / Safari / Edge
-- [ ] 代码通过 ESLint 检查
+- [x] 代码通过 ESLint 检查
 - [ ] 更新 [changelog.md](./changelog.md) v3.0.0 版本记录
