@@ -38,7 +38,7 @@
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" size="large" :loading="loading" native-type="submit" class="register-btn">
+              <el-button type="primary" size="large" :loading="loading" native-type="submit" class="register-btn" v-ripple>
                 {{ t('auth.register') }}
               </el-button>
             </el-form-item>

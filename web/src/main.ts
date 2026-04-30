@@ -4,6 +4,7 @@ import router from './router'
 import { createPinia } from 'pinia'
 import i18n from './locales'
 import { useLocale } from './composables/useLocale'
+import ripple from './directives/ripple'
 import './styles/main.css'
 
 const RootApp = defineComponent({
@@ -19,6 +20,7 @@ const RootApp = defineComponent({
 
 const app = createApp(RootApp)
 
+app.directive('ripple', ripple)
 app.use(createPinia())
 app.use(i18n)
 app.use(router)

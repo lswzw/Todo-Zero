@@ -27,7 +27,7 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" size="large" :loading="loading" native-type="submit" class="login-btn">
+            <el-button type="primary" size="large" :loading="loading" native-type="submit" class="login-btn" v-ripple>
               {{ t('auth.login') }}
             </el-button>
           </el-form-item>
