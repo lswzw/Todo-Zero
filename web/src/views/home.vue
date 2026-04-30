@@ -484,9 +484,6 @@ watch(page, () => loadTasks())
 onMounted(() => {
   loadCategories()
   Promise.all([loadTasks(), loadStat()])
-  if (permission.value === 'default') {
-    showNotificationPermission.value = true
-  }
 })
 
 async function loadStat() {
