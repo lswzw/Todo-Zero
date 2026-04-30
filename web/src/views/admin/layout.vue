@@ -110,7 +110,10 @@ function handleLogout() {
 .logo-text {
   font-size: 18px;
   font-weight: 600;
-  color: #303133;
+  background: linear-gradient(135deg, #303133, #667eea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .nav-right {

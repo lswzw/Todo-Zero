@@ -107,10 +107,13 @@ async function handleUpdate(key: string, value: string) {
 
 <style scoped>
 .admin-card {
-  background: #fff;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
@@ -119,7 +122,10 @@ async function handleUpdate(key: string, value: string) {
 
 .card-header h2 {
   font-size: 18px;
-  color: #303133;
+  background: linear-gradient(135deg, #303133, #667eea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .config-item {
@@ -127,7 +133,7 @@ async function handleUpdate(key: string, value: string) {
   align-items: center;
   justify-content: space-between;
   padding: 20px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .config-item:last-child {
