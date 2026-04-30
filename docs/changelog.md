@@ -537,3 +537,65 @@
   - `LoginAttempts` — 登录限流最大尝试次数（默认 10）
   - `LoginWindowMinutes` — 登录统计窗口分钟数（默认 15）
   - `LoginLockoutMinutes` — 登录锁定时长分钟数（默认 15）
+
+---
+
+## v3.0.0 — 界面现代化视觉重构
+
+> 里程碑：毛玻璃效果 + 现代渐变 + 精致动画，全面提升视觉体验，共 5 阶段 22 项任务全部完成。
+
+### Phase 1 — 基础架构准备
+
+- **全局样式变量** — 创建 `styles/variables.css`，定义统一色彩系统（`--primary`、`--primary-dark`、`--primary-light`）、背景变量（`--bg-primary`、`--bg-glass`、`--bg-glass-dark`）、阴影变量（`--shadow-glow`、`--shadow-card`）及间距/圆角/过渡时间等基础变量
+- **毛玻璃组件** — 创建 `components/GlassCard.vue`，封装可复用玻璃态卡片，支持 `dark`/`hoverable` props，`backdrop-filter: blur(20px)` + 半透明背景，悬停 `translateY(-2px)` + 阴影增强，含 `-webkit-backdrop-filter` 兼容前缀
+- **渐变背景组件** — 创建 `components/GradientBg.vue`，支持 `primary`/`secondary`/`dark` 三种渐变变体，主渐变 `linear-gradient(135deg, #667eea, #764ba2)`，添加 `radial-gradient` 装饰层 + 浮动动画
+- **主样式更新** — 引入全局变量文件，重置基础样式（body 背景、字体），整合全局过渡/动画基础类
+
+### Phase 2 — 公共组件重构
+
+- **导航栏毛玻璃化** — `backdrop-filter: blur(20px)` + 半透明白色背景 `rgba(255,255,255,0.7)`，`position: sticky` 固定
+- **按钮样式升级** — 主按钮渐变背景 + hover 缩放亮度增强 + active 按下反馈，次要按钮描边 + 渐变文字
+- **输入框样式升级** — 聚焦光晕效果、微透明背景、聚焦边框渐变过渡
+- **卡片组件升级** — 统一使用 `GlassCard`，阴影层级系统（sm/md/lg），圆角 `16px`，悬停阴影增强 + 微上移
+
+### Phase 3 — 页面重构（6 页面全覆盖）
+
+- **登录页** — `GradientBg` 动态渐变背景 + `GlassCard` 登录卡片 + 背景浮动装饰元素 + 输入框聚焦光晕 + 渐变按钮 + 渐变标题文字
+- **注册页** — 与登录页风格统一，`GradientBg` + `GlassCard`，注册成功动画反馈
+- **主页** — 导航栏毛玻璃化 + `GlassCard` 统计卡片（不同渐变色区分）+ 任务卡片列表悬停效果 + 整体 `GradientBg` secondary 背景
+- **任务详情页** — `GradientBg` secondary 背景 + `GlassCard` 详情区域 + 子任务卡片化 + 页面进入过渡动画
+- **回收站** — `GradientBg` 背景 + `GlassCard` 任务卡片 + 恢复/删除渐变按钮 + 空状态优化
+- **管理员面板** — 侧边栏毛玻璃化 + `GlassCard` 内容区 + 数据统计卡片渐变图标 + 表格行悬停增强
+
+### Phase 4 — 交互动画
+
+- **页面过渡动画** — 路由切换 `<Transition>` 淡入淡出，可选 `slide-up`/`slide-right`，时长 `0.3s ease`
+- **卡片悬停效果** — `translateY(-4px) scale(1.01)` + 阴影过渡 + `will-change: transform` 性能提示
+- **按钮涟漪效果** — 封装 `Ripple` 指令，点击位置产生涟漪扩散动画，`0.6s` 时长
+- **任务状态切换动画** — checkbox 缩放弹跳 + 文字划线过渡 + 完成状态透明度渐变
+
+### Phase 5 — 性能优化与兼容
+
+- **backdrop-filter 降级** — 不支持时回退到实色背景 `rgba(255,255,255,0.95)`，Safari/iOS 特殊处理
+- **CSS 动画性能** — 仅使用 `transform`/`opacity`，`translateZ(0)` GPU 加速，合理使用 `will-change`
+- **懒加载优化** — 路由组件 `defineAsyncComponent` 懒加载，图片 `loading="lazy"`
+- **首屏加载优化** — 关键 CSS 内联，骨架屏替换 loading，LCP < 2.5s / FID < 100ms 目标
+
+### 完成标准
+
+- 所有页面采用毛玻璃设计风格
+- 保持原有功能完整性（无功能回归）
+- 响应式适配：移动端 / 平板 / 桌面端
+- 浏览器兼容：Chrome / Firefox / Safari / Edge
+- 代码通过 ESLint 检查
+
+### 进度总览
+
+| 阶段 | 任务数 | 进度 |
+|------|--------|------|
+| Phase 1 - 基础架构 | 4 | 4/4 ✅ |
+| Phase 2 - 公共组件 | 4 | 4/4 ✅ |
+| Phase 3 - 页面重构 | 6 | 6/6 ✅ |
+| Phase 4 - 交互动画 | 4 | 4/4 ✅ |
+| Phase 5 - 性能优化 | 4 | 4/4 ✅ |
+| **合计** | **22** | **22/22 ✅** |
