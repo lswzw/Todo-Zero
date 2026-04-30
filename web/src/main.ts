@@ -6,6 +6,8 @@ import i18n from './locales'
 import { useLocale } from './composables/useLocale'
 import ripple from './directives/ripple'
 import './styles/main.css'
+import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/message-box/style/css'
 
 const RootApp = defineComponent({
   name: 'RootApp',
