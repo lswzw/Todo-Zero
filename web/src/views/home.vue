@@ -985,12 +985,20 @@ function handleLogout() {
   height: 18px;
   border-radius: 50%;
   border: 2px solid #c0c4cc;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 
 .check-dot.active {
   background: #667eea;
   border-color: #667eea;
+  animation: dot-bounce 0.4s ease;
+}
+
+@keyframes dot-bounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.3); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
 }
 
 .task-status {
@@ -1020,6 +1028,14 @@ function handleLogout() {
   border-color: #67c23a;
   color: #fff;
   font-size: 12px;
+  animation: check-pop 0.4s ease;
+}
+
+@keyframes check-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.2); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
 }
 
 .task-body {
@@ -1032,11 +1048,15 @@ function handleLogout() {
   font-size: 15px;
   color: #303133;
   line-height: 1.5;
+  transition: color 0.3s ease;
+  position: relative;
 }
 
 .task-title.line-through {
   text-decoration: line-through;
   color: #909399;
+  text-decoration-color: #909399;
+  text-decoration-thickness: 2px;
 }
 
 .task-content {

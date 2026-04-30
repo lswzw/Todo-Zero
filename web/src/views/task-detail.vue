@@ -422,6 +422,14 @@ async function handleEditSubmit() {
   border-color: #67c23a;
   color: #fff;
   font-size: 14px;
+  animation: check-pop 0.4s ease;
+}
+
+@keyframes check-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.2); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
 }
 
 .detail-title {
@@ -430,11 +438,14 @@ async function handleEditSubmit() {
   color: #303133;
   line-height: 1.4;
   word-break: break-word;
+  transition: color 0.3s ease;
 }
 
 .detail-title.line-through {
   text-decoration: line-through;
   color: #909399;
+  text-decoration-color: #909399;
+  text-decoration-thickness: 2px;
 }
 
 .meta-row {
