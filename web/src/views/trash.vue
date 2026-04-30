@@ -220,7 +220,10 @@ async function handleBatchPermanentDelete() {
 .page-title {
   font-size: 18px;
   font-weight: 600;
-  color: #303133;
+  background: linear-gradient(135deg, #303133, #667eea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .nav-right {
@@ -331,6 +334,14 @@ async function handleBatchPermanentDelete() {
 
 .empty-icon {
   font-size: 48px;
+  display: inline-block;
+  opacity: 0.6;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 .pagination {
