@@ -192,10 +192,13 @@ async function handleBatchPermanentDelete() {
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: #fff;
+  z-index: var(--z-sticky);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   height: 60px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 .nav-inner {
