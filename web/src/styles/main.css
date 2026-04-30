@@ -43,11 +43,17 @@ a:hover {
 
 .glass--hover {
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  will-change: transform;
 }
 
 .glass--hover:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.01);
   box-shadow: var(--shadow-hover);
+}
+
+.glass--hover:active {
+  transform: translateY(-2px) scale(1);
+  box-shadow: var(--shadow-glow);
 }
 
 /* ===== 渐变文字 ===== */
