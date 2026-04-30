@@ -51,9 +51,16 @@
             </el-form-item>
           </el-form>
           <div class="locale-switch">
-            <el-select v-model="currentLang" size="small" style="width: 100px" @change="handleLocaleChange">
-              <el-option v-for="opt in localeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-            </el-select>
+            <div class="lang-toggle">
+              <button
+                v-for="opt in localeOptions"
+                :key="opt.value"
+                :class="['lang-btn', { active: currentLang === opt.value }]"
+                @click="handleLocaleChange(opt.value)"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
           </div>
           <div class="login-link">
             {{ t('auth.hasAccount') }}<router-link to="/login">{{ t('auth.goToLogin') }}</router-link>
@@ -227,6 +234,38 @@ const handleRegister = async () => {
   display: flex;
   justify-content: center;
   margin: 8px 0;
+}
+
+.lang-toggle {
+  display: inline-flex;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 3px;
+  gap: 2px;
+}
+
+.lang-btn {
+  padding: 5px 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.lang-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.lang-btn.active {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .login-link {
