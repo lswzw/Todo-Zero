@@ -599,3 +599,24 @@
 | Phase 4 - 交互动画 | 4 | 4/4 ✅ |
 | Phase 5 - 性能优化 | 4 | 4/4 ✅ |
 | **合计** | **22** | **22/22 ✅** |
+
+## v3.1.0 — 国际化增强 + Bug 修复 + 代码清理
+
+### 国际化增强
+
+- **useLocale 全面升级** — `composables/useLocale.ts` 新增全局 singleton `syncedLocale`、跨 tab `storage` 事件同步、`setLocale`/`toggleLocale`/`getLocaleLabel`/`getLocaleAlias` 方法、`currentLocaleOption`/`currentLocaleLabel`/`currentLocaleAlias` 计算属性
+- **语言切换统一为悬浮按钮** — 所有页面统一使用右下角圆形悬浮按钮 `LocaleSwitch.vue`，移除各页面独立的 `el-select` 下拉切换
+- **新增翻译键** — 添加 `common.switchLanguage` 等翻译键
+- **Element Plus 语言联动** — 主应用使用 `ElConfigProvider` + `:locale` 动态绑定，Element Plus 组件语言随 vue-i18n 同步切换
+
+### Bug 修复
+
+- **登录页错误提示不显示** — 根因：`request.ts`（`.ts` 文件）中 `ElMessage` 的 CSS 未被 `unplugin-vue-components` 处理；修复：在 `main.ts` 显式导入 `element-plus/es/components/message/style/css` 和 `message-box/style/css`
+- **管理员退出登录弹窗不一致** — 统一为 home.vue 样式（无图标、自定义按钮文字、禁止点击遮罩关闭、禁止 ESC 关闭）
+- **管理员退出登录按钮多余背景色** — 从 `text type="danger"` 改为 `link` 类型
+
+### 代码清理
+
+- **清理无效文件** — 删除 `web/src/assets`、`web/src/components`（旧 `GlassCard.vue`）、`web/src/utils` 等空目录/废弃文件
+- **清理未使用的 API 和类型** — 删除 `api/index.ts` 中未使用的 Tag 相关 API 函数，删除 `types/index.ts` 中未使用的 `TagItem`/`TagListResp` 类型
+- **修复类型警告** — 移除 `LocaleSwitch.vue` 中未使用的 `LocaleValue` 导入，移除未使用的 `props` 赋值
