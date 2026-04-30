@@ -147,17 +147,6 @@ export interface BackupListResp {
   list: BackupItem[]
 }
 
-export interface TagItem {
-  id: number
-  name: string
-  color: string
-  isSystem: number
-}
-
-export interface TagListResp {
-  list: TagItem[]
-}
-
 export interface TriggerBackupResp {
   fileName: string
   fileSize: number
