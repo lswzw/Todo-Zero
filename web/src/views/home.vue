@@ -27,18 +27,22 @@
       <!-- 统计卡片 -->
       <div class="stat-row">
         <div class="stat-card total">
+          <div class="stat-icon">📊</div>
           <div class="stat-value">{{ stat.total }}</div>
           <div class="stat-label">{{ t('home.totalTasks') }}</div>
         </div>
         <div class="stat-card todo">
+          <div class="stat-icon">⏳</div>
           <div class="stat-value">{{ stat.todo }}</div>
           <div class="stat-label">{{ t('home.todo') }}</div>
         </div>
         <div class="stat-card done">
+          <div class="stat-icon">✅</div>
           <div class="stat-value">{{ stat.done }}</div>
           <div class="stat-label">{{ t('home.completed') }}</div>
         </div>
         <div class="stat-card rate">
+          <div class="stat-icon">📈</div>
           <div class="stat-value">{{ stat.doneRate }}%</div>
           <div class="stat-label">{{ t('home.completionRate') }}</div>
         </div>
@@ -794,7 +798,10 @@ function handleLogout() {
 .logo-text {
   font-size: 20px;
   font-weight: 600;
-  color: #303133;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .nav-right {
@@ -837,6 +844,11 @@ function handleLogout() {
 .stat-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
 }
 
 .stat-value {
@@ -897,7 +909,10 @@ function handleLogout() {
 
 .section-header h2 {
   font-size: 18px;
-  color: #303133;
+  background: linear-gradient(135deg, #303133, #667eea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .section-actions {
@@ -908,15 +923,18 @@ function handleLogout() {
 }
 
 .batch-bar {
-  background: #ecf5ff;
+  background: rgba(102, 126, 234, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(102, 126, 234, 0.15);
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #409eff;
+  color: #667eea;
 }
 
 .task-list {
@@ -988,11 +1006,17 @@ function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.status-circle:hover {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
 }
 
 .status-circle.done {
-  background: #67c23a;
+  background: linear-gradient(135deg, #67c23a, #38f9d7);
   border-color: #67c23a;
   color: #fff;
   font-size: 12px;
@@ -1059,6 +1083,18 @@ function handleLogout() {
   color: #909399;
 }
 
+.empty-icon {
+  font-size: 48px;
+  display: inline-block;
+  opacity: 0.6;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
 .category-manage {
   display: flex;
   flex-direction: column;
@@ -1082,10 +1118,6 @@ function handleLogout() {
   align-items: center;
   gap: 8px;
   padding: 4px 0;
-}
-
-.empty-icon {
-  font-size: 48px;
 }
 
 .pagination {
