@@ -186,7 +186,7 @@ async function handleBatchPermanentDelete() {
 <style scoped>
 .trash-page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .navbar {
@@ -236,10 +236,13 @@ async function handleBatchPermanentDelete() {
 }
 
 .trash-section {
-  background: #fff;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .task-list {
@@ -252,12 +255,13 @@ async function handleBatchPermanentDelete() {
   display: flex;
   align-items: flex-start;
   padding: 14px 12px;
-  border-radius: 8px;
-  transition: background 0.2s;
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
 .task-item:hover {
-  background: #f5f7fa;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .task-check {

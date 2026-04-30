@@ -79,7 +79,7 @@ function handleLogout() {
 <style scoped>
 .admin-layout {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .admin-navbar {
@@ -129,8 +129,10 @@ function handleLogout() {
 .admin-sidebar {
   width: 200px;
   min-height: calc(100vh - 60px);
-  background: #fff;
-  border-right: 1px solid #e8e8e8;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
   padding: 16px 0;
   flex-shrink: 0;
 }
@@ -147,12 +149,12 @@ function handleLogout() {
 }
 
 .sidebar-item:hover {
-  background: #f5f7fa;
+  background: rgba(102, 126, 234, 0.08);
   color: #667eea;
 }
 
 .sidebar-item.active {
-  background: #ecf5ff;
+  background: rgba(102, 126, 234, 0.12);
   color: #667eea;
   font-weight: 500;
   border-right: 3px solid #667eea;

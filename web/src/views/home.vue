@@ -757,7 +757,7 @@ function handleLogout() {
 <style scoped>
 .home-page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .navbar {
@@ -823,11 +823,20 @@ function handleLogout() {
 }
 
 .stat-card {
-  background: #fff;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
   padding: 20px;
   text-align: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
 .stat-value {
@@ -843,23 +852,38 @@ function handleLogout() {
 }
 
 .stat-card.total .stat-value {
-  color: #303133;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .stat-card.todo .stat-value {
-  color: #e6a23c;
+  background: linear-gradient(135deg, #e6a23c, #f5c242);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .stat-card.done .stat-value {
-  color: #67c23a;
+  background: linear-gradient(135deg, #67c23a, #38f9d7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .stat-card.rate .stat-value {
-  color: #667eea;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .task-section {
-  background: #fff;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .section-header {
@@ -905,13 +929,13 @@ function handleLogout() {
   display: flex;
   align-items: flex-start;
   padding: 14px 12px;
-  border-radius: 8px;
-  transition: background 0.2s;
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
 .task-item.ghost {
   opacity: 0.4;
-  background: #ecf5ff;
+  background: rgba(102, 126, 234, 0.08);
 }
 
 .drag-handle {
@@ -928,7 +952,9 @@ function handleLogout() {
 }
 
 .task-item:hover {
-  background: #f5f7fa;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transform: translateX(4px);
 }
 
 .task-check {
