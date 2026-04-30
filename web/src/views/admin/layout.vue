@@ -9,7 +9,7 @@
       <div class="nav-right">
         <span>{{ t('admin.admin') }}：{{ userStore.username }}</span>
         <el-button text @click="router.push('/')">{{ t('admin.homePage') }}</el-button>
-        <el-button text type="danger" @click="handleLogout">{{ t('common.logout') }}</el-button>
+        <el-button link @click="handleLogout">{{ t('common.logout') }}</el-button>
       </div>
     </header>
 
@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { resetAuthVerified } from '@/router'
@@ -58,12 +58,17 @@ const router = useRouter()
 const userStore = useUserStore()
 
 function handleLogout() {
-  ElMessageBox.confirm(t('common.logoutConfirm'), t('common.tip'), { type: 'warning' })
+  ElMessageBox.confirm(t('common.logoutConfirm'), t('common.tip'), {
+    type: '',
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
+    closeOnClickModal: false,
+    closeOnPressEscape: false,
+  })
     .then(() => {
       resetAuthVerified()
       userStore.logout()
       router.push('/login')
-      ElMessage.success(t('common.logoutSuccess'))
     })
     .catch(() => {})
 }
