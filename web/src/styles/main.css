@@ -262,6 +262,40 @@ a:hover {
   transform: translateY(0) !important;
 }
 
+/* ===== Element Plus 输入框样式升级 ===== */
+.el-input__wrapper {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset;
+  transition: all var(--transition-normal);
+}
+
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.3) inset;
+}
+
+.el-input__wrapper.is-focus {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 1px #667eea inset, 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.el-textarea__inner {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-normal);
+}
+
+.el-textarea__inner:hover {
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.el-textarea__inner:focus {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
 /* ===== 过渡动画基础类 ===== */
 .fade-enter-active,
 .fade-leave-active {
