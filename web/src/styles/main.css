@@ -170,6 +170,98 @@ a:hover {
   color: var(--info);
 }
 
+/* ===== Element Plus 按钮样式升级 ===== */
+/* 主按钮 - 渐变背景 */
+.el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  transition: all var(--transition-normal);
+}
+
+.el-button--primary:hover {
+  background: linear-gradient(135deg, #7b93ff 0%, #8a5db8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.el-button--primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* 成功按钮 */
+.el-button--success {
+  background: linear-gradient(135deg, #67c23a 0%, #52b120 100%);
+  border: none;
+  transition: all var(--transition-normal);
+}
+
+.el-button--success:hover {
+  background: linear-gradient(135deg, #7ed04f 0%, #5fc02e 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(103, 194, 58, 0.4);
+}
+
+/* 警告按钮 */
+.el-button--warning {
+  background: linear-gradient(135deg, #e6a23c 0%, #d4912a 100%);
+  border: none;
+  transition: all var(--transition-normal);
+}
+
+.el-button--warning:hover {
+  background: linear-gradient(135deg, #f0b550 0%, #e09f38 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(230, 162, 60, 0.4);
+}
+
+/* 危险按钮 */
+.el-button--danger {
+  background: linear-gradient(135deg, #f56c6c 0%, #e05555 100%);
+  border: none;
+  transition: all var(--transition-normal);
+}
+
+.el-button--danger:hover {
+  background: linear-gradient(135deg, #f78989 0%, #e86a6a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.4);
+}
+
+/* 信息按钮 */
+.el-button--info {
+  background: linear-gradient(135deg, #409eff 0%, #3388dd 100%);
+  border: none;
+  transition: all var(--transition-normal);
+}
+
+.el-button--info:hover {
+  background: linear-gradient(135deg, #5ab1ff 0%, #4a9aee 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(64, 158, 255, 0.4);
+}
+
+/* 默认按钮 - 描边 + 渐变文字 */
+.el-button--default {
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  background: transparent;
+  transition: all var(--transition-normal);
+}
+
+.el-button--default:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* 所有按钮通用按下反馈 */
+.el-button:active {
+  transform: translateY(0) !important;
+}
+
 /* ===== 过渡动画基础类 ===== */
 .fade-enter-active,
 .fade-leave-active {
