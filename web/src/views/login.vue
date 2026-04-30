@@ -34,6 +34,12 @@
         </el-form>
         <div class="locale-switch">
           <div class="lang-toggle">
+            <div
+              class="lang-slider"
+              :style="{
+                transform: currentLang === 'en' ? 'translateX(100%)' : 'translateX(0)',
+              }"
+            />
             <button
               v-for="opt in localeOptions"
               :key="opt.value"
@@ -81,6 +87,7 @@ const rules = {
 }
 
 function handleLocaleChange(lang: string) {
+  currentLang.value = lang
   setLocale(lang)
 }
 
@@ -199,6 +206,19 @@ const handleLogin = async () => {
   border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 3px;
   gap: 2px;
+  position: relative;
+}
+
+.lang-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(50% - 4px);
+  height: calc(100% - 6px);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .lang-btn {
@@ -210,8 +230,10 @@ const handleLogin = async () => {
   cursor: pointer;
   color: rgba(255, 255, 255, 0.7);
   background: transparent;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease;
   font-family: inherit;
+  position: relative;
+  z-index: 1;
 }
 
 .lang-btn:hover {
@@ -219,9 +241,7 @@ const handleLogin = async () => {
 }
 
 .lang-btn.active {
-  background: rgba(255, 255, 255, 0.25);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .register-link {
